@@ -8,11 +8,18 @@
         "framework"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./../laravel-workos-helpers"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
+        "laravel/workos": "*",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
