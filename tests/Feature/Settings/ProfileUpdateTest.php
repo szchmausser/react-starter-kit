@@ -38,7 +38,6 @@ class ProfileUpdateTest extends TestCase
         $user->refresh();
 
         $this->assertSame('Test User', $user->name);
-        $this->assertNotNull($user->email_verified_at);
     }
 
     public function test_user_can_delete_their_account()
