@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fae57c3a27261e6f48035aed7dbc8428",
+    "content-hash": "7b77adb2f604e243f8d02797baed8f57",
     "packages": [
         {
             "name": "brick/math",
@@ -1594,11 +1594,17 @@
         },
         {
             "name": "laravel/workos",
-            "version": "dev-main",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/workos.git",
+                "reference": "de1f2ad6d96a979759aeec2073c31d002396cb38"
+            },
             "dist": {
-                "type": "path",
-                "url": "./../laravel-workos",
-                "reference": "5af9f2c92b8d18c60071fb201858831b24e5a3da"
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/workos/zipball/de1f2ad6d96a979759aeec2073c31d002396cb38",
+                "reference": "de1f2ad6d96a979759aeec2073c31d002396cb38",
+                "shasum": ""
             },
             "require": {
                 "firebase/php-jwt": "^6.11",
@@ -1615,11 +1621,11 @@
             },
             "type": "library",
             "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
                 "laravel": {
                     "providers": []
+                },
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
                 }
             },
             "autoload": {
@@ -1627,11 +1633,7 @@
                     "Laravel\\WorkOS\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1651,9 +1653,7 @@
                 "issues": "https://github.com/laravel/workos/issues",
                 "source": "https://github.com/laravel/workos"
             },
-            "transport-options": {
-                "relative": true
-            }
+            "time": "2025-02-18T19:15:52+00:00"
         },
         {
             "name": "league/commonmark",
