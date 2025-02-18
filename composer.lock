@@ -1594,16 +1594,16 @@
         },
         {
             "name": "laravel/workos",
-            "version": "v0.1.1",
+            "version": "v0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/workos.git",
-                "reference": "d8e5d49ed63ca5fef6d2543d96479e6ff481e742"
+                "reference": "89121a04de75f51986decd5de9a0f34ceb819de9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/workos/zipball/d8e5d49ed63ca5fef6d2543d96479e6ff481e742",
-                "reference": "d8e5d49ed63ca5fef6d2543d96479e6ff481e742",
+                "url": "https://api.github.com/repos/laravel/workos/zipball/89121a04de75f51986decd5de9a0f34ceb819de9",
+                "reference": "89121a04de75f51986decd5de9a0f34ceb819de9",
                 "shasum": ""
             },
             "require": {
@@ -1653,7 +1653,7 @@
                 "issues": "https://github.com/laravel/workos/issues",
                 "source": "https://github.com/laravel/workos"
             },
-            "time": "2025-02-18T19:25:22+00:00"
+            "time": "2025-02-18T20:09:16+00:00"
         },
         {
             "name": "league/commonmark",
