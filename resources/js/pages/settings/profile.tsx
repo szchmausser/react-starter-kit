@@ -14,7 +14,7 @@ import SettingsLayout from '@/layouts/settings/layout';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Profile Settings',
+        title: 'Profile settings',
         href: '/settings/profile',
     },
 ];
@@ -35,11 +35,11 @@ export default function Profile({ status }: { status?: string }) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Profile Settings" />
+            <Head title="Profile settings" />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Profile Information" description="Update your name and profile information" />
+                    <HeadingSmall title="Profile information" description="Update your name and email address" />
 
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
@@ -52,13 +52,14 @@ export default function Profile({ status }: { status?: string }) {
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
                                 autoComplete="name"
+                                placeholder="Full name"
                             />
 
                             <InputError className="mt-2" message={errors.name} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email Address</Label>
+                            <Label htmlFor="email">Email address</Label>
 
                             <Input
                                 id="email"
@@ -83,7 +84,7 @@ export default function Profile({ status }: { status?: string }) {
                                 leave="transition ease-in-out"
                                 leaveTo="opacity-0"
                             >
-                                <p className="text-sm text-gray-600">Saved.</p>
+                                <p className="text-sm text-neutral-600">Saved</p>
                             </Transition>
                         </div>
                     </form>
