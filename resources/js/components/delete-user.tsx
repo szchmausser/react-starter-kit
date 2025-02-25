@@ -50,7 +50,7 @@ export default function DeleteUser() {
                             you would like to permanently delete your account.
                         </DialogDescription>
                         <form className="space-y-6" onSubmit={deleteUser}>
-                            <DialogFooter>
+                            <DialogFooter className="gap-2">
                                 <DialogClose asChild>
                                     <Button variant="secondary" onClick={closeModal}>
                                         Cancel
