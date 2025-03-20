@@ -18,7 +18,7 @@ require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 
 Route::get('announce', function () {
-    Broadcast::on('test-message')
+    Broadcast::on('test-channel')
         ->as('test.message')
         ->with(['message' => 'Hello World'])
         ->send();
