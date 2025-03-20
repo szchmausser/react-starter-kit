@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -15,3 +16,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+Route::get('announce', function () {
+    Broadcast::on('test-message')
+        ->as('test.message')
+        ->with(['message' => 'Hello World'])
+        ->send();
+});

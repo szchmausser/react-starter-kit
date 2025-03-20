@@ -2,6 +2,8 @@ import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+// import useEcho from '@/hooks/use-echo';
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -11,6 +13,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
+    // useEcho('cool-channel', '.test.message', (payload) => {
+    //     console.log(payload);
+    // }, [], 'public');
+
+    window.Echo.channel(`test-message`)
+    .listen('.test.message', (e) => {
+        console.log('Event received!', e);
+    });
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
