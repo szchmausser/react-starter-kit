@@ -18,12 +18,12 @@ export default function TwoFactorChallenge() {
 
     const submitCode = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('two-factor.login'));
+        post(route('two-factor.challenge'));
     };
 
     const submitRecoveryCode = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('two-factor.login'));
+        post(route('two-factor.challenge'));
     };
 
     return (

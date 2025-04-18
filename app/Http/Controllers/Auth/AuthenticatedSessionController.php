@@ -29,8 +29,18 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        // Find user by email
+        $user = \App\Models\User::where('email', $request->email)->first();
 
+        // If user has 2FA enabled and confirmed, redirect to challenge
+        if ($user && $user->two_factor_confirmed_at) {
+            $request->session()->put('login.id', $user->getKey());
+            $request->session()->put('login.remember', $request->boolean('remember'));
+            return redirect()->route('two-factor.challenge');
+        }
+
+        // Proceed with normal authentication
+        $request->authenticate();
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

@@ -22,7 +22,7 @@ class TwoFactorAuthenticatedSessionController extends Controller
      */
     public function create(Request $request)
     {
-        if (! $request->session()->has('auth.two_factor_user_id')) {
+        if (! $request->session()->has('login.id')) {
             return redirect()->route('login');
         }
 
@@ -42,41 +42,42 @@ class TwoFactorAuthenticatedSessionController extends Controller
             'recovery_code' => 'nullable|string',
         ]);
 
-        $user = Auth::loginUsingId($request->session()->pull('auth.two_factor_user_id'));
+        $userId = $request->session()->get('login.id');
+        $user = \App\Models\User::find($userId);
 
+        if (! $user) {
+            return redirect()->route('login');
+        }
+
+        // Handle TOTP code
         if ($request->filled('code')) {
-            $request->session()->put([
-                'login.id' => $user->getKey(),
-                'login.remember' => $request->session()->pull('auth.two_factor_remember'),
-            ]);
-
-            $result = app(ConfirmTwoFactorAuthentication::class)(
-                $request->user(),
-                $request->code
-            );
-
-            if ($result) {
-                $request->session()->forget('login');
-                return redirect()->intended(route('dashboard'));
+            $secret = decrypt($user->two_factor_secret);
+            $valid = app(\App\Actions\TwoFactorAuth\VerifyTwoFactorCode::class)($secret, $request->code);
+            if ($valid) {
+                Auth::login($user, $request->session()->get('login.remember', false));
+                $request->session()->regenerate();
+                $request->session()->forget(['login.id', 'login.remember']);
+                return redirect()->intended(route('dashboard', absolute: false));
             }
-
             return back()->withErrors(['code' => __('The provided two factor authentication code was invalid.')]);
         }
 
+        // Handle recovery code
         if ($request->filled('recovery_code')) {
-            $recovery = collect($user->recoveryCodes())->first(function ($code) use ($request) {
-                return hash_equals($code, $request->recovery_code);
+            $recoveryCodes = $user->recoveryCodes();
+            $provided = $request->recovery_code;
+            $match = collect($recoveryCodes)->first(function ($code) use ($provided) {
+                return hash_equals($code, $provided);
             });
-
-            if (! $recovery) {
+            if (! $match) {
                 return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
             }
-
-            $user->replaceRecoveryCode($recovery);
-
-            $request->session()->forget('login');
-
-            return redirect()->intended(route('dashboard'));
+            // Remove used recovery code
+            $user->replaceRecoveryCode($match);
+            Auth::login($user, $request->session()->get('login.remember', false));
+            $request->session()->regenerate();
+            $request->session()->forget(['login.id', 'login.remember']);
+            return redirect()->intended(route('dashboard', absolute: false));
         }
 
         return back()->withErrors(['code' => __('Please provide a valid two factor authentication code.')]);
