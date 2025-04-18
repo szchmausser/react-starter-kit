@@ -21,11 +21,6 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
-    
-    Route::get('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'create'])
-        ->name('two-factor.challenge');
-
-    Route::post('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store']);
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
@@ -60,3 +55,8 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
+
+Route::get('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'create'])
+        ->name('two-factor.challenge');
+
+Route::post('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store']);

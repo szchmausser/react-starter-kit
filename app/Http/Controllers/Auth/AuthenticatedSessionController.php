@@ -32,14 +32,15 @@ class AuthenticatedSessionController extends Controller
         // Find user by email
         $user = \App\Models\User::where('email', $request->email)->first();
 
-        // If user has 2FA enabled and confirmed, redirect to challenge
-        if ($user && $user->two_factor_confirmed_at) {
+        // If user exists, password is correct, and 2FA is enabled, redirect to challenge
+        if ($user && $user->two_factor_confirmed_at && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
             $request->session()->put('login.id', $user->getKey());
             $request->session()->put('login.remember', $request->boolean('remember'));
+            // Optionally clear any previous errors
             return redirect()->route('two-factor.challenge');
         }
 
-        // Proceed with normal authentication
+        // Proceed with normal authentication (this will handle errors and login)
         $request->authenticate();
         $request->session()->regenerate();
 

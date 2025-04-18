@@ -40,7 +40,7 @@ export default function TwoFactor({ enabled: initialEnabled, confirmed: initialC
     const [recoveryCodesList, setRecoveryCodesList] = useState(recoveryCodes);
     const [copied, setCopied] = useState(false);
 
-    const { data, setData, post, delete: destroy, processing, reset, recentlySuccessful, errors } = useForm({
+    const { data, setData, post, delete: destroy, processing, reset, errors } = useForm({
         code: '',
     });
 
@@ -233,12 +233,12 @@ export default function TwoFactor({ enabled: initialEnabled, confirmed: initialC
                                             </>
                                         ) : (
                                             <>
-                                                <div className="mt-4">
-                                                    <Label htmlFor="code">Verification Code</Label>
+                                                <div>
                                                     <InputOTP 
                                                         maxLength={6} 
                                                         value={data.code} 
                                                         onChange={(value) => setData('code', value)}
+                                                        autoFocus
                                                     >
                                                         <InputOTPGroup>
                                                             {Array.from({ length: 6 }).map((_, index) => (
@@ -284,9 +284,9 @@ export default function TwoFactor({ enabled: initialEnabled, confirmed: initialC
                             </p>    
 
                             <div>
-                                <div className="flex items-center p-4 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-t-xl">
+                                <div className="flex items-start p-4 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-t-xl">
                                     <LockKeyhole className="size-5 mr-2 text-stone-500" />
-                                    <div>
+                                    <div className="space-y-1">
                                         <h3 className="font-medium">2FA Recovery Codes</h3>
                                         <p className="text-sm text-stone-500 dark:text-stone-400">
                                             Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.
@@ -348,17 +348,6 @@ export default function TwoFactor({ enabled: initialEnabled, confirmed: initialC
                             </div>
                         </div>
                     )}
-
-
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out"
-                        enterFrom="opacity-0"
-                        leave="transition ease-in-out"
-                        leaveTo="opacity-0"
-                    >
-                        <p className="text-sm text-neutral-600">Saved</p>
-                    </Transition>
                 </div>
             </SettingsLayout>
         </AppLayout>
