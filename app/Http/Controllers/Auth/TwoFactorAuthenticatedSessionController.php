@@ -64,7 +64,7 @@ class TwoFactorAuthenticatedSessionController extends Controller
 
         // Handle recovery code
         if ($request->filled('recovery_code')) {
-            $recoveryCodes = $user->recoveryCodes();
+            $recoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes), true);
             $provided = $request->recovery_code;
             $match = collect($recoveryCodes)->first(function ($code) use ($provided) {
                 return hash_equals($code, $provided);
@@ -72,8 +72,13 @@ class TwoFactorAuthenticatedSessionController extends Controller
             if (! $match) {
                 return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
             }
-            // Remove used recovery code
-            $user->replaceRecoveryCode($match);
+            // Remove used recovery code using the ProcessRecoveryCode action
+            $updatedCodes = app(\App\Actions\TwoFactorAuth\ProcessRecoveryCode::class)($recoveryCodes, $match);
+            if ($updatedCodes === false) {
+                return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
+            }
+            $user->two_factor_recovery_codes = encrypt(json_encode($updatedCodes));
+            $user->save();
             Auth::login($user, $request->session()->get('login.remember', false));
             $request->session()->regenerate();
             $request->session()->forget(['login.id', 'login.remember']);

@@ -4,7 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt as LivewireVolt;
+// Removed LivewireVolt import; not needed for React stack tests.
 use Tests\TestCase;
 use App\Actions\TwoFactorAuth\GenerateQrCodeAndSecretKey;
 use App\Actions\TwoFactorAuth\GenerateNewRecoveryCodes;
@@ -23,23 +23,32 @@ class TwoFactorAuthTest extends TestCase
             ->get('/settings/two-factor');
 
         $response->assertStatus(200);
-        $response->assertSee('Two Factor Authentication');
-        $response->assertSee('Disabled');
+
+        // Check Inertia props instead of HTML
+        $inertiaProps = $response->original?->getData() ?? [];
+        if (isset($inertiaProps['page']['props'])) {
+            $props = $inertiaProps['page']['props'];
+            $this->assertArrayHasKey('enabled', $props);
+            $this->assertArrayHasKey('confirmed', $props);
+            $this->assertArrayHasKey('recoveryCodes', $props);
+            $this->assertFalse($props['enabled']);
+            $this->assertFalse($props['confirmed']);
+        } else {
+            // Fallback: check for expected strings in HTML (legacy/SSR)
+            $response->assertSee('Two Factor Authentication');
+            $response->assertSee('Disabled');
+        }
     }
 
     public function test_can_enable_two_factor_authentication()
     {
         $user = User::factory()->create();
-
         $this->actingAs($user);
-        
-        $component = LivewireVolt::test('settings.two-factor')
-            ->call('enable')
-            ->assertSet('enabled', true);
-            
-        $this->assertTrue($component->enabled);
-        
-        // Verify the database was updated with two-factor secret and recovery codes
+
+        // Simulate enabling 2FA via POST
+        $response = $this->post('/settings/two-factor');
+        $response->assertRedirect(); // Should redirect after enabling
+
         $user->refresh();
         $this->assertNotNull($user->two_factor_secret);
         $this->assertNotNull($user->two_factor_recovery_codes);
@@ -69,8 +78,20 @@ class TwoFactorAuthTest extends TestCase
             ->get('/settings/two-factor');
 
         $response->assertStatus(200);
-        $response->assertSee('Enabled');
-        $response->assertSee('2FA Recovery Codes');
+        // For Inertia/React, check the JSON response props instead of HTML content
+        $inertiaProps = $response->original?->getData() ?? [];
+        if (isset($inertiaProps['page']['props'])) {
+            $props = $inertiaProps['page']['props'];
+            $this->assertTrue(
+                ($props['enabled'] ?? false) === true,
+                '2FA should be enabled in page props.'
+            );
+            $this->assertArrayHasKey('recoveryCodes', $props);
+        } else {
+            // Fallback: check for expected strings in HTML (for legacy Inertia SSR)
+            $response->assertSee('Enabled');
+            $response->assertSee('2FA Recovery Codes');
+        }
     }
 
     public function test_user_with_two_factor_enabled_is_redirected_to_challenge_page_after_login()
@@ -93,17 +114,15 @@ class TwoFactorAuthTest extends TestCase
         ])->save();
 
         // Attempt to login and check for redirect
-        $component = LivewireVolt::test('auth.login')
-            ->set('email', $user->email)
-            ->set('password', 'password')
-            ->call('login');
-            
-        // Check for redirect to two-factor challenge page
-        $component->assertRedirect('/two-factor-challenge');
-        
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+        $response->assertRedirect('/two-factor-challenge');
+
         // Also verify the session has the login.id value set
-        $this->assertTrue(Session::has('login.id'));
-        $this->assertEquals($user->id, Session::get('login.id'));
+        $this->assertTrue(session()->has('login.id'));
+        $this->assertEquals($user->id, session('login.id'));
     }
 
     public function test_can_authenticate_with_recovery_code()
@@ -131,20 +150,20 @@ class TwoFactorAuthTest extends TestCase
         // Get the first recovery code
         $recoveryCode = $recoveryCodes[0];
 
-        // Test authentication with recovery code
-        $component = LivewireVolt::test('auth.two-factor-challenge')
-            ->set('recovery', true)
-            ->set('recovery_code', $recoveryCode)
-            ->call('submit_recovery_code');
+        // Test authentication with recovery code via POST
+        $response = $this->post('/two-factor-challenge', [
+            'recovery_code' => $recoveryCode,
+        ]);
+        $response->assertRedirect('/dashboard');
 
         // Verify the recovery code was removed
         $user->refresh();
         $updatedRecoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes));
         $this->assertCount(count($recoveryCodes) - 1, $updatedRecoveryCodes);
         $this->assertNotContains($recoveryCode, $updatedRecoveryCodes);
-        
+
         // Verify the session was cleared
-        $this->assertFalse(Session::has('login.id'));
+        $this->assertFalse(session()->has('login.id'));
     }
 
     public function test_unauthenticated_user_is_redirected_to_login_when_accessing_two_factor_challenge()
@@ -230,9 +249,10 @@ class TwoFactorAuthTest extends TestCase
         // Test disabling 2FA
         $this->actingAs($user);
         
-        $component = LivewireVolt::test('settings.two-factor');
-        $component->call('disable');
-        
+        // Simulate disabling 2FA via DELETE
+        $response = $this->delete('/settings/two-factor');
+        $response->assertRedirect();
+
         // Verify the user's 2FA settings were cleared
         $user->refresh();
         $this->assertNull($user->two_factor_secret);
