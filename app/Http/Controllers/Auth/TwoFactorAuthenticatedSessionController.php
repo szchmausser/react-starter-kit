@@ -3,14 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
-use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
-use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
-use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
-use Laravel\Fortify\Features;
+
 
 class TwoFactorAuthenticatedSessionController extends Controller
 {
@@ -43,7 +40,7 @@ class TwoFactorAuthenticatedSessionController extends Controller
         ]);
 
         $userId = $request->session()->get('login.id');
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
 
         if (! $user) {
             return redirect()->route('login');
@@ -79,12 +76,21 @@ class TwoFactorAuthenticatedSessionController extends Controller
             }
             $user->two_factor_recovery_codes = encrypt(json_encode($updatedCodes));
             $user->save();
-            Auth::login($user, $request->session()->get('login.remember', false));
-            $request->session()->regenerate();
-            $request->session()->forget(['login.id', 'login.remember']);
-            return redirect()->intended(route('dashboard', absolute: false));
+            return $this->completeLogin($request, $user);
         }
 
         return back()->withErrors(['code' => __('Please provide a valid two factor authentication code.')]);
     }
+
+    /**
+     * Complete login and session management after successful 2FA.
+     */
+    private function completeLogin(Request $request, $user)
+    {
+        Auth::login($user, $request->session()->get('login.remember', false));
+        $request->session()->regenerate();
+        $request->session()->forget(['login.id', 'login.remember']);
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
 }
+
