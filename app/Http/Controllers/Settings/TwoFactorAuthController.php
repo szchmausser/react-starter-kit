@@ -22,11 +22,12 @@ class TwoFactorAuthController extends Controller
      */
     public function edit(Request $request)
     {
-        $recoveryCodes = $request->user()->two_factor_secret ? json_decode(decrypt($request->user()->two_factor_recovery_codes)) : [];
+
+        
         return Inertia::render('settings/two-factor', [
-            'enabled' => !empty($request->user()->two_factor_secret),
-            'qrCode' => $request->user()->two_factor_secret ? true : false,
-            'recoveryCodes' => $recoveryCodes,
+            'enabled' => !is_null($request->user()->two_factor_secret),
+            'confirmed' => !is_null($request->user()->two_factor_confirmed_at),
+            'recoveryCodes' => $request->user()->two_factor_secret ? json_decode(decrypt($request->user()->two_factor_recovery_codes)) : [],
         ]);
     }
 
@@ -82,16 +83,20 @@ class TwoFactorAuthController extends Controller
     public function confirm(Request $request)
     {
         $request->validate([
-            'code' => 'required|string|min:6',
+            'code' => 'required|string',
         ]);
 
+        // Get the secret key from the user's record
         $secret = decrypt($request->user()->two_factor_secret);
+        
+        // Verify the code
         $valid = app(VerifyTwoFactorCode::class)($secret, $request->code);
 
         if ($valid) {
             app(ConfirmTwoFactorAuthentication::class)($request->user());
             return back()->with('status', 'two-factor-authentication-confirmed');
         }
+
 
         return back()->withErrors(['code' => 'The provided two-factor authentication code was invalid.']);
     }
@@ -107,9 +112,29 @@ class TwoFactorAuthController extends Controller
         if (empty($request->user()->two_factor_secret)) {
             return response('', 404);
         }
-
-        [$qrCode, $secret] = app(GenerateQrCodeAndSecretKey::class)($request->user());
-
+        
+        // Get the existing secret key instead of generating a new one
+        $secret = decrypt($request->user()->two_factor_secret);
+        
+        // Generate QR code based on the existing secret
+        $google2fa = new \PragmaRX\Google2FA\Google2FA();
+        $companyName = config('app.name', 'Laravel');
+        
+        $g2faUrl = $google2fa->getQRCodeUrl(
+            $companyName,
+            $request->user()->email,
+            $secret
+        );
+        
+        $writer = new \BaconQrCode\Writer(
+            new \BaconQrCode\Renderer\ImageRenderer(
+                new \BaconQrCode\Renderer\RendererStyle\RendererStyle(400),
+                new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
+            )
+        );
+        
+        $qrCode = base64_encode($writer->writeString($g2faUrl));
+        
         return response()->json([
             'svg' => $qrCode,
             'secret' => $secret

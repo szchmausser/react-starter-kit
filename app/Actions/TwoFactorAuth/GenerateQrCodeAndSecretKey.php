@@ -20,30 +20,34 @@ class GenerateQrCodeAndSecretKey
      */
     public function __invoke($user): array
     {
-
-        $google2fa = new Google2FA;
-        $secret_key = $google2fa->generateSecretKey();
-
-        $this->companyName = 'Auth';
-        if (is_string(config('app.name'))) {
-            $this->companyName = config('app.name');
-        }
-
+        // Create a new Google2FA instance with explicit configuration
+        $google2fa = new Google2FA();
+        $google2fa->setOneTimePasswordLength(6);
+        
+        // Generate a standard 16-character secret key
+        $secret_key = $google2fa->generateSecretKey(16);
+        
+        // Set company name from config
+        $this->companyName = config('app.name', 'Laravel');
+        
+        // Generate the QR code URL
         $g2faUrl = $google2fa->getQRCodeUrl(
             $this->companyName,
-            (string) $user->email,
+            $user->email,
             $secret_key
         );
-
+        
+        // Create the QR code image
         $writer = new Writer(
             new ImageRenderer(
-                new RendererStyle(800),
+                new RendererStyle(400),
                 new SvgImageBackEnd()
             )
         );
-
+        
+        // Generate the QR code as a base64 encoded SVG
         $qrcode_image = base64_encode($writer->writeString($g2faUrl));
-
+        
         return [$qrcode_image, $secret_key];
 
     }

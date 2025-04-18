@@ -24,13 +24,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface TwoFactorProps {
     enabled: boolean;
+    confirmed: boolean;
     qrCode: boolean;
     recoveryCodes: string[];
 }
 
-export default function TwoFactor({ enabled: initialEnabled, qrCode, recoveryCodes }: TwoFactorProps) {
+export default function TwoFactor({ enabled: initialEnabled, confirmed: initialConfirmed, qrCode, recoveryCodes }: TwoFactorProps) {
     const [enabled, setEnabled] = useState(initialEnabled);
-    const [confirmed, setConfirmed] = useState(initialEnabled);
+    const [confirmed, setConfirmed] = useState(initialConfirmed);
     const [showModal, setShowModal] = useState(false);
     const [verifyStep, setVerifyStep] = useState(false);
     const [qrCodeSvg, setQrCodeSvg] = useState('');
@@ -54,6 +55,7 @@ export default function TwoFactor({ enabled: initialEnabled, qrCode, recoveryCod
             post(route('two-factor.enable'), {
                 preserveScroll: true,
                 onSuccess: async () => {
+                    // Only set enabled to true, but not confirmed yet
                     setEnabled(true);
                     const response = await fetch(route('two-factor.qr-code'));
                     const data = await response.json();
@@ -77,6 +79,12 @@ export default function TwoFactor({ enabled: initialEnabled, qrCode, recoveryCod
         if (!data.code || data.code.length !== 6) {
             return;
         }
+        
+        // Make sure the code is properly formatted (no spaces, exactly 6 digits)
+        const formattedCode = data.code.replace(/\s+/g, '').trim();
+        
+        // Set the formatted code back to the form data
+        setData('code', formattedCode);
         
         post(route('two-factor.confirm'), {
             preserveScroll: true,
