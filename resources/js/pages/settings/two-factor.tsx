@@ -312,7 +312,7 @@ export default function TwoFactor({ enabled: initialEnabled, confirmed: initialC
                                         {showingRecoveryCodes && (
                                             <Button 
                                                 size="sm" 
-                                                variant="secondary" 
+                                                variant="outline" 
                                                 className="text-stone-600" 
                                                 onClick={(e) => {
                                                     e.preventDefault(); 
