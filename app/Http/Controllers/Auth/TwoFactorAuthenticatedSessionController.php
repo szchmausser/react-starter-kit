@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\TwoFactorAuth\CompleteTwoFactorAuthentication;
+use App\Actions\TwoFactorAuth\ProcessRecoveryCode;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -51,9 +53,7 @@ class TwoFactorAuthenticatedSessionController extends Controller
             $secret = decrypt($user->two_factor_secret);
             $valid = app(\App\Actions\TwoFactorAuth\VerifyTwoFactorCode::class)($secret, $request->code);
             if ($valid) {
-                Auth::login($user, $request->session()->get('login.remember', false));
-                $request->session()->regenerate();
-                $request->session()->forget(['login.id', 'login.remember']);
+                app(CompleteTwoFactorAuthentication::class)($user);
                 return redirect()->intended(route('dashboard', absolute: false));
             }
             return back()->withErrors(['code' => __('The provided two factor authentication code was invalid.')]);
@@ -70,27 +70,20 @@ class TwoFactorAuthenticatedSessionController extends Controller
                 return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
             }
             // Remove used recovery code using the ProcessRecoveryCode action
-            $updatedCodes = app(\App\Actions\TwoFactorAuth\ProcessRecoveryCode::class)($recoveryCodes, $match);
+            $updatedCodes = app(ProcessRecoveryCode::class)($recoveryCodes, $match);
             if ($updatedCodes === false) {
                 return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
             }
             $user->two_factor_recovery_codes = encrypt(json_encode($updatedCodes));
             $user->save();
-            return $this->completeLogin($request, $user);
+            // Complete the authentication process
+            app(CompleteTwoFactorAuthentication::class)($user);
+            
+            // Redirect to the intended page
+            return redirect()->intended(route('dashboard', absolute: false));
         }
 
         return back()->withErrors(['code' => __('Please provide a valid two factor authentication code.')]);
-    }
-
-    /**
-     * Complete login and session management after successful 2FA.
-     */
-    private function completeLogin(Request $request, $user)
-    {
-        Auth::login($user, $request->session()->get('login.remember', false));
-        $request->session()->regenerate();
-        $request->session()->forget(['login.id', 'login.remember']);
-        return redirect()->intended(route('dashboard', absolute: false));
     }
 }
 
