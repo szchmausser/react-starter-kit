@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,17 +31,16 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Find user by email
         $user = User::where('email', $request->email)->first();
 
-        // If user exists, password is correct, and 2FA is enabled, redirect to challenge
-        if ($user && $user->two_factor_confirmed_at && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+        // If this user exists, password is correct, and 2FA is enabled, we want to redirect to the 2FA challenge
+        if ($user && $user->two_factor_confirmed_at && Hash::check($request->password, $user->password)) {
             $request->session()->put('login.id', $user->getKey());
             // Optionally clear any previous errors
             return redirect()->route('two-factor.challenge');
         }
 
-        // Proceed with normal authentication (this will handle errors and login)
+        // Otherwise, proceed with normal authentication
         $request->authenticate();
         $request->session()->regenerate();
 

@@ -21,6 +21,7 @@ class TwoFactorAuthChallengeController extends Controller
      */
     public function create(Request $request)
     {
+        dd('here');
         // Session check is now handled by the EnsureTwoFactorChallengeSession middleware
         return Inertia::render('auth/two-factor-challenge');
     }
@@ -84,17 +85,17 @@ class TwoFactorAuthChallengeController extends Controller
     protected function authenticateUsingRecoveryCode(Request $request, User $user)
     {
         $recoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes), true);
-        $provided = $request->recovery_code;
-        $match = collect($recoveryCodes)->first(function ($code) use ($provided) {
-            return hash_equals($code, $provided);
+        $providedRecoveryCode = $request->recovery_code;
+        $matchedRecoveryCode = collect($recoveryCodes)->first(function ($code) use ($providedRecoveryCode) {
+            return hash_equals($code, $providedRecoveryCode);
         });
         
-        if (! $match) {
+        if (! $matchedRecoveryCode) {
             return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
         }
         
         // Remove used recovery code using the ProcessRecoveryCode action
-        $updatedCodes = app(ProcessRecoveryCode::class)($recoveryCodes, $match);
+        $updatedCodes = app(ProcessRecoveryCode::class)($recoveryCodes, $matchedRecoveryCode);
         if ($updatedCodes === false) {
             return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
         }
