@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
-import { Transition } from '@headlessui/react';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Check, Copy, Eye, EyeOff, Loader, ScanLine, LockKeyhole } from 'lucide-react';
 import { type BreadcrumbItem } from '@/types';
 

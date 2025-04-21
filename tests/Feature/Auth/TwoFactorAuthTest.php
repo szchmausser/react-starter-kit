@@ -4,7 +4,6 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-// Removed LivewireVolt import; not needed for React stack tests.
 use Tests\TestCase;
 use App\Actions\TwoFactorAuth\GenerateQrCodeAndSecretKey;
 use App\Actions\TwoFactorAuth\GenerateNewRecoveryCodes;
