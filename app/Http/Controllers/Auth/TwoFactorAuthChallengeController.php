@@ -14,19 +14,6 @@ use Inertia\Inertia;
 class TwoFactorAuthChallengeController extends Controller
 {
     /**
-     * Display the two factor authentication challenge view.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Inertia\Response
-     */
-    public function create(Request $request)
-    {
-        dd('here');
-        // Session check is now handled by the EnsureTwoFactorChallengeSession middleware
-        return Inertia::render('auth/two-factor-challenge');
-    }
-
-    /**
      * Attempt to authenticate a new session using the two factor authentication code.
      *
      * @param  \Illuminate\Http\Request  $request
