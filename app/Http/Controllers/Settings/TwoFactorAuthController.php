@@ -23,7 +23,6 @@ class TwoFactorAuthController extends Controller
     public function edit(Request $request)
     {
         return Inertia::render('settings/two-factor', [
-            'enabled' => $this->twoFactorEnabled($request->user()),
             'confirmed' => !is_null($request->user()->two_factor_confirmed_at),
             'recoveryCodes' => $this->getRecoveryCodes($request->user()),
         ]);

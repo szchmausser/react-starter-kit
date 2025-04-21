@@ -27,10 +27,8 @@ class TwoFactorAuthTest extends TestCase
         $inertiaProps = $response->original?->getData() ?? [];
         if (isset($inertiaProps['page']['props'])) {
             $props = $inertiaProps['page']['props'];
-            $this->assertArrayHasKey('enabled', $props);
             $this->assertArrayHasKey('confirmed', $props);
             $this->assertArrayHasKey('recoveryCodes', $props);
-            $this->assertFalse($props['enabled']);
             $this->assertFalse($props['confirmed']);
         } else {
             // Fallback: check for expected strings in HTML (legacy/SSR)
@@ -82,8 +80,8 @@ class TwoFactorAuthTest extends TestCase
         if (isset($inertiaProps['page']['props'])) {
             $props = $inertiaProps['page']['props'];
             $this->assertTrue(
-                ($props['enabled'] ?? false) === true,
-                '2FA should be enabled in page props.'
+                ($props['confirmed'] ?? false) === true,
+                '2FA should be confirmed in page props.'
             );
             $this->assertArrayHasKey('recoveryCodes', $props);
         } else {

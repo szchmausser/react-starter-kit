@@ -18,20 +18,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface TwoFactorProps {
-    enabled: boolean;
     confirmed: boolean;
-    qrCode: boolean;
     recoveryCodes: string[];
 }
 
-export default function TwoFactor({ enabled: initialEnabled, confirmed: initialConfirmed, qrCode, recoveryCodes }: TwoFactorProps) {
-    const [enabled, setEnabled] = useState(initialEnabled);
+export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }: TwoFactorProps) {
     const [confirmed, setConfirmed] = useState(initialConfirmed);
     const [showModal, setShowModal] = useState(false);
     const [verifyStep, setVerifyStep] = useState(false);
     const [qrCodeSvg, setQrCodeSvg] = useState('');
     const [secretKey, setSecretKey] = useState('');
-    const [showingRecoveryCodes, setShowingRecoveryCodes] = useState(initialEnabled);
+    const [showingRecoveryCodes, setShowingRecoveryCodes] = useState(false);
     const [recoveryCodesList, setRecoveryCodesList] = useState(recoveryCodes);
     const [copied, setCopied] = useState(false);
 
@@ -51,7 +48,6 @@ export default function TwoFactor({ enabled: initialEnabled, confirmed: initialC
                 preserveScroll: true,
                 onSuccess: async () => {
                     // Only set enabled to true, but not confirmed yet
-                    setEnabled(true);
                     const response = await fetch(route('two-factor.qr-code'));
                     const data = await response.json();
                     setQrCodeSvg(data.svg);
@@ -117,7 +113,6 @@ export default function TwoFactor({ enabled: initialEnabled, confirmed: initialC
         destroy(route('two-factor.disable'), {
             preserveScroll: true,
             onSuccess: () => {
-                setEnabled(false);
                 setConfirmed(false);
                 setShowingRecoveryCodes(false);
                 setQrCodeSvg('');
@@ -319,18 +314,22 @@ export default function TwoFactor({ enabled: initialEnabled, confirmed: initialC
                                             </Button>
                                         )}
                                     </div>
-                                    {showingRecoveryCodes && (
-                                        <div className="relative">
-                                            <div className="grid max-w-xl gap-1 px-4 py-4 font-mono text-sm bg-stone-200 dark:bg-stone-900 dark:text-stone-100">
-                                                {recoveryCodesList.map((code, index) => (
-                                                    <div key={index}>{code}</div>
-                                                ))}
-                                            </div>
-                                            <p className="px-4 py-3 text-xs select-none text-stone-500 dark:text-stone-400">
-                                                You have {recoveryCodesList.length} recovery codes left. Each can be used once to access your account and will be removed after use. If you need more, click <span className="font-bold">Regenerate Codes</span> above.
-                                            </p>
+                                    <div 
+                                        className="relative overflow-hidden transition-all duration-300"
+                                        style={{
+                                            height: showingRecoveryCodes ? 'auto' : '0',
+                                            opacity: showingRecoveryCodes ? 1 : 0,
+                                        }}
+                                    >
+                                        <div className="grid max-w-xl gap-1 px-4 py-4 font-mono text-sm bg-stone-200 dark:bg-stone-900 dark:text-stone-100">
+                                            {recoveryCodesList.map((code, index) => (
+                                                <div key={index}>{code}</div>
+                                            ))}
                                         </div>
-                                    )}
+                                        <p className="px-4 py-3 text-xs select-none text-stone-500 dark:text-stone-400">
+                                            You have {recoveryCodesList.length} recovery codes left. Each can be used once to access your account and will be removed after use. If you need more, click <span className="font-bold">Regenerate Codes</span> above.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                             <div className="inline relative">
