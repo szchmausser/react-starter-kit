@@ -56,7 +56,10 @@ Route::middleware('auth')->group(function () {
         ->name('logout');
 });
 
-Route::get('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'create'])
-        ->name('two-factor.challenge');
+// Two-factor challenge routes with the ensure-two-factor-challenge-session middleware
+Route::middleware('ensure-two-factor-challenge-session')->group(function () {
+    Route::get('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'create'])
+            ->name('two-factor.challenge');
 
-Route::post('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store']);
+    Route::post('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store']);
+});
