@@ -44,7 +44,17 @@ class TwoFactorAuthTest extends TestCase
 
         // Simulate enabling 2FA via POST
         $response = $this->post('/settings/two-factor');
-        $response->assertRedirect(); // Should redirect after enabling
+        
+        // Assert JSON response with expected structure
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'status' => 'two-factor-authentication-enabled'
+                 ])
+                 ->assertJsonStructure([
+                     'svg',
+                     'secret',
+                     'recovery_codes'
+                 ]);
 
         $user->refresh();
         $this->assertNotNull($user->two_factor_secret);

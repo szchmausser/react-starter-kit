@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
+import axios from 'axios';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import HeadingSmall from '@/components/heading-small';
@@ -59,11 +60,16 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
         }
     };
 
-    const fetchRecoveryCodes = async () => {
-        const response = await fetch(route('two-factor.recovery-codes'));
-        const data = await response.json();
-        setRecoveryCodesList(data.recoveryCodes);
+    // Use recovery codes that are already in the props
+    const showRecoveryCodes = () => {
         setShowingRecoveryCodes(true);
+    };
+    
+    // Only fetch new recovery codes when needed (after confirmation)
+    const fetchRecoveryCodes = async () => {
+        // After confirming 2FA, we need to get the latest recovery codes
+        // The codes are already included in the props, so we just need to show them
+        showRecoveryCodes();
     };
 
     const verifyTwoFactorCode = () => {
@@ -84,7 +90,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                 setShowModal(false);
                 setVerifyStep(false);
                 reset();
-                fetchRecoveryCodes();
+                showRecoveryCodes();
             },
             onError: (errors) => {
                 if (errors.code) {
@@ -100,12 +106,27 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
         setTimeout(() => setCopied(false), 1500);
     };
 
+    interface RecoveryCodesResponse {
+        status: string;
+        recovery_codes: string[];
+    }
+
     const regenerateRecoveryCodes = () => {
-        post(route('two-factor.regenerate-recovery-codes'), {
-            preserveScroll: true,
-            onSuccess: () => {
-                fetchRecoveryCodes();
-            },
+        // Use Axios directly which will handle CSRF tokens automatically
+        // Laravel sets up Axios with CSRF protection in resources/js/bootstrap.js
+        axios.post<RecoveryCodesResponse>(route('two-factor.regenerate-recovery-codes'), {}, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then((response) => {
+            if (response.data && response.data.recovery_codes) {
+                setRecoveryCodesList(response.data.recovery_codes);
+            }
+        })
+        .catch((error) => {
+            console.error('Error regenerating recovery codes:', error);
         });
     };
 

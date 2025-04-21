@@ -20,11 +20,14 @@ class TwoFactorAuthController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Inertia\Response
      */
-    public function edit(Request $request)
+    public function show(Request $request)
     {
+        $user = $request->user();
+        $confirmed = !is_null($user->two_factor_confirmed_at);
+        
         return Inertia::render('settings/two-factor', [
-            'confirmed' => !is_null($request->user()->two_factor_confirmed_at),
-            'recoveryCodes' => $this->getRecoveryCodes($request->user()),
+            'confirmed' => $confirmed,
+            'recoveryCodes' => $this->getRecoveryCodes($user),
         ]);
     }
 
@@ -32,18 +35,25 @@ class TwoFactorAuthController extends Controller
      * Enable two factor authentication for the user.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\JsonResponse
      */
     public function enable(Request $request)
     {
         [$qrCode, $secret] = app(GenerateQrCodeAndSecretKey::class)($request->user());
         
+        $recoveryCodes = $this->generateRecoveryCodes($request->user());
+        
         $request->user()->forceFill([
             'two_factor_secret' => encrypt($secret),
-            'two_factor_recovery_codes' => encrypt(json_encode($this->generateRecoveryCodes($request->user())))
+            'two_factor_recovery_codes' => encrypt(json_encode($recoveryCodes))
         ])->save();
 
-        return back()->with('status', 'two-factor-authentication-enabled');
+        return response()->json([
+            'status' => 'two-factor-authentication-enabled',
+            'svg' => $qrCode,
+            'secret' => $secret,
+            'recovery_codes' => $recoveryCodes
+        ]);
     }
     
     /**
@@ -98,45 +108,6 @@ class TwoFactorAuthController extends Controller
         return back()->withErrors(['code' => 'The provided two-factor authentication code was invalid.']);
     }
 
-    /**
-     * Get the QR code SVG for the user's two factor authentication.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function qrCode(Request $request)
-    {
-        if (empty($request->user()->two_factor_secret)) {
-            return response('', 404);
-        }
-        
-        // Get the existing secret key instead of generating a new one
-        $secret = decrypt($request->user()->two_factor_secret);
-        
-        // Generate QR code based on the existing secret
-        $google2fa = new \PragmaRX\Google2FA\Google2FA();
-        $companyName = config('app.name', 'Laravel');
-        
-        $g2faUrl = $google2fa->getQRCodeUrl(
-            $companyName,
-            $request->user()->email,
-            $secret
-        );
-        
-        $writer = new \BaconQrCode\Writer(
-            new \BaconQrCode\Renderer\ImageRenderer(
-                new \BaconQrCode\Renderer\RendererStyle\RendererStyle(400),
-                new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
-            )
-        );
-        
-        $qrCode = base64_encode($writer->writeString($g2faUrl));
-        
-        return response()->json([
-            'svg' => $qrCode,
-            'secret' => $secret
-        ]);
-    }
 
     /**
      * Get the recovery codes for the user.
@@ -177,7 +148,7 @@ class TwoFactorAuthController extends Controller
      * Generate new recovery codes for the user.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\Response
      */
     public function regenerateRecoveryCodes(Request $request)
     {
@@ -187,6 +158,14 @@ class TwoFactorAuthController extends Controller
             'two_factor_recovery_codes' => encrypt(json_encode($codes))
         ])->save();
 
+        // Check if this is an AJAX request
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'status' => 'recovery-codes-generated',
+                'recovery_codes' => $codes
+            ]);
+        }
+        
         return back()->with('status', 'recovery-codes-generated');
     }
 }
