@@ -7,9 +7,6 @@ use App\Actions\TwoFactorAuth\ProcessRecoveryCode;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-
 
 class TwoFactorAuthChallengeController extends Controller
 {
@@ -72,17 +69,11 @@ class TwoFactorAuthChallengeController extends Controller
     protected function authenticateUsingRecoveryCode(Request $request, User $user)
     {
         $recoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes), true);
-        $providedRecoveryCode = $request->recovery_code;
-        $matchedRecoveryCode = collect($recoveryCodes)->first(function ($code) use ($providedRecoveryCode) {
-            return hash_equals($code, $providedRecoveryCode);
-        });
         
-        if (! $matchedRecoveryCode) {
-            return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
-        }
+        // Process the recovery code - this handles validation and removing the used code
+        $updatedCodes = app(ProcessRecoveryCode::class)($recoveryCodes, $request->recovery_code);
         
-        // Remove used recovery code using the ProcessRecoveryCode action
-        $updatedCodes = app(ProcessRecoveryCode::class)($recoveryCodes, $matchedRecoveryCode);
+        // If ProcessRecoveryCode returns false, the code was invalid
         if ($updatedCodes === false) {
             return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
         }
