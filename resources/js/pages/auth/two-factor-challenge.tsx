@@ -3,10 +3,8 @@ import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
 import AuthLayout from '@/layouts/auth-layout';
-import TextLink from '@/components/text-link';
 
 export default function TwoFactorChallenge() {
     const [recovery, setRecovery] = useState(false);
@@ -38,12 +36,7 @@ export default function TwoFactorChallenge() {
             {!recovery ? (
                 <form onSubmit={submitCode} className="space-y-4">
                     <div className="flex flex-col items-center justify-center space-y-3 text-center">
-                        <InputOTP
-                            maxLength={6}
-                            value={data.code}
-                            onChange={(value) => setData('code', value)}
-                            autoFocus
-                        >
+                        <InputOTP maxLength={6} value={data.code} onChange={(value) => setData('code', value)} autoFocus>
                             <InputOTPGroup>
                                 <InputOTPSlot index={0} />
                                 <InputOTPSlot index={1} />
