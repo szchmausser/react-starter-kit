@@ -17,9 +17,20 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
 interface TwoFactorProps {
     confirmed: boolean;
     recoveryCodes: string[];
+}
+
+interface enableResponse {
+    qrCode: string;
+    secret: string;
+}
+
+interface RecoveryCodesResponse {
+    recovery_codes: string[];
 }
 
 export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }: TwoFactorProps) {
@@ -36,29 +47,12 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
 
     useEffect(() => {
         if (showModal && !verifyStep && !qrCodeSvg) {
-            fetchQrCode();
+            enable();
         }
     }, [showModal, verifyStep]);
 
-    interface FlashData {
-        qrCode?: string;
-        secret?: string;
-        recovery_codes?: string[];
-        status?: string;
-    }
-
-    interface ApiResponse {
-        status: string;
-        qrCode?: string;
-        svg?: string;
-        secret?: string;
-        recovery_codes?: string[];
-    }
-
-    const fetchQrCode = async () => {
+    const enable = async () => {
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
             const response = await fetch(route('two-factor.enable'), {
                 method: 'POST',
                 headers: {
@@ -70,21 +64,14 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
             });
 
             if (response.ok) {
-                const data: ApiResponse = await response.json();
+                const data: enableResponse = await response.json();
 
                 if (data.qrCode) {
                     setQrCodeSvg(data.qrCode);
-                } else if (data.svg) {
-                    // Handle both possible response formats
-                    setQrCodeSvg(data.svg);
                 }
 
                 if (data.secret) {
                     setSecretKey(data.secret);
-                }
-
-                if (data.recovery_codes) {
-                    setRecoveryCodesList(data.recovery_codes);
                 }
             } else {
                 console.error('Error enabling 2FA:', response.statusText);
@@ -94,18 +81,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
         }
     };
 
-    // Use recovery codes that are already in the props
-    const showRecoveryCodes = () => {
-        setShowingRecoveryCodes(true);
-    };
-
-    // No longer needed as recovery codes are returned from the confirm endpoint
-    // Keeping this as a placeholder in case we need to fetch recovery codes separately in the future
-    const fetchRecoveryCodes = async () => {
-        showRecoveryCodes();
-    };
-
-    const verifyTwoFactorCode = async () => {
+    const confirm = async () => {
         if (!passcode || passcode.length !== 6) {
             return;
         }
@@ -114,8 +90,6 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
         const formattedCode = passcode.replace(/\s+/g, '').trim();
 
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
             const response = await fetch(route('two-factor.confirm'), {
                 method: 'POST',
                 headers: {
@@ -140,7 +114,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                 setConfirmed(true);
                 setVerifyStep(false);
                 setShowModal(false);
-                showRecoveryCodes(); // Show recovery codes immediately
+                setShowingRecoveryCodes(true); // Show recovery codes immediately
                 setPasscode(''); // Reset passcode
                 setError(''); // Clear any errors
             } else {
@@ -155,21 +129,8 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
         }
     };
 
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-    };
-
-    interface RecoveryCodesResponse {
-        status: string;
-        recovery_codes: string[];
-    }
-
     const regenerateRecoveryCodes = async () => {
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
             const response = await fetch(route('two-factor.regenerate-recovery-codes'), {
                 method: 'POST',
                 headers: {
@@ -181,7 +142,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
             });
 
             if (response.ok) {
-                const data: ApiResponse = await response.json();
+                const data: RecoveryCodesResponse = await response.json();
 
                 if (data.recovery_codes) {
                     setRecoveryCodesList(data.recovery_codes);
@@ -196,8 +157,6 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
 
     const disableTwoFactorAuthentication = async () => {
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
             const response = await fetch(route('two-factor.disable'), {
                 method: 'DELETE',
                 headers: {
@@ -222,6 +181,12 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
         }
     };
 
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Two-Factor Authentication" />
@@ -235,17 +200,11 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
 
                     {!confirmed && (
                         <div className="flex flex-col items-start justify-start space-y-5">
-                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50">
-                                Disabled
-                            </Badge>
-                            <p className="-translate-y-1 text-stone-500 dark:text-stone-400">
-                                When you enable 2FA, you'll be prompted for a secure code during login, which can be retrieved from your phone's Google Authenticator app.
-                            </p>
+                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50">Disabled</Badge>
+                            <p className="-translate-y-1 text-stone-500 dark:text-stone-400">When you enable 2FA, you'll be prompted for a secure code during login, which can be retrieved from your phone's Google Authenticator app.</p>
                             <Dialog open={showModal} onOpenChange={setShowModal}>
                                 <DialogTrigger asChild>
-                                    <Button onClick={() => setShowModal(true)}>
-                                        Enable
-                                    </Button>
+                                    <Button onClick={() => setShowModal(true)}>Enable</Button>
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-md">
                                     <DialogHeader className="flex items-center justify-center">
@@ -287,9 +246,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                                 </div>
 
                                                 <div className="flex items-center space-x-5 w-full">
-                                                    <Button className="w-full" onClick={() => setVerifyStep(true)}>
-                                                        Continue
-                                                    </Button>
+                                                    <Button className="w-full" onClick={() => setVerifyStep(true)}>Continue</Button>
                                                 </div>
                                                 <div className="flex items-center relative w-full justify-center">
                                                     <div className="w-full absolute inset-0 top-1/2 bg-stone-200 dark:bg-stone-600 h-px"></div>
@@ -303,16 +260,8 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <input
-                                                                    type="text"
-                                                                    readOnly
-                                                                    value={secretKey}
-                                                                    className="w-full h-full p-3 text-black dark:text-stone-100 bg-white dark:bg-stone-800"
-                                                                />
-                                                                <button
-                                                                    onClick={() => copyToClipboard(secretKey)}
-                                                                    className="block relative border-l border-stone-200 dark:border-stone-600 px-3 hover:bg-stone-100 dark:hover:bg-stone-600 h-auto"
-                                                                >
+                                                                <input type="text" readOnly value={secretKey} className="w-full h-full p-3 text-black dark:text-stone-100 bg-white dark:bg-stone-800" />
+                                                                <button onClick={() => copyToClipboard(secretKey)} className="block relative border-l border-stone-200 dark:border-stone-600 px-3 hover:bg-stone-100 dark:hover:bg-stone-600 h-auto">
                                                                     {!copied ? <Copy className="w-4" /> : <Check className="w-4 text-green-500" />}
                                                                 </button>
                                                             </>
@@ -323,35 +272,15 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                         ) : (
                                             <>
                                                 <InputOTP maxLength={6} value={passcode} onChange={(value) => setPasscode(value)} autoFocus>
-                                                    <InputOTPGroup>
-                                                        <InputOTPSlot index={0} />
-                                                        <InputOTPSlot index={1} />
-                                                        <InputOTPSlot index={2} />
-                                                    </InputOTPGroup>
-                                                    <InputOTPGroup>
-                                                        <InputOTPSlot index={3} />
-                                                        <InputOTPSlot index={4} />
-                                                        <InputOTPSlot index={5} />
-                                                    </InputOTPGroup>
+                                                    <InputOTPGroup><InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} /></InputOTPGroup>
+                                                    <InputOTPGroup><InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} /></InputOTPGroup>
                                                 </InputOTP>
                                                 {error && (
                                                     <div className="mt-2 text-sm text-red-600">{error}</div>
                                                 )}
                                                 <div className="flex items-center space-x-5 w-full">   
-                                                    <Button 
-                                                        variant="outline" 
-                                                        className="w-full" 
-                                                        onClick={() => setVerifyStep(false)}
-                                                    >
-                                                        Back
-                                                    </Button>
-                                                    <Button 
-                                                        className="w-full" 
-                                                        onClick={verifyTwoFactorCode}
-                                                        disabled={!passcode || passcode.length < 6}
-                                                    >
-                                                        Confirm
-                                                    </Button>
+                                                    <Button variant="outline" className="w-full" onClick={() => setVerifyStep(false)}>Back</Button>
+                                                    <Button  className="w-full"  onClick={confirm} disabled={!passcode || passcode.length < 6}>Confirm</Button>
                                                 </div>
                                             </>
                                         )}
@@ -364,57 +293,34 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                     {confirmed && (
                         <div className="flex flex-col space-y-5">
                             <div className="relative">
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-50">
-                                    Enabled
-                                </Badge>
+                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-50">Enabled</Badge>
                             </div>
-                            <p className="text-stone-500 dark:text-stone-400">
-                                With two factor authentication enabled, you'll be prompted for a secure, random token during login, which you can retrieve from your Google Authenticator app.
-                            </p>
+                            <p className="text-stone-500 dark:text-stone-400">With two factor authentication enabled, you'll be prompted for a secure, random token during login, which you can retrieve from your Google Authenticator app.</p>
 
                             <div>
                                 <div className="flex items-start p-4 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-t-xl">
                                     <LockKeyhole className="size-5 mr-2 text-stone-500" />
                                     <div className="space-y-1">
                                         <h3 className="font-medium">2FA Recovery Codes</h3>
-                                        <p className="text-sm text-stone-500 dark:text-stone-400">
-                                            Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.
-                                        </p>
+                                        <p className="text-sm text-stone-500 dark:text-stone-400">Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.</p>
                                     </div>
                                 </div>
                                 <div className="bg-stone-100 dark:bg-stone-800 rounded-b-xl border-t-0 border border-stone-200 dark:border-stone-700 text-sm">
-                                    <div
-                                        onClick={() => setShowingRecoveryCodes(!showingRecoveryCodes)}
-                                        className="h-10 group cursor-pointer flex items-center select-none justify-between px-5 text-xs"
-                                    >
+                                    <div onClick={() => setShowingRecoveryCodes(!showingRecoveryCodes)} className="h-10 group cursor-pointer flex items-center select-none justify-between px-5 text-xs">
                                         <div className={`relative ${!showingRecoveryCodes ? 'opacity-40 hover:opacity-60' : 'opacity-60'}`}>
                                             {!showingRecoveryCodes ? (
-                                                <span className="flex items-center space-x-1">
-                                                    <Eye className="size-4" /> <span>View My Recovery Codes</span>
-                                                </span>
+                                                <span className="flex items-center space-x-1"><Eye className="size-4" /> <span>View My Recovery Codes</span></span>
                                             ) : (
-                                                <span className="flex items-center space-x-1">
-                                                    <EyeOff className="size-4" /> <span>Hide Recovery Codes</span>
-                                                </span>
+                                                <span className="flex items-center space-x-1"><EyeOff className="size-4" /> <span>Hide Recovery Codes</span></span>
                                             )}
                                         </div>
                                         {showingRecoveryCodes && (
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="text-stone-600"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    regenerateRecoveryCodes();
-                                                }}
-                                            >
+                                            <Button size="sm" variant="outline" className="text-stone-600" onClick={(e) => { e.preventDefault(); e.stopPropagation(); regenerateRecoveryCodes(); }}>
                                                 Regenerate Codes
                                             </Button>
                                         )}
                                     </div>
-                                    <div
-                                        className="relative overflow-hidden transition-all duration-300"
+                                    <div className="relative overflow-hidden transition-all duration-300"
                                         style={{
                                             height: showingRecoveryCodes ? 'auto' : '0',
                                             opacity: showingRecoveryCodes ? 1 : 0,
@@ -432,12 +338,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                 </div>
                             </div>
                             <div className="inline relative">
-                                <Button
-                                    variant="destructive"
-                                    onClick={disableTwoFactorAuthentication}
-                                >
-                                    Disable 2FA
-                                </Button>
+                                <Button variant="destructive" onClick={disableTwoFactorAuthentication}>Disable 2FA</Button>
                             </div>
                         </div>
                     )}
