@@ -15,7 +15,8 @@ use App\Actions\TwoFactorAuth\VerifyTwoFactorCode;
 class TwoFactorAuthController extends Controller
 {
     /**
-     * Show the two factor authentication settings form.
+     * Show the two factor auth settings page
+     * route[GET] => 'settings/two-factor'
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Inertia\Response
@@ -24,7 +25,12 @@ class TwoFactorAuthController extends Controller
     {
         $user = $request->user();
         $confirmed = !is_null($user->two_factor_confirmed_at);
-        
+
+        // If 2fa is not confirmed, we want to clear out secret and recovery codes
+        if (!$confirmed) {
+            app(DisableTwoFactorAuthentication::class)($user);
+        }
+
         return Inertia::render('settings/two-factor', [
             'confirmed' => $confirmed,
             'recoveryCodes' => $this->getRecoveryCodes($user),
@@ -32,7 +38,8 @@ class TwoFactorAuthController extends Controller
     }
 
     /**
-     * Enable two factor authentication for the user.
+     * Enable two factor authentication
+     * route[POST] => 'settings/two-factor'
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
@@ -41,51 +48,22 @@ class TwoFactorAuthController extends Controller
     {
         [$qrCode, $secret] = app(GenerateQrCodeAndSecretKey::class)($request->user());
         
-        $recoveryCodes = $this->generateRecoveryCodes($request->user());
-        
         $request->user()->forceFill([
-            'two_factor_secret' => encrypt($secret),
-            'two_factor_recovery_codes' => encrypt(json_encode($recoveryCodes))
+            'two_factor_secret' => encrypt($secret)
         ])->save();
-
+        
         return response()->json([
-            'status' => 'two-factor-authentication-enabled',
-            'svg' => $qrCode,
-            'secret' => $secret,
-            'recovery_codes' => $recoveryCodes
+            'qrCode' => $qrCode,
+            'secret' => $secret
         ]);
-    }
-    
-    /**
-     * Generate recovery codes for the user.
-     *
-     * @param  \App\Models\User  $user
-     * @return array
-     */
-    private function generateRecoveryCodes($user)
-    {
-        return app(GenerateNewRecoveryCodes::class)($user);
-    }
-
-    /**
-     * Disable two factor authentication for the user.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function disable(Request $request)
-    {
-        $disableTwoFactorAuthentication = app(DisableTwoFactorAuthentication::class);
-        $disableTwoFactorAuthentication($request->user());
-
-        return back()->with('status', 'two-factor-authentication-disabled');
     }
 
     /**
      * Verify and confirm the user's two-factor authentication.
+     * route[POST] => 'settings/two-factor/confirm'
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\JsonResponse
      */
     public function confirm(Request $request)
     {
@@ -100,14 +78,60 @@ class TwoFactorAuthController extends Controller
         $valid = app(VerifyTwoFactorCode::class)($secret, $request->code);
 
         if ($valid) {
+            // Generate recovery codes when confirming 2FA
+            $recoveryCodes = app(GenerateNewRecoveryCodes::class)($request->user());
+            
+            // Update user with recovery codes and confirm 2FA
+            $request->user()->forceFill([
+                'two_factor_recovery_codes' => encrypt(json_encode($recoveryCodes))
+            ])->save();
+            
             app(ConfirmTwoFactorAuthentication::class)($request->user());
-            return back()->with('status', 'two-factor-authentication-confirmed');
+            
+            return response()->json([
+                'status' => 'two-factor-authentication-confirmed',
+                'recovery_codes' => $recoveryCodes
+            ]);
         }
 
-
-        return back()->withErrors(['code' => 'The provided two-factor authentication code was invalid.']);
+        return response()->json([
+            'status' => 'error',
+            'message' => 'The provided two-factor authentication code was invalid.'
+        ], 422);
     }
 
+    /**
+     * Generate new recovery codes for the user.
+     * route[POST] => 'settings/two-factor/recovery-codes'
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function regenerateRecoveryCodes(Request $request)
+    {
+        $codes = app(GenerateNewRecoveryCodes::class)($request->user());
+        
+        $request->user()->forceFill([
+            'two_factor_recovery_codes' => encrypt(json_encode($codes))
+        ])->save();
+        
+        return response()->json([
+            'recovery_codes' => $codes
+        ]);
+    }
+
+    /**
+     * Disable two factor authentication for the user.
+     * route[DELETE] => 'settings/two-factor'
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return void
+     */
+    public function disable(Request $request)
+    {
+        $disableTwoFactorAuthentication = app(DisableTwoFactorAuthentication::class);
+        $disableTwoFactorAuthentication($request->user());
+    }
 
     /**
      * Get the recovery codes for the user.
@@ -142,30 +166,5 @@ class TwoFactorAuthController extends Controller
         return $this->twoFactorEnabled($user)
             ? json_decode(decrypt($user->two_factor_recovery_codes))
             : [];
-    }
-
-    /**
-     * Generate new recovery codes for the user.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function regenerateRecoveryCodes(Request $request)
-    {
-        $codes = app(GenerateNewRecoveryCodes::class)($request->user());
-        
-        $request->user()->forceFill([
-            'two_factor_recovery_codes' => encrypt(json_encode($codes))
-        ])->save();
-
-        // Check if this is an AJAX request
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'status' => 'recovery-codes-generated',
-                'recovery_codes' => $codes
-            ]);
-        }
-        
-        return back()->with('status', 'recovery-codes-generated');
     }
 }

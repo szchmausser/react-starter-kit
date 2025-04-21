@@ -47,18 +47,16 @@ class TwoFactorAuthTest extends TestCase
         
         // Assert JSON response with expected structure
         $response->assertStatus(200)
-                 ->assertJson([
-                     'status' => 'two-factor-authentication-enabled'
-                 ])
                  ->assertJsonStructure([
-                     'svg',
-                     'secret',
-                     'recovery_codes'
+                     'qrCode',  // Changed from 'svg' to 'qrCode'
+                     'secret'
+                     // 'recovery_codes' removed as they're now generated in the confirm step
                  ]);
 
         $user->refresh();
         $this->assertNotNull($user->two_factor_secret);
-        $this->assertNotNull($user->two_factor_recovery_codes);
+        // Recovery codes are now null until confirm step
+        $this->assertNull($user->two_factor_recovery_codes);
     }
 
     public function test_can_manually_enable_two_factor_authentication()
@@ -258,7 +256,7 @@ class TwoFactorAuthTest extends TestCase
         
         // Simulate disabling 2FA via DELETE
         $response = $this->delete('/settings/two-factor');
-        $response->assertRedirect();
+        $response->assertStatus(200);
 
         // Verify the user's 2FA settings were cleared
         $user->refresh();

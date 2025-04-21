@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Head, useForm } from '@inertiajs/react';
-import axios from 'axios';
+import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Check, Copy, Eye, EyeOff, Loader, ScanLine, LockKeyhole } from 'lucide-react';
 import { type BreadcrumbItem } from '@/types';
 
@@ -32,10 +31,8 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
     const [showingRecoveryCodes, setShowingRecoveryCodes] = useState(false);
     const [recoveryCodesList, setRecoveryCodesList] = useState(recoveryCodes);
     const [copied, setCopied] = useState(false);
-
-    const { data, setData, post, delete: destroy, processing, reset, errors } = useForm({
-        code: '',
-    });
+    const [passcode, setPasscode] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (showModal && !verifyStep && !qrCodeSvg) {
@@ -43,20 +40,57 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
         }
     }, [showModal, verifyStep]);
 
+    interface FlashData {
+        qrCode?: string;
+        secret?: string;
+        recovery_codes?: string[];
+        status?: string;
+    }
+
+    interface ApiResponse {
+        status: string;
+        qrCode?: string;
+        svg?: string;
+        secret?: string;
+        recovery_codes?: string[];
+    }
+
     const fetchQrCode = async () => {
         try {
-            post(route('two-factor.enable'), {
-                preserveScroll: true,
-                onSuccess: async () => {
-                    // Only set enabled to true, but not confirmed yet
-                    const response = await fetch(route('two-factor.qr-code'));
-                    const data = await response.json();
-                    setQrCodeSvg(data.svg);
-                    setSecretKey(data.secret);
-                },
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            const response = await fetch(route('two-factor.enable'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             });
+
+            if (response.ok) {
+                const data: ApiResponse = await response.json();
+
+                if (data.qrCode) {
+                    setQrCodeSvg(data.qrCode);
+                } else if (data.svg) {
+                    // Handle both possible response formats
+                    setQrCodeSvg(data.svg);
+                }
+
+                if (data.secret) {
+                    setSecretKey(data.secret);
+                }
+
+                if (data.recovery_codes) {
+                    setRecoveryCodesList(data.recovery_codes);
+                }
+            } else {
+                console.error('Error enabling 2FA:', response.statusText);
+            }
         } catch (error) {
-            console.error('Error fetching QR code:', error);
+            console.error('Error enabling 2FA:', error);
         }
     };
 
@@ -64,42 +98,63 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
     const showRecoveryCodes = () => {
         setShowingRecoveryCodes(true);
     };
-    
-    // Only fetch new recovery codes when needed (after confirmation)
+
+    // No longer needed as recovery codes are returned from the confirm endpoint
+    // Keeping this as a placeholder in case we need to fetch recovery codes separately in the future
     const fetchRecoveryCodes = async () => {
-        // After confirming 2FA, we need to get the latest recovery codes
-        // The codes are already included in the props, so we just need to show them
         showRecoveryCodes();
     };
 
-    const verifyTwoFactorCode = () => {
-        if (!data.code || data.code.length !== 6) {
+    const verifyTwoFactorCode = async () => {
+        if (!passcode || passcode.length !== 6) {
             return;
         }
-        
+
         // Make sure the code is properly formatted (no spaces, exactly 6 digits)
-        const formattedCode = data.code.replace(/\s+/g, '').trim();
-        
-        // Set the formatted code back to the form data
-        setData('code', formattedCode);
-        
-        post(route('two-factor.confirm'), {
-            preserveScroll: true,
-            onSuccess: () => {
-                setConfirmed(true);
-                setShowModal(false);
-                setVerifyStep(false);
-                reset();
-                showRecoveryCodes();
-            },
-            onError: (errors) => {
-                if (errors.code) {
-                    setData('code', '');
+        const formattedCode = passcode.replace(/\s+/g, '').trim();
+
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            const response = await fetch(route('two-factor.confirm'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    code: formattedCode
+                })
+            });
+
+            if (response.ok) {
+                const responseData = await response.json();
+
+                // Update recovery codes if they're returned
+                if (responseData.recovery_codes) {
+                    setRecoveryCodesList(responseData.recovery_codes);
                 }
-            },
-        });
+
+                setConfirmed(true);
+                setVerifyStep(false);
+                setShowModal(false);
+                showRecoveryCodes(); // Show recovery codes immediately
+                setPasscode(''); // Reset passcode
+                setError(''); // Clear any errors
+            } else {
+                const errorData = await response.json();
+                console.error('Verification error:', errorData.message);
+                setError(errorData.message || 'Invalid verification code');
+                setPasscode(''); // Clear the code field
+            }
+        } catch (error) {
+            console.error('Error confirming 2FA:', error);
+            setError('An error occurred while confirming 2FA');
+        }
     };
-    
+
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
@@ -111,35 +166,60 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
         recovery_codes: string[];
     }
 
-    const regenerateRecoveryCodes = () => {
-        // Use Axios directly which will handle CSRF tokens automatically
-        // Laravel sets up Axios with CSRF protection in resources/js/bootstrap.js
-        axios.post<RecoveryCodesResponse>(route('two-factor.regenerate-recovery-codes'), {}, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
+    const regenerateRecoveryCodes = async () => {
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            const response = await fetch(route('two-factor.regenerate-recovery-codes'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                const data: ApiResponse = await response.json();
+
+                if (data.recovery_codes) {
+                    setRecoveryCodesList(data.recovery_codes);
+                }
+            } else {
+                console.error('Error regenerating codes:', response.statusText);
             }
-        })
-        .then((response) => {
-            if (response.data && response.data.recovery_codes) {
-                setRecoveryCodesList(response.data.recovery_codes);
-            }
-        })
-        .catch((error) => {
-            console.error('Error regenerating recovery codes:', error);
-        });
+        } catch (error) {
+            console.error('Error regenerating codes:', error);
+        }
     };
 
-    const disableTwoFactorAuthentication = () => {
-        destroy(route('two-factor.disable'), {
-            preserveScroll: true,
-            onSuccess: () => {
+    const disableTwoFactorAuthentication = async () => {
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            const response = await fetch(route('two-factor.disable'), {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
                 setConfirmed(false);
                 setShowingRecoveryCodes(false);
+                setRecoveryCodesList([]);
                 setQrCodeSvg('');
                 setSecretKey('');
-            },
-        });
+            } else {
+                console.error('Error disabling 2FA:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error disabling 2FA:', error);
+        }
     };
 
     return (
@@ -148,9 +228,9 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall 
-                        title="Two-Factor Authentication" 
-                        description="Add additional security to your account using two-factor authentication." 
+                    <HeadingSmall
+                        title="Two-Factor Authentication"
+                        description="Add additional security to your account using two-factor authentication."
                     />
 
                     {!confirmed && (
@@ -168,27 +248,25 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-md">
-                                    <div className="relative w-full items-center justify-center flex flex-col space-y-5">
-                                        <div className="p-0.5 w-auto rounded-full border border-stone-100 dark:border-stone-600 bg-white dark:bg-stone-800 shadow-sm">
+                                    <DialogHeader className="flex items-center justify-center">
+                                        <div className="p-0.5 w-auto rounded-full border mb-3 border-stone-100 dark:border-stone-600 bg-white dark:bg-stone-800 shadow-sm">
                                             <div className="p-2.5 rounded-full border border-stone-200 dark:border-stone-600 overflow-hidden bg-stone-100 dark:bg-stone-200 relative">
                                                 {/* Checkerboard lines */}
                                                 <div className="flex items-stretch absolute inset-0 w-full h-full divide-x [&>div]:flex-1 divide-stone-200 dark:divide-stone-300 justify-around opacity-50">
                                                     {[...Array(5)].map((_, i) => <div key={i}></div>)}
-                                                </div>  
+                                                </div>
                                                 <div className="flex flex-col items-stretch absolute w-full h-full divide-y [&>div]:flex-1 inset-0 divide-stone-200 dark:divide-stone-300 justify-around opacity-50">
                                                     {[...Array(5)].map((_, i) => <div key={i}></div>)}
                                                 </div>
                                                 <ScanLine className="size-6 relative z-20 dark:text-black" />
                                             </div>
                                         </div>
-                                        <div className="space-y-2 flex flex-col items-center justify-center">
-                                            <h2 className="text-xl font-medium text-stone-900 dark:text-stone-100">
-                                                {!verifyStep ? 'Turn on 2-step Verification' : 'Verify Authentication Code'}
-                                            </h2>
-                                            <p className="text-stone-600 text-sm dark:text-stone-400">
-                                                {!verifyStep ? 'Open your authenticator app and choose Scan QR code' : 'Enter the 6-digit code from your authenticator app'}
-                                            </p>
-                                        </div>
+                                        <DialogTitle>{!verifyStep ? 'Turn on 2-step Verification' : 'Verify Authentication Code'}</DialogTitle>
+                                        <DialogDescription className="text-center">
+                                            {!verifyStep ? 'Open your authenticator app and choose Scan QR code' : 'Enter the 6-digit code from your authenticator app'}
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="relative w-full items-center justify-center flex flex-col space-y-5">
                                         {!verifyStep ? (
                                             <>
                                                 <div className="relative max-w-md mx-auto overflow-hidden flex items-center p-8 pt-0">
@@ -208,7 +286,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                                     )}
                                                 </div>
 
-                                                <div className="flex items-center space-x-5 w-full">   
+                                                <div className="flex items-center space-x-5 w-full">
                                                     <Button className="w-full" onClick={() => setVerifyStep(true)}>
                                                         Continue
                                                     </Button>
@@ -225,14 +303,14 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <input 
-                                                                    type="text" 
-                                                                    readOnly 
-                                                                    value={secretKey} 
-                                                                    className="w-full h-full p-3 text-black dark:text-stone-100 bg-white dark:bg-stone-800" 
+                                                                <input
+                                                                    type="text"
+                                                                    readOnly
+                                                                    value={secretKey}
+                                                                    className="w-full h-full p-3 text-black dark:text-stone-100 bg-white dark:bg-stone-800"
                                                                 />
-                                                                <button 
-                                                                    onClick={() => copyToClipboard(secretKey)} 
+                                                                <button
+                                                                    onClick={() => copyToClipboard(secretKey)}
                                                                     className="block relative border-l border-stone-200 dark:border-stone-600 px-3 hover:bg-stone-100 dark:hover:bg-stone-600 h-auto"
                                                                 >
                                                                     {!copied ? <Copy className="w-4" /> : <Check className="w-4 text-green-500" />}
@@ -244,21 +322,21 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                             </>
                                         ) : (
                                             <>
-                                                <div>
-                                                    <InputOTP 
-                                                        maxLength={6} 
-                                                        value={data.code} 
-                                                        onChange={(value) => setData('code', value)}
-                                                        autoFocus
-                                                    >
-                                                        <InputOTPGroup>
-                                                            {Array.from({ length: 6 }).map((_, index) => (
-                                                                <InputOTPSlot key={index} index={index} />
-                                                            ))}
-                                                        </InputOTPGroup>
-                                                    </InputOTP>
-                                                    {errors.code && <p className="my-2 text-sm text-red-600">{errors.code}</p>}
-                                                </div>
+                                                <InputOTP maxLength={6} value={passcode} onChange={(value) => setPasscode(value)} autoFocus>
+                                                    <InputOTPGroup>
+                                                        <InputOTPSlot index={0} />
+                                                        <InputOTPSlot index={1} />
+                                                        <InputOTPSlot index={2} />
+                                                    </InputOTPGroup>
+                                                    <InputOTPGroup>
+                                                        <InputOTPSlot index={3} />
+                                                        <InputOTPSlot index={4} />
+                                                        <InputOTPSlot index={5} />
+                                                    </InputOTPGroup>
+                                                </InputOTP>
+                                                {error && (
+                                                    <div className="mt-2 text-sm text-red-600">{error}</div>
+                                                )}
                                                 <div className="flex items-center space-x-5 w-full">   
                                                     <Button 
                                                         variant="outline" 
@@ -270,7 +348,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                                     <Button 
                                                         className="w-full" 
                                                         onClick={verifyTwoFactorCode}
-                                                        disabled={processing || !data.code || data.code.length < 6}
+                                                        disabled={!passcode || passcode.length < 6}
                                                     >
                                                         Confirm
                                                     </Button>
@@ -292,7 +370,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                             </div>
                             <p className="text-stone-500 dark:text-stone-400">
                                 With two factor authentication enabled, you'll be prompted for a secure, random token during login, which you can retrieve from your Google Authenticator app.
-                            </p>    
+                            </p>
 
                             <div>
                                 <div className="flex items-start p-4 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-t-xl">
@@ -305,8 +383,8 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                     </div>
                                 </div>
                                 <div className="bg-stone-100 dark:bg-stone-800 rounded-b-xl border-t-0 border border-stone-200 dark:border-stone-700 text-sm">
-                                    <div 
-                                        onClick={() => setShowingRecoveryCodes(!showingRecoveryCodes)} 
+                                    <div
+                                        onClick={() => setShowingRecoveryCodes(!showingRecoveryCodes)}
                                         className="h-10 group cursor-pointer flex items-center select-none justify-between px-5 text-xs"
                                     >
                                         <div className={`relative ${!showingRecoveryCodes ? 'opacity-40 hover:opacity-60' : 'opacity-60'}`}>
@@ -321,13 +399,13 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                             )}
                                         </div>
                                         {showingRecoveryCodes && (
-                                            <Button 
-                                                size="sm" 
-                                                variant="outline" 
-                                                className="text-stone-600" 
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="text-stone-600"
                                                 onClick={(e) => {
-                                                    e.preventDefault(); 
-                                                    e.stopPropagation(); 
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
                                                     regenerateRecoveryCodes();
                                                 }}
                                             >
@@ -335,7 +413,7 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                             </Button>
                                         )}
                                     </div>
-                                    <div 
+                                    <div
                                         className="relative overflow-hidden transition-all duration-300"
                                         style={{
                                             height: showingRecoveryCodes ? 'auto' : '0',
@@ -354,8 +432,8 @@ export default function TwoFactor({ confirmed: initialConfirmed, recoveryCodes }
                                 </div>
                             </div>
                             <div className="inline relative">
-                                <Button 
-                                    variant="destructive" 
+                                <Button
+                                    variant="destructive"
                                     onClick={disableTwoFactorAuthentication}
                                 >
                                     Disable 2FA

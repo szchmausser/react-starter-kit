@@ -37,7 +37,7 @@ export default function TwoFactorChallenge() {
 
             {!recovery ? (
                 <form onSubmit={submitCode} className="space-y-4">
-                    <div className="flex flex-col items-center justify-center text-center">
+                    <div className="flex flex-col items-center justify-center space-y-3 text-center">
                         <InputOTP
                             maxLength={6}
                             value={data.code}
@@ -45,9 +45,14 @@ export default function TwoFactorChallenge() {
                             autoFocus
                         >
                             <InputOTPGroup>
-                                {Array.from({ length: 6 }).map((_, index) => (
-                                    <InputOTPSlot key={index} index={index} />
-                                ))}
+                                <InputOTPSlot index={0} />
+                                <InputOTPSlot index={1} />
+                                <InputOTPSlot index={2} />
+                            </InputOTPGroup>
+                            <InputOTPGroup>
+                                <InputOTPSlot index={3} />
+                                <InputOTPSlot index={4} />
+                                <InputOTPSlot index={5} />
                             </InputOTPGroup>
                         </InputOTP>
                         <InputError message={errors.code} />
@@ -66,6 +71,7 @@ export default function TwoFactorChallenge() {
                         className="block w-full"
                         autoComplete="one-time-code"
                         placeholder="Enter recovery code"
+                        autoFocus
                         required
                     />
                     <InputError message={errors.recovery_code} />
