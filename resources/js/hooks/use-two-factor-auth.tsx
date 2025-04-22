@@ -5,6 +5,12 @@ interface EnableResponse {
   secret: string;
 }
 
+interface ConfirmResponse {
+  status: string;
+  recovery_codes?: string[];
+  message?: string;
+}
+
 interface RecoveryCodesResponse {
   recovery_codes: string[];
 }
@@ -70,7 +76,7 @@ export function useTwoFactorAuth(initialConfirmed: boolean, initialRecoveryCodes
       });
 
       if (response.ok) {
-        const responseData = await response.json();
+        const responseData: ConfirmResponse = await response.json();
         if (responseData.recovery_codes) {
           setRecoveryCodesList(responseData.recovery_codes);
         }
