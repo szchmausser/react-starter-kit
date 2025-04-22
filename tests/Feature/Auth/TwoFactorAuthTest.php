@@ -25,16 +25,10 @@ class TwoFactorAuthTest extends TestCase
 
         // Check Inertia props instead of HTML
         $inertiaProps = $response->original?->getData() ?? [];
-        if (isset($inertiaProps['page']['props'])) {
-            $props = $inertiaProps['page']['props'];
-            $this->assertArrayHasKey('confirmed', $props);
-            $this->assertArrayHasKey('recoveryCodes', $props);
-            $this->assertFalse($props['confirmed']);
-        } else {
-            // Fallback: check for expected strings in HTML (legacy/SSR)
-            $response->assertSee('Two Factor Authentication');
-            $response->assertSee('Disabled');
-        }
+        $props = $inertiaProps['page']['props'];
+        $this->assertArrayHasKey('confirmed', $props);
+        $this->assertArrayHasKey('recoveryCodes', $props);
+        $this->assertFalse($props['confirmed']);
     }
 
     public function test_can_enable_two_factor_authentication()
@@ -48,14 +42,13 @@ class TwoFactorAuthTest extends TestCase
         // Assert JSON response with expected structure
         $response->assertStatus(200)
                  ->assertJsonStructure([
-                     'qrCode',  // Changed from 'svg' to 'qrCode'
+                     'qrCode',
                      'secret'
-                     // 'recovery_codes' removed as they're now generated in the confirm step
                  ]);
 
         $user->refresh();
         $this->assertNotNull($user->two_factor_secret);
-        // Recovery codes are now null until confirm step
+        // Recovery codes are null until confirm step
         $this->assertNull($user->two_factor_recovery_codes);
     }
 
@@ -85,18 +78,12 @@ class TwoFactorAuthTest extends TestCase
         $response->assertStatus(200);
         // For Inertia/React, check the JSON response props instead of HTML content
         $inertiaProps = $response->original?->getData() ?? [];
-        if (isset($inertiaProps['page']['props'])) {
-            $props = $inertiaProps['page']['props'];
-            $this->assertTrue(
-                ($props['confirmed'] ?? false) === true,
-                '2FA should be confirmed in page props.'
-            );
-            $this->assertArrayHasKey('recoveryCodes', $props);
-        } else {
-            // Fallback: check for expected strings in HTML (for legacy Inertia SSR)
-            $response->assertSee('Enabled');
-            $response->assertSee('2FA Recovery Codes');
-        }
+        $props = $inertiaProps['page']['props'];
+        $this->assertTrue(
+            ($props['confirmed'] ?? false) === true,
+            '2FA should be confirmed in page props.'
+        );
+        $this->assertArrayHasKey('recoveryCodes', $props);
     }
 
     public function test_user_with_two_factor_enabled_is_redirected_to_challenge_page_after_login()
@@ -182,8 +169,6 @@ class TwoFactorAuthTest extends TestCase
 
     public function test_authenticated_user_without_pending_two_factor_challenge_is_redirected_to_login()
     {
-        // Note: This test name has been changed to match the actual behavior
-        // In your implementation, users without pending 2FA are redirected to login, not dashboard
         $user = User::factory()->create();
 
         // Authenticate the user but don't set the login.id session
@@ -197,12 +182,8 @@ class TwoFactorAuthTest extends TestCase
         $response->assertRedirect('/login');
     }
 
-    public function test_user_with_pending_two_factor_challenge_can_access_dashboard_in_test_environment()
-    {
-        // Note: This test name has been changed to match the actual behavior
-        // In your test environment, the middleware that would normally redirect to the 2FA challenge
-        // might not be active, so we're testing what actually happens
-        
+    public function test_user_with_two_factor_confirmed_can_access_dashboard()
+    {   
         $user = User::factory()->create();
 
         // Generate QR code and secret key
