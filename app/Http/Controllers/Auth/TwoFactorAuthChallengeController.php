@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Actions\TwoFactorAuth\CompleteTwoFactorAuthentication;
 use App\Actions\TwoFactorAuth\ProcessRecoveryCode;
+use App\Actions\TwoFactorAuth\VerifyTwoFactorCode;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -55,7 +56,7 @@ class TwoFactorAuthChallengeController extends Controller
     protected function authenticateUsingCode(Request $request, User $user)
     {
         $secret = decrypt($user->two_factor_secret);
-        $valid = app(\App\Actions\TwoFactorAuth\VerifyTwoFactorCode::class)($secret, $request->code);
+        $valid = app(VerifyTwoFactorCode::class)($secret, $request->code);
         
         if ($valid) {
             app(CompleteTwoFactorAuthentication::class)($user);
@@ -87,6 +88,7 @@ class TwoFactorAuthChallengeController extends Controller
             return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
         }
         
+        // Update the user's recovery codes, removing the used code
         $user->two_factor_recovery_codes = encrypt(json_encode($updatedCodes));
         $user->save();
         
