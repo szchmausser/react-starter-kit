@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\TwoFactorAuth\DisableTwoFactorAuthentication;
+use App\Actions\TwoFactorAuth\GenerateNewRecoveryCodes;
+use App\Actions\TwoFactorAuth\GenerateQrCodeAndSecretKey;
+use App\Actions\TwoFactorAuth\VerifyTwoFactorCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Actions\TwoFactorAuth\DisableTwoFactorAuthentication;
-use App\Actions\TwoFactorAuth\GenerateNewRecoveryCodes;
-use App\Actions\TwoFactorAuth\GenerateQrCodeAndSecretKey;
-use App\Actions\TwoFactorAuth\ConfirmTwoFactorAuthentication;
-use App\Actions\TwoFactorAuth\VerifyTwoFactorCode;
 
 class TwoFactorAuthController extends Controller
 {
