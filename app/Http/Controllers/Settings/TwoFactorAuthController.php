@@ -27,6 +27,7 @@ class TwoFactorAuthController extends Controller
         $confirmed = !is_null($user->two_factor_confirmed_at);
 
         // If 2fa is not confirmed, we want to clear out secret and recovery codes
+        // This happens when a user enables 2fa and does not finish confirmation
         if (!$confirmed) {
             app(DisableTwoFactorAuthentication::class)($user);
         }
@@ -83,10 +84,9 @@ class TwoFactorAuthController extends Controller
             
             // Update user with recovery codes and confirm 2FA
             $request->user()->forceFill([
-                'two_factor_recovery_codes' => encrypt(json_encode($recoveryCodes))
+                'two_factor_recovery_codes' => encrypt(json_encode($recoveryCodes)),
+                'two_factor_confirmed_at' => now()
             ])->save();
-            
-            app(ConfirmTwoFactorAuthentication::class)($request->user());
             
             return response()->json([
                 'status' => 'two-factor-authentication-confirmed',
