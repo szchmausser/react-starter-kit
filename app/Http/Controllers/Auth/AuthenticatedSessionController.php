@@ -35,8 +35,12 @@ class AuthenticatedSessionController extends Controller
 
         // If this user exists, password is correct, and 2FA is enabled, we want to redirect to the 2FA challenge
         if ($user && $user->two_factor_confirmed_at && Hash::check($request->password, $user->password)) {
-            $request->session()->put('login.id', $user->getKey());
-            // Optionally clear any previous errors
+            // Store the user ID and remember preference in the session
+            $request->session()->put([
+                'login.id' => $user->getKey(),
+                'login.remember' => $request->boolean('remember')
+            ]);
+            
             return redirect()->route('two-factor.challenge');
         }
 

@@ -7,6 +7,9 @@ use App\Actions\TwoFactorAuth\ProcessRecoveryCode;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class TwoFactorAuthChallengeController extends Controller
 {
@@ -25,6 +28,9 @@ class TwoFactorAuthChallengeController extends Controller
 
         // If we made it here, user is available via the EnsureTwoFactorChallengeSession middleware
         $user = $request->two_factor_auth_user;
+
+        // Ensure the 2FA challenge is not rate limited
+        $this->ensureIsNotRateLimited($user);
 
         // Handle one-time password (OTP) code
         if ($request->filled('code')) {
@@ -53,9 +59,11 @@ class TwoFactorAuthChallengeController extends Controller
         
         if ($valid) {
             app(CompleteTwoFactorAuthentication::class)($user);
+            RateLimiter::clear($this->throttleKey($user));
             return redirect()->intended(route('dashboard', absolute: false));
         }
         
+        RateLimiter::hit($this->throttleKey($user));
         return back()->withErrors(['code' => __('The provided two factor authentication code was invalid.')]);
     }
 
@@ -75,6 +83,7 @@ class TwoFactorAuthChallengeController extends Controller
         
         // If ProcessRecoveryCode returns false, the code was invalid
         if ($updatedCodes === false) {
+            RateLimiter::hit($this->throttleKey($user));
             return back()->withErrors(['recovery_code' => __('The provided two factor authentication recovery code was invalid.')]);
         }
         
@@ -84,8 +93,45 @@ class TwoFactorAuthChallengeController extends Controller
         // Complete the authentication process
         app(CompleteTwoFactorAuthentication::class)($user);
         
+        // Clear rate limiter after successful authentication
+        RateLimiter::clear($this->throttleKey($user));
+        
         // Redirect to the intended page
         return redirect()->intended(route('dashboard', absolute: false));
+    }
+    
+    /**
+     * Ensure the 2FA challenge is not rate limited.
+     *
+     * @param  \App\Models\User  $user
+     * @return void
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function ensureIsNotRateLimited(User $user): void
+    {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey($user), 5)) {
+            return;
+        }
+
+        $seconds = RateLimiter::availableIn($this->throttleKey($user));
+
+        throw ValidationException::withMessages([
+            'code' => __('Too many two factor authentication attempts. Please try again in :seconds seconds.', [
+                'seconds' => $seconds,
+            ]),
+        ]);
+    }
+
+    /**
+     * Get the rate limiting throttle key for the given user.
+     *
+     * @param  \App\Models\User  $user
+     * @return string
+     */
+    protected function throttleKey(User $user): string
+    {
+        return Str::transliterate($user->id . '|2fa|' . request()->ip());
     }
 }
 
