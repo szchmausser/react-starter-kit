@@ -34,7 +34,7 @@ class TwoFactorAuthController extends Controller
 
         return Inertia::render('settings/two-factor', [
             'confirmed' => $confirmed,
-            'recoveryCodes' => $this->getRecoveryCodes($user),
+            'recoveryCodes' => !is_null($user->two_factor_secret) ? json_decode(decrypt($user->two_factor_recovery_codes)) : [],
         ]);
     }
 
@@ -131,40 +131,5 @@ class TwoFactorAuthController extends Controller
     {
         $disableTwoFactorAuthentication = app(DisableTwoFactorAuthentication::class);
         $disableTwoFactorAuthentication($request->user());
-    }
-
-    /**
-     * Get the recovery codes for the user.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function recoveryCodes(Request $request)
-    {
-        if (!$this->twoFactorEnabled($request->user())) {
-            return response('', 404);
-        }
-
-        return response()->json([
-            'recoveryCodes' => $this->getRecoveryCodes($request->user()),
-        ]);
-    }
-
-    /**
-     * Helper to check if 2FA is enabled for a user.
-     */
-    private function twoFactorEnabled($user)
-    {
-        return !is_null($user->two_factor_secret);
-    }
-
-    /**
-     * Helper to get recovery codes for a user, or empty array if not enabled.
-     */
-    private function getRecoveryCodes($user)
-    {
-        return $this->twoFactorEnabled($user)
-            ? json_decode(decrypt($user->two_factor_recovery_codes))
-            : [];
     }
 }
