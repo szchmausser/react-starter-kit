@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 interface EnableResponse {
   qrCode: string;
@@ -38,7 +38,7 @@ export function useTwoFactorAuth(initialConfirmed: boolean, initialRecoveryCodes
     }
   }, [showModal, verifyStep, qrCodeSvg]);
 
-  const enable = useCallback(async () => {
+  const enable = async () => {
     try {
       const response = await fetch(route('two-factor.enable'), {
         method: 'POST',
@@ -55,9 +55,9 @@ export function useTwoFactorAuth(initialConfirmed: boolean, initialRecoveryCodes
     } catch (error) {
       console.error('Error enabling 2FA:', error);
     }
-  }, [headers]);
+  };
 
-  const confirm = useCallback(async () => {
+  const confirm = async () => {
     if (!passcode || passcode.length !== 6) return;
 
     const formattedCode = passcode.replace(/\s+/g, '').trim();
@@ -91,9 +91,9 @@ export function useTwoFactorAuth(initialConfirmed: boolean, initialRecoveryCodes
       console.error('Error confirming 2FA:', error);
       setError('An error occurred while confirming 2FA');
     }
-  }, [headers, passcode]);
+  };
 
-  const regenerateRecoveryCodes = useCallback(async () => {
+  const regenerateRecoveryCodes = async () => {
     try {
       const response = await fetch(route('two-factor.regenerate-recovery-codes'), {
         method: 'POST',
@@ -111,9 +111,9 @@ export function useTwoFactorAuth(initialConfirmed: boolean, initialRecoveryCodes
     } catch (error) {
       console.error('Error regenerating codes:', error);
     }
-  }, [headers]);
+  };
 
-  const disable = useCallback(async () => {
+  const disable = async () => {
     try {
       const response = await fetch(route('two-factor.disable'), { method: 'DELETE', headers });
 
@@ -129,13 +129,13 @@ export function useTwoFactorAuth(initialConfirmed: boolean, initialRecoveryCodes
     } catch (error) {
       console.error('Error disabling 2FA:', error);
     }
-  }, [headers]);
+  };
 
-  const copyToClipboard = useCallback((text: string) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
-  }, []);
+  };
 
   return {
     confirmed,
