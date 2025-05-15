@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\IndividualController;
+use App\Http\Controllers\LegalCaseController;
+use App\Http\Controllers\LegalEntityController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +24,15 @@ Route::get('/search/results', [SearchController::class, 'search'])->name('search
 
 // Detalle de usuario
 Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+
+// Detalle de individuo
+Route::get('/individuals/{individual}', [IndividualController::class, 'show'])->name('individuals.show');
+
+// Detalle de entidad legal
+Route::get('/legal-entities/{legalEntity}', [LegalEntityController::class, 'show'])->name('legal-entities.show');
+
+// Detalle de caso legal
+Route::get('/legal-cases/{legalCase}', [LegalCaseController::class, 'show'])->name('legal-cases.show');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
