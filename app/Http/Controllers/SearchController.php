@@ -22,8 +22,6 @@ final class SearchController extends Controller
         $query = $request->input('query');
 
         $searchResults = (new Search())
-            // Búsqueda en usuarios del sistema
-            ->registerModel(User::class, ['name', 'email'])
             
             // Búsqueda en personas naturales
             ->registerModel(Individual::class, [
