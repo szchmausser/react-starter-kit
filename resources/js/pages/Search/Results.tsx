@@ -86,16 +86,16 @@ export default function SearchResults({ results, query }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Resultados de Búsqueda" />
             <div className="p-4 sm:p-6">
-                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="p-4 sm:p-6 text-gray-900">
+                <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
                         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div className="flex items-center">
-                                <Search className="h-6 w-6 text-gray-500 mr-2" />
+                                <Search className="h-6 w-6 text-gray-500 dark:text-gray-400 mr-2" />
                                 <h1 className="text-2xl font-semibold">Resultados de búsqueda</h1>
                             </div>
                             <Button
                                 onClick={() => router.visit(route('search.index'))}
-                                className="inline-flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white"
+                                className="inline-flex items-center justify-center bg-gray-800 hover:bg-gray-700 dark:bg-gray-200 dark:hover:bg-gray-100 dark:text-gray-900 text-white"
                                 size="sm"
                             >
                                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -103,12 +103,12 @@ export default function SearchResults({ results, query }: Props) {
                             </Button>
                         </div>
 
-                        <div className="mb-6 border rounded-md overflow-hidden">
-                            <div className="bg-gray-100 px-4 py-2 font-medium border-b">
-                                Criterio de búsqueda
+                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
+                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium border-b dark:border-zinc-700">
+                                <span className="dark:text-gray-200">Criterio de búsqueda</span>
                             </div>
-                            <div className="p-4">
-                                <p className="text-gray-700">
+                            <div className="p-4 dark:bg-zinc-900">
+                                <p className="text-gray-700 dark:text-gray-300">
                                     Término buscado: <span className="font-semibold">"{query}"</span>
                                 </p>
                             </div>
@@ -116,31 +116,31 @@ export default function SearchResults({ results, query }: Props) {
 
                         {Object.entries(results).length > 0 ? (
                             Object.entries(results).map(([type, items]) => (
-                                <div key={type} className="mb-6 border rounded-md overflow-hidden">
-                                    <div className="bg-gray-100 px-4 py-3 font-medium flex items-center border-b">
+                                <div key={type} className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
+                                    <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-3 font-medium flex items-center border-b dark:border-zinc-700">
                                         {getIcon(type)}
-                                        <span className="ml-2">
+                                        <span className="ml-2 dark:text-gray-200">
                                             {type.includes('individuals') && 'Personas Naturales'}
                                             {type.includes('legal_entities') && 'Personas Jurídicas'}
                                             {type.includes('legal_cases') && 'Expedientes Judiciales'}
                                             {!type.includes('individuals') && !type.includes('legal_entities') && !type.includes('legal_cases') && type}
                                         </span>
-                                        <span className="ml-2 text-sm text-gray-500">
+                                        <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
                                             ({items.length} {items.length === 1 ? 'resultado' : 'resultados'})
                                         </span>
                                     </div>
                                     {items.length > 0 ? (
-                                        <ul className="divide-y divide-gray-200">
+                                        <ul className="divide-y divide-gray-200 dark:divide-zinc-800">
                                             {items.map((result) => (
-                                                <li key={result.searchable.id} className="p-4 hover:bg-gray-50">
+                                                <li key={result.searchable.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900 dark:bg-zinc-900">
                                                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="text-lg font-medium">{result.title}</p>
-                                                            <p className="text-sm text-gray-600">{getSecondaryInfo(result, type)}</p>
+                                                            <p className="text-lg font-medium dark:text-white">{result.title}</p>
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400">{getSecondaryInfo(result, type)}</p>
                                                         </div>
                                                         <Button 
                                                             onClick={() => router.visit(result.url)} 
-                                                            className="w-full sm:w-auto bg-blue-500 text-white hover:bg-blue-600"
+                                                            className="w-full sm:w-auto bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                                                             size="sm"
                                                         >
                                                             Ver Detalles
@@ -150,18 +150,18 @@ export default function SearchResults({ results, query }: Props) {
                                             ))}
                                         </ul>
                                     ) : (
-                                        <div className="p-4 text-center text-gray-500">
+                                        <div className="p-4 text-center text-gray-500 dark:text-gray-400 dark:bg-zinc-900">
                                             No se encontraron resultados.
                                         </div>
                                     )}
                                 </div>
                             ))
                         ) : (
-                            <div className="border rounded-md overflow-hidden">
-                                <div className="bg-gray-100 px-4 py-2 font-medium border-b">
-                                    Sin resultados
+                            <div className="border dark:border-zinc-700 rounded-md overflow-hidden">
+                                <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium border-b dark:border-zinc-700">
+                                    <span className="dark:text-gray-200">Sin resultados</span>
                                 </div>
-                                <div className="p-6 text-center text-gray-500">
+                                <div className="p-6 text-center text-gray-500 dark:text-gray-400 dark:bg-zinc-900">
                                     No se encontraron resultados para tu búsqueda. Intenta con otros términos o revisa la ortografía.
                                 </div>
                             </div>
