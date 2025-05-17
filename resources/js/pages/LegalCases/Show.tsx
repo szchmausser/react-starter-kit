@@ -146,38 +146,48 @@ export default function LegalCaseShow({ legalCase }: Props) {
                     <div className="p-4 sm:p-6 text-gray-900">
                         <h1 className="text-2xl font-semibold mb-4">Detalle del Expediente</h1>
                         
-                        <div className="mb-6">
-                            <h2 className="text-xl font-medium mb-2">Información General</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <strong>Código de Expediente:</strong> {legalCase.code}
-                                </div>
-                                <div>
-                                    <strong>Tipo de Caso:</strong> {legalCase.case_type.name}
-                                </div>
-                                <div>
-                                    <strong>Fecha de Entrada:</strong> {formatDate(legalCase.entry_date)}
-                                </div>
-                                <div>
-                                    <strong>Fecha de Sentencia:</strong> {formatDate(legalCase.sentence_date)}
-                                </div>
-                                <div>
-                                    <strong>Fecha de Cierre:</strong> {formatDate(legalCase.closing_date)}
-                                </div>
-                                <div>
-                                    <strong>Estado:</strong> {legalCase.closing_date ? 'Cerrado' : 'Activo'}
+                        {/* Sección de Información General - Ahora con estilo de tarjeta */}
+                        <div className="mb-6 border rounded-md overflow-hidden">
+                            <div className="bg-gray-100 px-4 py-2 font-medium">
+                                Información General
+                            </div>
+                            <div className="p-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <strong>Código de Expediente:</strong> {legalCase.code}
+                                    </div>
+                                    <div>
+                                        <strong>Tipo de Caso:</strong> {legalCase.case_type.name}
+                                    </div>
+                                    <div>
+                                        <strong>Fecha de Entrada:</strong> {formatDate(legalCase.entry_date)}
+                                    </div>
+                                    <div>
+                                        <strong>Fecha de Sentencia:</strong> {formatDate(legalCase.sentence_date)}
+                                    </div>
+                                    <div>
+                                        <strong>Fecha de Cierre:</strong> {formatDate(legalCase.closing_date)}
+                                    </div>
+                                    <div>
+                                        <strong>Estado:</strong> {legalCase.closing_date ? 'Cerrado' : 'Activo'}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
+                        {/* Sección de Descripción del Tipo de Caso - Ahora con estilo de tarjeta */}
                         {legalCase.case_type.description && (
-                            <div className="mb-6">
-                                <h2 className="text-xl font-medium mb-2">Descripción del Tipo de Caso</h2>
-                                <p className="text-gray-700">{legalCase.case_type.description}</p>
+                            <div className="mb-6 border rounded-md overflow-hidden">
+                                <div className="bg-gray-100 px-4 py-2 font-medium">
+                                    Descripción del Tipo de Caso
+                                </div>
+                                <div className="p-4">
+                                    <p className="text-gray-700">{legalCase.case_type.description}</p>
+                                </div>
                             </div>
                         )}
 
-                        {/* Sección única para todas las partes relacionadas */}
+                        {/* Sección única para todas las partes relacionadas - Ya tiene estilo de tarjeta */}
                         <div className="mb-6">
                             <h2 className="text-xl font-medium mb-2">Partes Relacionadas</h2>
                             
