@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
-import { User, Fingerprint, Contact, FileText, Mail, Phone, FileQuestion } from 'lucide-react';
+import { User, Fingerprint, Contact, FileText, Mail, Phone, FileQuestion, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface CaseType {
     id: number;
@@ -123,74 +123,134 @@ export default function IndividualShow({ individual }: Props) {
                             </div>
                         </div>
 
-                        {/* Expedientes Relacionados - Ahora con estilo de tarjeta */}
+                        {/* Expedientes Relacionados - Con diseño responsivo (tabla/tarjetas) */}
                         <div className="mb-6">
                             <div className="flex items-center mb-2">
                                 <FileText className="h-5 w-5 text-amber-600 mr-2" />
                                 <h2 className="text-xl font-medium">Expedientes Relacionados</h2>
                             </div>
                             {individual.legal_cases && individual.legal_cases.length > 0 ? (
-                                <div className="border rounded-md overflow-hidden">
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50">
-                                                <tr>
-                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Código
-                                                    </th>
-                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Tipo de Caso
-                                                    </th>
-                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Fecha de Entrada
-                                                    </th>
-                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Fecha de Sentencia
-                                                    </th>
-                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Estado
-                                                    </th>
-                                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Acciones
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
-                                                {individual.legal_cases.map((legalCase) => (
-                                                    <tr key={legalCase.id}>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                            <div className="flex items-center">
-                                                                <FileQuestion className="h-4 w-4 text-amber-500 mr-2" />
-                                                                {legalCase.code}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {legalCase.case_type.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {formatDate(legalCase.entry_date)}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {formatDate(legalCase.sentence_date)}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {legalCase.closing_date ? 'Cerrado' : 'Activo'}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                            <Button 
-                                                                onClick={() => router.visit(route('legal-cases.show', legalCase.id))} 
-                                                                className="bg-blue-500 text-white"
-                                                                size="sm"
-                                                            >
-                                                                Ver Detalles
-                                                            </Button>
-                                                        </td>
+                                <>
+                                    {/* Vista de tabla para pantallas medianas y grandes */}
+                                    <div className="hidden md:block border rounded-md overflow-hidden">
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Código
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Tipo de Caso
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Fecha de Entrada
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Fecha de Sentencia
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Estado
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Acciones
+                                                        </th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {individual.legal_cases.map((legalCase) => (
+                                                        <tr key={`table-${legalCase.id}`}>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                <div className="flex items-center">
+                                                                    <FileQuestion className="h-4 w-4 text-amber-500 mr-2" />
+                                                                    {legalCase.code}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {legalCase.case_type.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {formatDate(legalCase.entry_date)}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {formatDate(legalCase.sentence_date)}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {legalCase.closing_date ? 'Cerrado' : 'Activo'}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                                <Button 
+                                                                    onClick={() => router.visit(route('legal-cases.show', legalCase.id))} 
+                                                                    className="bg-blue-500 text-white"
+                                                                    size="sm"
+                                                                >
+                                                                    Ver Detalles
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
+
+                                    {/* Vista de tarjetas para dispositivos móviles */}
+                                    <div className="md:hidden space-y-4">
+                                        {individual.legal_cases.map((legalCase) => (
+                                            <div key={`card-${legalCase.id}`} className="border rounded-md overflow-hidden">
+                                                <div className="bg-gray-100 px-4 py-2 font-medium flex items-center justify-between">
+                                                    <div className="flex items-center">
+                                                        <FileQuestion className="h-4 w-4 text-amber-500 mr-2" />
+                                                        <span>{legalCase.code}</span>
+                                                    </div>
+                                                    <span className={`text-xs px-2 py-1 rounded-full ${legalCase.closing_date ? 'bg-gray-200 text-gray-800' : 'bg-green-100 text-green-800'}`}>
+                                                        {legalCase.closing_date ? 'Cerrado' : 'Activo'}
+                                                    </span>
+                                                </div>
+                                                <div className="p-4 space-y-3">
+                                                    <div>
+                                                        <div className="text-xs font-medium text-gray-500 uppercase">Tipo de Caso</div>
+                                                        <div className="text-sm">{legalCase.case_type.name}</div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div>
+                                                            <div className="text-xs font-medium text-gray-500 uppercase">Fecha de Entrada</div>
+                                                            <div className="text-sm flex items-center">
+                                                                <Calendar className="h-3 w-3 mr-1" />
+                                                                {formatDate(legalCase.entry_date)}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs font-medium text-gray-500 uppercase">Fecha de Sentencia</div>
+                                                            <div className="text-sm flex items-center">
+                                                                {legalCase.sentence_date ? (
+                                                                    <>
+                                                                        <CheckCircle className="h-3 w-3 text-green-500 mr-1" />
+                                                                        {formatDate(legalCase.sentence_date)}
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <AlertCircle className="h-3 w-3 text-amber-500 mr-1" />
+                                                                        Pendiente
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="pt-2">
+                                                        <Button 
+                                                            onClick={() => router.visit(route('legal-cases.show', legalCase.id))} 
+                                                            className="w-full bg-blue-500 text-white"
+                                                            size="sm"
+                                                        >
+                                                            Ver Detalles
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
                             ) : (
                                 <div className="border rounded-md overflow-hidden">
                                     <div className="p-4 text-center text-gray-500">
