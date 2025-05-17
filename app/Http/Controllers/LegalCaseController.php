@@ -35,7 +35,7 @@ class LegalCaseController extends Controller
      */
     public function show(string $id)
     {
-        $legalCase = \App\Models\LegalCase::with(['caseType'])->findOrFail($id);
+        $legalCase = \App\Models\LegalCase::with(['caseType', 'individuals', 'legalEntities'])->findOrFail($id);
         
         return \Inertia\Inertia::render('LegalCases/Show', [
             'legalCase' => $legalCase

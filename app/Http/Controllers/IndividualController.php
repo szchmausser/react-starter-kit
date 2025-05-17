@@ -35,7 +35,7 @@ class IndividualController extends Controller
      */
     public function show(string $id)
     {
-        $individual = \App\Models\Individual::findOrFail($id);
+        $individual = \App\Models\Individual::with(['legalCases.caseType'])->findOrFail($id);
         
         return \Inertia\Inertia::render('Individuals/Show', [
             'individual' => $individual
