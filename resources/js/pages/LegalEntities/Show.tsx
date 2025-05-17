@@ -77,9 +77,8 @@ export default function LegalEntityShow({ legalEntity }: Props) {
             <div className="p-4 sm:p-6">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div className="p-4 sm:p-6 text-gray-900">
-                        <div className="flex items-center mb-4">
-                            <Building2 className="h-6 w-6 text-green-600 mr-2" />
-                            <h1 className="text-2xl font-semibold">Detalle de Persona Jurídica</h1>
+                        <div className="mb-4">
+                            <h1 className="text-2xl font-bold text-center uppercase">DETALLE DE PERSONA JURÍDICA</h1>
                         </div>
                         
                         {/* Información Empresarial - Ahora con estilo de tarjeta */}
@@ -140,9 +139,8 @@ export default function LegalEntityShow({ legalEntity }: Props) {
 
                         {/* Expedientes Relacionados - Con diseño responsivo (tabla/tarjetas) */}
                         <div className="mb-6">
-                            <div className="flex items-center mb-2">
-                                <FileText className="h-5 w-5 text-amber-600 mr-2" />
-                                <h2 className="text-xl font-medium">Expedientes Relacionados</h2>
+                            <div className="mb-4">
+                                <h2 className="text-xl font-bold text-center uppercase">EXPEDIENTES RELACIONADOS</h2>
                             </div>
                             {legalEntity.legal_cases && legalEntity.legal_cases.length > 0 ? (
                                 <>
@@ -293,7 +291,7 @@ export default function LegalEntityShow({ legalEntity }: Props) {
                             )}
                         </div>
 
-                        <div className="mt-6">
+                        <div className="mt-6 flex justify-center">
                             <Button
                                 onClick={() => router.visit(route('search.index'))}
                                 className="bg-gray-800 hover:bg-gray-700"

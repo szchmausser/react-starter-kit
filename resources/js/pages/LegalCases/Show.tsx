@@ -143,19 +143,19 @@ export default function LegalCaseShow({ legalCase }: Props) {
     const getRoleIcon = (role: string) => {
         switch(role) {
             case 'Juez': 
-                return <Gavel className="h-5 w-5 text-purple-500" />;
+                return <Gavel className="h-5 w-5 text-purple-500" aria-hidden="true" />;
             case 'Solicitante': 
-                return <UserCheck className="h-5 w-5 text-blue-500" />;
+                return <UserCheck className="h-5 w-5 text-blue-500" aria-hidden="true" />;
             case 'Abogado de Solicitante':
-                return <UserCog className="h-5 w-5 text-blue-700" />;
+                return <UserCog className="h-5 w-5 text-blue-700" aria-hidden="true" />;
             case 'Demandado':
-                return <Users className="h-5 w-5 text-orange-500" />;
+                return <Users className="h-5 w-5 text-orange-500" aria-hidden="true" />;
             case 'Abogado de Demandado':
-                return <UserCog className="h-5 w-5 text-orange-700" />;
+                return <UserCog className="h-5 w-5 text-orange-700" aria-hidden="true" />;
             case 'Testigo':
-                return <Eye className="h-5 w-5 text-green-500" />;
+                return <Eye className="h-5 w-5 text-green-500" aria-hidden="true" />;
             default:
-                return <Users className="h-5 w-5 text-gray-500" />;
+                return <Users className="h-5 w-5 text-gray-500" aria-hidden="true" />;
         }
     };
     
@@ -165,15 +165,14 @@ export default function LegalCaseShow({ legalCase }: Props) {
             <div className="p-4 sm:p-6">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div className="p-4 sm:p-6 text-gray-900">
-                        <div className="flex items-center mb-4">
-                            <FileText className="h-6 w-6 text-amber-600 mr-2" />
-                            <h1 className="text-2xl font-semibold">Detalle del Expediente</h1>
+                        <div className="mb-4">
+                            <h1 className="text-2xl font-bold text-center uppercase">DETALLE DEL EXPEDIENTE</h1>
                         </div>
                         
                         {/* Sección de Información General - Ahora con estilo de tarjeta */}
                         <div className="mb-6 border rounded-md overflow-hidden">
                             <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
-                                <Info className="h-5 w-5 text-blue-500 mr-2" />
+                                <Info className="h-5 w-5 text-blue-600 mr-2" aria-hidden="true" />
                                 Información General
                             </div>
                             <div className="p-4">
@@ -194,7 +193,10 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                         <strong>Fecha de Cierre:</strong> {formatDate(legalCase.closing_date)}
                                     </div>
                                     <div>
-                                        <strong>Estado:</strong> {legalCase.closing_date ? 'Cerrado' : 'Activo'}
+                                        <strong>Estado:</strong> 
+                                        <span className={`ml-2 px-2 py-1 text-sm rounded-full ${legalCase.closing_date ? 'bg-gray-200 text-gray-800' : 'bg-green-100 text-green-800'}`}>
+                                            {legalCase.closing_date ? 'Cerrado' : 'Activo'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -204,7 +206,7 @@ export default function LegalCaseShow({ legalCase }: Props) {
                         {legalCase.case_type.description && (
                             <div className="mb-6 border rounded-md overflow-hidden">
                                 <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
-                                    <FileQuestion className="h-5 w-5 text-amber-500 mr-2" />
+                                    <FileQuestion className="h-5 w-5 text-amber-500 mr-2" aria-hidden="true" />
                                     Descripción del Tipo de Caso
                                 </div>
                                 <div className="p-4">
@@ -215,9 +217,8 @@ export default function LegalCaseShow({ legalCase }: Props) {
 
                         {/* Sección única para todas las partes relacionadas - Ya tiene estilo de tarjeta */}
                         <div className="mb-6">
-                            <div className="flex items-center mb-2">
-                                <ScrollText className="h-5 w-5 text-blue-600 mr-2" />
-                                <h2 className="text-xl font-medium">Partes Relacionadas</h2>
+                            <div className="mb-4">
+                                <h2 className="text-xl font-bold text-center uppercase">PARTES RELACIONADAS</h2>
                             </div>
                             
                             {Object.keys(partiesByRole).length > 0 ? (
@@ -237,8 +238,8 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                                         <div key={`${party.type}-${party.id}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between">
                                                             <div className="flex items-center">
                                                                 {party.type === 'individual' ? 
-                                                                    <UserCheck className="h-4 w-4 text-blue-500 mr-2" /> : 
-                                                                    <Building className="h-4 w-4 text-green-500 mr-2" />
+                                                                    <UserCheck className="h-4 w-4 text-blue-500 mr-2" aria-hidden="true" /> : 
+                                                                    <Building className="h-4 w-4 text-green-500 mr-2" aria-hidden="true" />
                                                                 }
                                                                 <div>
                                                                     <p className="font-medium">{party.name}</p>
@@ -254,7 +255,7 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                                                             ? route('individuals.show', party.id) 
                                                                             : route('legal-entities.show', party.id)
                                                                     )} 
-                                                                    className="bg-blue-500 text-white"
+                                                                    className="bg-blue-600 hover:bg-blue-700 text-white"
                                                                     size="sm"
                                                                 >
                                                                     Ver Detalles
@@ -272,7 +273,7 @@ export default function LegalCaseShow({ legalCase }: Props) {
                             )}
                         </div>
 
-                        <div className="mt-6">
+                        <div className="mt-6 flex justify-center">
                             <Button
                                 onClick={() => router.visit(route('search.index'))}
                                 className="bg-gray-800 hover:bg-gray-700"
