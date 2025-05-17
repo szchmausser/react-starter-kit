@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
-import { Building2, Mail, Phone, Briefcase, Contact, FileText, Globe, FileQuestion, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import { Building2, Mail, Phone, Briefcase, Contact, FileText, Globe, FileQuestion, Calendar, CheckCircle, AlertCircle, UserCog } from 'lucide-react';
 
 interface CaseType {
     id: number;
@@ -159,6 +159,9 @@ export default function LegalEntityShow({ legalEntity }: Props) {
                                                             Tipo de Caso
                                                         </th>
                                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Rol
+                                                        </th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                             Fecha de Entrada
                                                         </th>
                                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -183,6 +186,14 @@ export default function LegalEntityShow({ legalEntity }: Props) {
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                                 {legalCase.case_type.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                <div className="flex items-center">
+                                                                    <UserCog className="h-4 w-4 text-green-500 mr-1" />
+                                                                    <span className="font-medium">
+                                                                        {legalCase.pivot?.role || 'Sin rol asignado'}
+                                                                    </span>
+                                                                </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                                 {formatDate(legalCase.entry_date)}
@@ -223,6 +234,13 @@ export default function LegalEntityShow({ legalEntity }: Props) {
                                                     </span>
                                                 </div>
                                                 <div className="p-4 space-y-3">
+                                                    <div className="flex items-center">
+                                                        <UserCog className="h-4 w-4 text-green-600 mr-2" />
+                                                        <div>
+                                                            <div className="text-xs font-medium text-gray-500 uppercase">Rol en el Expediente</div>
+                                                            <div className="text-sm font-medium">{legalCase.pivot?.role || 'Sin rol asignado'}</div>
+                                                        </div>
+                                                    </div>
                                                     <div>
                                                         <div className="text-xs font-medium text-gray-500 uppercase">Tipo de Caso</div>
                                                         <div className="text-sm">{legalCase.case_type.name}</div>
