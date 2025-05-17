@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
+import { User, Fingerprint, Contact, FileText, Mail, Phone, FileQuestion } from 'lucide-react';
 
 interface CaseType {
     id: number;
@@ -65,11 +66,15 @@ export default function IndividualShow({ individual }: Props) {
             <div className="p-4 sm:p-6">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div className="p-4 sm:p-6 text-gray-900">
-                        <h1 className="text-2xl font-semibold mb-4">Detalle de Persona Natural</h1>
+                        <div className="flex items-center mb-4">
+                            <User className="h-6 w-6 text-blue-600 mr-2" />
+                            <h1 className="text-2xl font-semibold">Detalle de Persona Natural</h1>
+                        </div>
                         
                         {/* Información Personal - Ahora con estilo de tarjeta */}
                         <div className="mb-6 border rounded-md overflow-hidden">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">
+                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
+                                <Fingerprint className="h-5 w-5 text-blue-500 mr-2" />
                                 Información Personal
                             </div>
                             <div className="p-4">
@@ -91,19 +96,22 @@ export default function IndividualShow({ individual }: Props) {
 
                         {/* Información de Contacto - Ahora con estilo de tarjeta */}
                         <div className="mb-6 border rounded-md overflow-hidden">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">
+                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
+                                <Contact className="h-5 w-5 text-green-500 mr-2" />
                                 Información de Contacto
                             </div>
                             <div className="p-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {individual.email_1 && (
-                                        <div>
-                                            <strong>Email:</strong> {individual.email_1}
+                                        <div className="flex items-center">
+                                            <Mail className="h-4 w-4 text-blue-500 mr-2" />
+                                            <span><strong>Email:</strong> {individual.email_1}</span>
                                         </div>
                                     )}
                                     {individual.phone_number_1 && (
-                                        <div>
-                                            <strong>Teléfono:</strong> {individual.phone_number_1}
+                                        <div className="flex items-center">
+                                            <Phone className="h-4 w-4 text-blue-500 mr-2" />
+                                            <span><strong>Teléfono:</strong> {individual.phone_number_1}</span>
                                         </div>
                                     )}
                                     {!individual.email_1 && !individual.phone_number_1 && (
@@ -117,7 +125,10 @@ export default function IndividualShow({ individual }: Props) {
 
                         {/* Expedientes Relacionados - Ahora con estilo de tarjeta */}
                         <div className="mb-6">
-                            <h2 className="text-xl font-medium mb-2">Expedientes Relacionados</h2>
+                            <div className="flex items-center mb-2">
+                                <FileText className="h-5 w-5 text-amber-600 mr-2" />
+                                <h2 className="text-xl font-medium">Expedientes Relacionados</h2>
+                            </div>
                             {individual.legal_cases && individual.legal_cases.length > 0 ? (
                                 <div className="border rounded-md overflow-hidden">
                                     <div className="overflow-x-auto">
@@ -148,7 +159,10 @@ export default function IndividualShow({ individual }: Props) {
                                                 {individual.legal_cases.map((legalCase) => (
                                                     <tr key={legalCase.id}>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                            {legalCase.code}
+                                                            <div className="flex items-center">
+                                                                <FileQuestion className="h-4 w-4 text-amber-500 mr-2" />
+                                                                {legalCase.code}
+                                                            </div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                             {legalCase.case_type.name}

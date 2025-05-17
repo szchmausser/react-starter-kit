@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
+import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye } from 'lucide-react';
 
 interface CaseType {
     id: number;
@@ -138,17 +139,41 @@ export default function LegalCaseShow({ legalCase }: Props) {
         'Sin rol asignado'
     ];
     
+    // Función para obtener el icono según el rol
+    const getRoleIcon = (role: string) => {
+        switch(role) {
+            case 'Juez': 
+                return <Gavel className="h-5 w-5 text-purple-500" />;
+            case 'Solicitante': 
+                return <UserCheck className="h-5 w-5 text-blue-500" />;
+            case 'Abogado de Solicitante':
+                return <UserCog className="h-5 w-5 text-blue-700" />;
+            case 'Demandado':
+                return <Users className="h-5 w-5 text-orange-500" />;
+            case 'Abogado de Demandado':
+                return <UserCog className="h-5 w-5 text-orange-700" />;
+            case 'Testigo':
+                return <Eye className="h-5 w-5 text-green-500" />;
+            default:
+                return <Users className="h-5 w-5 text-gray-500" />;
+        }
+    };
+    
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detalle del Expediente: ${legalCase.code}`} />
             <div className="p-4 sm:p-6">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div className="p-4 sm:p-6 text-gray-900">
-                        <h1 className="text-2xl font-semibold mb-4">Detalle del Expediente</h1>
+                        <div className="flex items-center mb-4">
+                            <FileText className="h-6 w-6 text-amber-600 mr-2" />
+                            <h1 className="text-2xl font-semibold">Detalle del Expediente</h1>
+                        </div>
                         
                         {/* Sección de Información General - Ahora con estilo de tarjeta */}
                         <div className="mb-6 border rounded-md overflow-hidden">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">
+                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
+                                <Info className="h-5 w-5 text-blue-500 mr-2" />
                                 Información General
                             </div>
                             <div className="p-4">
@@ -178,7 +203,8 @@ export default function LegalCaseShow({ legalCase }: Props) {
                         {/* Sección de Descripción del Tipo de Caso - Ahora con estilo de tarjeta */}
                         {legalCase.case_type.description && (
                             <div className="mb-6 border rounded-md overflow-hidden">
-                                <div className="bg-gray-100 px-4 py-2 font-medium">
+                                <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
+                                    <FileQuestion className="h-5 w-5 text-amber-500 mr-2" />
                                     Descripción del Tipo de Caso
                                 </div>
                                 <div className="p-4">
@@ -189,7 +215,10 @@ export default function LegalCaseShow({ legalCase }: Props) {
 
                         {/* Sección única para todas las partes relacionadas - Ya tiene estilo de tarjeta */}
                         <div className="mb-6">
-                            <h2 className="text-xl font-medium mb-2">Partes Relacionadas</h2>
+                            <div className="flex items-center mb-2">
+                                <ScrollText className="h-5 w-5 text-blue-600 mr-2" />
+                                <h2 className="text-xl font-medium">Partes Relacionadas</h2>
+                            </div>
                             
                             {Object.keys(partiesByRole).length > 0 ? (
                                 <div className="space-y-6">
@@ -199,17 +228,24 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                         
                                         return (
                                             <div key={role} className="border rounded-md overflow-hidden">
-                                                <div className="bg-gray-100 px-4 py-2 font-medium">
-                                                    {role}
+                                                <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
+                                                    {getRoleIcon(role)}
+                                                    <span className="ml-2">{role}</span>
                                                 </div>
                                                 <div className="divide-y divide-gray-200">
                                                     {partiesByRole[role].map(party => (
                                                         <div key={`${party.type}-${party.id}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between">
-                                                            <div>
-                                                                <p className="font-medium">{party.name}</p>
-                                                                <p className="text-sm text-gray-600">
-                                                                    {party.type === 'individual' ? 'Cédula:' : 'RIF:'} {party.identifier}
-                                                                </p>
+                                                            <div className="flex items-center">
+                                                                {party.type === 'individual' ? 
+                                                                    <UserCheck className="h-4 w-4 text-blue-500 mr-2" /> : 
+                                                                    <Building className="h-4 w-4 text-green-500 mr-2" />
+                                                                }
+                                                                <div>
+                                                                    <p className="font-medium">{party.name}</p>
+                                                                    <p className="text-sm text-gray-600">
+                                                                        {party.type === 'individual' ? 'Cédula:' : 'RIF:'} {party.identifier}
+                                                                    </p>
+                                                                </div>
                                                             </div>
                                                             <div className="mt-2 sm:mt-0">
                                                                 <Button 

@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
+import { Building2, Mail, Phone, Briefcase, Contact, FileText, Globe, FileQuestion } from 'lucide-react';
 
 interface CaseType {
     id: number;
@@ -76,11 +77,15 @@ export default function LegalEntityShow({ legalEntity }: Props) {
             <div className="p-4 sm:p-6">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div className="p-4 sm:p-6 text-gray-900">
-                        <h1 className="text-2xl font-semibold mb-4">Detalle de Persona Jurídica</h1>
+                        <div className="flex items-center mb-4">
+                            <Building2 className="h-6 w-6 text-green-600 mr-2" />
+                            <h1 className="text-2xl font-semibold">Detalle de Persona Jurídica</h1>
+                        </div>
                         
                         {/* Información Empresarial - Ahora con estilo de tarjeta */}
                         <div className="mb-6 border rounded-md overflow-hidden">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">
+                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
+                                <Briefcase className="h-5 w-5 text-green-500 mr-2" />
                                 Información Empresarial
                             </div>
                             <div className="p-4">
@@ -100,24 +105,28 @@ export default function LegalEntityShow({ legalEntity }: Props) {
 
                         {/* Información de Contacto - Ahora con estilo de tarjeta */}
                         <div className="mb-6 border rounded-md overflow-hidden">
-                            <div className="bg-gray-100 px-4 py-2 font-medium">
+                            <div className="bg-gray-100 px-4 py-2 font-medium flex items-center">
+                                <Contact className="h-5 w-5 text-green-500 mr-2" />
                                 Información de Contacto
                             </div>
                             <div className="p-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {legalEntity.email_1 && (
-                                        <div>
-                                            <strong>Email:</strong> {legalEntity.email_1}
+                                        <div className="flex items-center">
+                                            <Mail className="h-4 w-4 text-blue-500 mr-2" />
+                                            <span><strong>Email:</strong> {legalEntity.email_1}</span>
                                         </div>
                                     )}
                                     {legalEntity.phone_number_1 && (
-                                        <div>
-                                            <strong>Teléfono:</strong> {legalEntity.phone_number_1}
+                                        <div className="flex items-center">
+                                            <Phone className="h-4 w-4 text-blue-500 mr-2" />
+                                            <span><strong>Teléfono:</strong> {legalEntity.phone_number_1}</span>
                                         </div>
                                     )}
                                     {legalEntity.website && (
-                                        <div>
-                                            <strong>Sitio Web:</strong> {legalEntity.website}
+                                        <div className="flex items-center">
+                                            <Globe className="h-4 w-4 text-blue-500 mr-2" />
+                                            <span><strong>Sitio Web:</strong> {legalEntity.website}</span>
                                         </div>
                                     )}
                                     {!legalEntity.email_1 && !legalEntity.phone_number_1 && !legalEntity.website && (
@@ -131,7 +140,10 @@ export default function LegalEntityShow({ legalEntity }: Props) {
 
                         {/* Expedientes Relacionados - Ahora con estilo de tarjeta */}
                         <div className="mb-6">
-                            <h2 className="text-xl font-medium mb-2">Expedientes Relacionados</h2>
+                            <div className="flex items-center mb-2">
+                                <FileText className="h-5 w-5 text-amber-600 mr-2" />
+                                <h2 className="text-xl font-medium">Expedientes Relacionados</h2>
+                            </div>
                             {legalEntity.legal_cases && legalEntity.legal_cases.length > 0 ? (
                                 <div className="border rounded-md overflow-hidden">
                                     <div className="overflow-x-auto">
@@ -162,7 +174,10 @@ export default function LegalEntityShow({ legalEntity }: Props) {
                                                 {legalEntity.legal_cases.map((legalCase) => (
                                                     <tr key={legalCase.id}>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                            {legalCase.code}
+                                                            <div className="flex items-center">
+                                                                <FileQuestion className="h-4 w-4 text-amber-500 mr-2" />
+                                                                {legalCase.code}
+                                                            </div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                             {legalCase.case_type.name}

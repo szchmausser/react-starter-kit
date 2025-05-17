@@ -2,14 +2,15 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
+import { Search, ArrowLeft, User, Building2, FileText } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Search',
+        title: 'Búsqueda',
         href: '/search',
     },
     {
-        title: 'Results',
+        title: 'Resultados',
         href: '/results',
     },
 ];
@@ -67,56 +68,105 @@ export default function SearchResults({ results, query }: Props) {
         return '';
     };
 
+    // Función para obtener el icono según el tipo de resultado
+    const getIcon = (type: string) => {
+        if (type.includes('individuals')) {
+            return <User className="h-5 w-5 text-blue-500" />;
+        }
+        if (type.includes('legal_entities')) {
+            return <Building2 className="h-5 w-5 text-green-500" />;
+        }
+        if (type.includes('legal_cases')) {
+            return <FileText className="h-5 w-5 text-amber-500" />;
+        }
+        return null;
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Resultados de Búsqueda" />
-            <div className="overflow-hidden">
-                <div className="p-3 sm:p-4 md:p-6">
-                    <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <h1 className="text-xl sm:text-2xl font-semibold">Resultados de búsqueda para: "{query}"</h1>
-                        <button
-                            onClick={() => router.visit(route('search.index'))}
-                            className="w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out hover:bg-gray-200 focus:bg-gray-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none active:bg-gray-300"
-                        >
-                            Nueva búsqueda
-                        </button>
-                    </div>
-                    {Object.entries(results).length > 0 ? (
-                        Object.entries(results).map(([type, items]) => (
-                            <div key={type} className="mb-6">
-                                <h2 className="mb-3 text-lg sm:text-xl font-medium">
-                                    {type.includes('individuals') && 'Resultados de Personas Naturales'}
-                                    {type.includes('legal_entities') && 'Resultados de Personas Jurídicas'}
-                                    {type.includes('legal_cases') && 'Resultados de Expedientes Judiciales'}
-                                    {!type.includes('individuals') && !type.includes('legal_entities') && !type.includes('legal_cases') && type}
-                                </h2>
-                                {items.length > 0 ? (
-                                    <ul className="divide-y divide-gray-200">
-                                        {items.map((result) => (
-                                            <li key={result.searchable.id} className="py-3 sm:py-4">
-                                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4">
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-medium">{result.title}</p>
-                                                        <p className="text-sm">{getSecondaryInfo(result, type)}</p>
-                                                    </div>
-                                                    <Button 
-                                                        onClick={() => router.visit(result.url)} 
-                                                        className="w-full sm:w-auto bg-blue-500 text-white"
-                                                    >
-                                                        Ver
-                                                    </Button>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p>No se encontraron resultados.</p>
-                                )}
+            <div className="p-4 sm:p-6">
+                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="p-4 sm:p-6 text-gray-900">
+                        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div className="flex items-center">
+                                <Search className="h-6 w-6 text-gray-500 mr-2" />
+                                <h1 className="text-2xl font-semibold">Resultados de búsqueda</h1>
                             </div>
-                        ))
-                    ) : (
-                        <p>No se encontraron resultados para tu búsqueda.</p>
-                    )}
+                            <Button
+                                onClick={() => router.visit(route('search.index'))}
+                                className="inline-flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white"
+                                size="sm"
+                            >
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                Nueva búsqueda
+                            </Button>
+                        </div>
+
+                        <div className="mb-6 border rounded-md overflow-hidden">
+                            <div className="bg-gray-100 px-4 py-2 font-medium border-b">
+                                Criterio de búsqueda
+                            </div>
+                            <div className="p-4">
+                                <p className="text-gray-700">
+                                    Término buscado: <span className="font-semibold">"{query}"</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        {Object.entries(results).length > 0 ? (
+                            Object.entries(results).map(([type, items]) => (
+                                <div key={type} className="mb-6 border rounded-md overflow-hidden">
+                                    <div className="bg-gray-100 px-4 py-3 font-medium flex items-center border-b">
+                                        {getIcon(type)}
+                                        <span className="ml-2">
+                                            {type.includes('individuals') && 'Personas Naturales'}
+                                            {type.includes('legal_entities') && 'Personas Jurídicas'}
+                                            {type.includes('legal_cases') && 'Expedientes Judiciales'}
+                                            {!type.includes('individuals') && !type.includes('legal_entities') && !type.includes('legal_cases') && type}
+                                        </span>
+                                        <span className="ml-2 text-sm text-gray-500">
+                                            ({items.length} {items.length === 1 ? 'resultado' : 'resultados'})
+                                        </span>
+                                    </div>
+                                    {items.length > 0 ? (
+                                        <ul className="divide-y divide-gray-200">
+                                            {items.map((result) => (
+                                                <li key={result.searchable.id} className="p-4 hover:bg-gray-50">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-lg font-medium">{result.title}</p>
+                                                            <p className="text-sm text-gray-600">{getSecondaryInfo(result, type)}</p>
+                                                        </div>
+                                                        <Button 
+                                                            onClick={() => router.visit(result.url)} 
+                                                            className="w-full sm:w-auto bg-blue-500 text-white hover:bg-blue-600"
+                                                            size="sm"
+                                                        >
+                                                            Ver Detalles
+                                                        </Button>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="p-4 text-center text-gray-500">
+                                            No se encontraron resultados.
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="border rounded-md overflow-hidden">
+                                <div className="bg-gray-100 px-4 py-2 font-medium border-b">
+                                    Sin resultados
+                                </div>
+                                <div className="p-6 text-center text-gray-500">
+                                    No se encontraron resultados para tu búsqueda. Intenta con otros términos o revisa la ortografía.
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </AppLayout>
