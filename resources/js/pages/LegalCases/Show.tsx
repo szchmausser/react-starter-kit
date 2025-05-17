@@ -20,6 +20,7 @@ interface Individual {
     pivot?: {
         individual_id: number;
         legal_case_id: number;
+        role?: string;
     };
 }
 
@@ -31,6 +32,7 @@ interface LegalEntity {
     pivot?: {
         legal_entity_id: number;
         legal_case_id: number;
+        role?: string;
     };
 }
 
@@ -77,6 +79,65 @@ export default function LegalCaseShow({ legalCase }: Props) {
             : entity.business_name;
     };
     
+    // Debug de los datos recibidos
+    console.log("Datos del expediente:", legalCase);
+    console.log("Individuos:", legalCase.individuals);
+    console.log("Entidades legales:", legalCase.legal_entities);
+    
+    // Combinar todas las partes y agruparlas por rol
+    const getAllParties = () => {
+        const parties: {[key: string]: Array<{id: number, name: string, identifier: string, type: 'individual' | 'entity', entityObj: Individual | LegalEntity}>} = {};
+        
+        // Procesar individuos
+        legalCase.individuals.forEach(individual => {
+            console.log("Individual:", individual.first_name, "Pivot:", individual.pivot, "Role:", individual.pivot?.role);
+            const role = individual.pivot?.role || 'Sin rol asignado';
+            if (!parties[role]) {
+                parties[role] = [];
+            }
+            parties[role].push({
+                id: individual.id, 
+                name: getFullName(individual), 
+                identifier: individual.national_id,
+                type: 'individual',
+                entityObj: individual
+            });
+        });
+        
+        // Procesar entidades legales
+        legalCase.legal_entities.forEach(entity => {
+            console.log("Entidad:", entity.business_name, "Pivot:", entity.pivot, "Role:", entity.pivot?.role);
+            const role = entity.pivot?.role || 'Sin rol asignado';
+            if (!parties[role]) {
+                parties[role] = [];
+            }
+            parties[role].push({
+                id: entity.id, 
+                name: getEntityName(entity), 
+                identifier: entity.rif,
+                type: 'entity',
+                entityObj: entity
+            });
+        });
+        
+        return parties;
+    };
+    
+    // Obtener todas las partes agrupadas por rol
+    const partiesByRole = getAllParties();
+    console.log("Partes por rol:", partiesByRole);
+    
+    // Orden de roles para mostrar en la interfaz
+    const roleOrder = [
+        'Juez', 
+        'Solicitante', 
+        'Abogado de Solicitante',
+        'Demandado',
+        'Abogado de Demandado',
+        'Testigo',
+        'Sin rol asignado'
+    ];
+    
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detalle del Expediente: ${legalCase.code}`} />
@@ -116,97 +177,52 @@ export default function LegalCaseShow({ legalCase }: Props) {
                             </div>
                         )}
 
-                        {/* Sección de personas naturales relacionadas */}
+                        {/* Sección única para todas las partes relacionadas */}
                         <div className="mb-6">
-                            <h2 className="text-xl font-medium mb-2">Personas Naturales Relacionadas</h2>
-                            {legalCase.individuals && legalCase.individuals.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Nombre
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Cédula
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Acciones
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {legalCase.individuals.map((individual) => (
-                                                <tr key={individual.id}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {getFullName(individual)}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {individual.national_id}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <Button 
-                                                            onClick={() => router.visit(route('individuals.show', individual.id))} 
-                                                            className="bg-blue-500 text-white"
-                                                            size="sm"
-                                                        >
-                                                            Ver Detalles
-                                                        </Button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                            <h2 className="text-xl font-medium mb-2">Partes Relacionadas</h2>
+                            
+                            {Object.keys(partiesByRole).length > 0 ? (
+                                <div className="space-y-6">
+                                    {roleOrder.map(role => {
+                                        // Solo mostrar roles que tengan partes asignadas
+                                        if (!partiesByRole[role] || partiesByRole[role].length === 0) return null;
+                                        
+                                        return (
+                                            <div key={role} className="border rounded-md overflow-hidden">
+                                                <div className="bg-gray-100 px-4 py-2 font-medium">
+                                                    {role}
+                                                </div>
+                                                <div className="divide-y divide-gray-200">
+                                                    {partiesByRole[role].map(party => (
+                                                        <div key={`${party.type}-${party.id}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between">
+                                                            <div>
+                                                                <p className="font-medium">{party.name}</p>
+                                                                <p className="text-sm text-gray-600">
+                                                                    {party.type === 'individual' ? 'Cédula:' : 'RIF:'} {party.identifier}
+                                                                </p>
+                                                            </div>
+                                                            <div className="mt-2 sm:mt-0">
+                                                                <Button 
+                                                                    onClick={() => router.visit(
+                                                                        party.type === 'individual' 
+                                                                            ? route('individuals.show', party.id) 
+                                                                            : route('legal-entities.show', party.id)
+                                                                    )} 
+                                                                    className="bg-blue-500 text-white"
+                                                                    size="sm"
+                                                                >
+                                                                    Ver Detalles
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             ) : (
-                                <p>No hay personas naturales relacionadas con este expediente.</p>
-                            )}
-                        </div>
-
-                        {/* Sección de personas jurídicas relacionadas */}
-                        <div className="mb-6">
-                            <h2 className="text-xl font-medium mb-2">Personas Jurídicas Relacionadas</h2>
-                            {legalCase.legal_entities && legalCase.legal_entities.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Razón Social
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    RIF
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Acciones
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {legalCase.legal_entities.map((entity) => (
-                                                <tr key={entity.id}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {getEntityName(entity)}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {entity.rif}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <Button 
-                                                            onClick={() => router.visit(route('legal-entities.show', entity.id))} 
-                                                            className="bg-blue-500 text-white"
-                                                            size="sm"
-                                                        >
-                                                            Ver Detalles
-                                                        </Button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <p>No hay personas jurídicas relacionadas con este expediente.</p>
+                                <p>No hay partes relacionadas con este expediente.</p>
                             )}
                         </div>
 

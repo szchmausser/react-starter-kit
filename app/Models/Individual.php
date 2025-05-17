@@ -55,6 +55,8 @@ class Individual extends Model implements Searchable
     // Relaciones
     public function legalCases()
     {
-        return $this->belongsToMany(LegalCase::class, 'case_individuals');
+        return $this->belongsToMany(LegalCase::class, 'case_individuals')
+                    ->withPivot('role')
+                    ->withTimestamps();
     }
 } 

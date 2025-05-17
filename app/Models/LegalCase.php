@@ -46,11 +46,15 @@ class LegalCase extends Model implements Searchable
 
     public function individuals()
     {
-        return $this->belongsToMany(Individual::class, 'case_individuals');
+        return $this->belongsToMany(Individual::class, 'case_individuals')
+                    ->withPivot('role')
+                    ->withTimestamps();
     }
 
     public function legalEntities()
     {
-        return $this->belongsToMany(LegalEntity::class, 'case_legal_entities');
+        return $this->belongsToMany(LegalEntity::class, 'case_legal_entities')
+                    ->withPivot('role')
+                    ->withTimestamps();
     }
 } 

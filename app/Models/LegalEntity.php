@@ -58,6 +58,8 @@ class LegalEntity extends Model implements Searchable
     
     public function legalCases()
     {
-        return $this->belongsToMany(LegalCase::class, 'case_legal_entities');
+        return $this->belongsToMany(LegalCase::class, 'case_legal_entities')
+                    ->withPivot('role')
+                    ->withTimestamps();
     }
 } 
