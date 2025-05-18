@@ -103,14 +103,6 @@ export default function LegalEntitiesEdit({ legalEntity, representatives }: Prop
           <h1 className="text-2xl font-bold">
             Editar Entidad Legal: {getEntityName()}
           </h1>
-          <Button 
-            variant="outline"
-            onClick={() => router.visit(route('legal-entities.show', legalEntity.id))}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver
-          </Button>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg p-4 sm:p-6">

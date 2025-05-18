@@ -331,15 +331,6 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                 </div>
                             )}
                         </div>
-
-                        <div className="mt-6 flex justify-center">
-                            <Button
-                                onClick={() => router.visit(route('search.index'))}
-                                className="bg-gray-800 hover:bg-gray-700 dark:bg-gray-200 dark:hover:bg-gray-100 dark:text-gray-900 text-white"
-                            >
-                                Volver a Búsqueda
-                            </Button>
-                        </div>
                     </div>
                 </div>
             </div>

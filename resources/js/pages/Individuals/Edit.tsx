@@ -100,14 +100,6 @@ export default function IndividualsEdit({ individual }: Props) {
           <h1 className="text-2xl font-bold">
             Editar Persona: {getFullName()}
           </h1>
-          <Button 
-            variant="outline"
-            onClick={() => router.visit(route('individuals.show', individual.id))}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver
-          </Button>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg p-4 sm:p-6">
