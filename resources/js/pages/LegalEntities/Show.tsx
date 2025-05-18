@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
-import { Building2, Mail, Phone, Briefcase, Contact, FileText, Globe, FileQuestion, Calendar, CheckCircle, AlertCircle, UserCog } from 'lucide-react';
+import { Building2, Mail, Phone, Briefcase, Contact, FileText, Globe, FileQuestion, Calendar, CheckCircle, AlertCircle, UserCog, Eye } from 'lucide-react';
 
 interface CaseType {
     id: number;
@@ -205,10 +205,12 @@ export default function LegalEntityShow({ legalEntity }: Props) {
                                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                                 <Button 
                                                                     onClick={() => router.visit(route('legal-cases.show', legalCase.id))} 
-                                                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
-                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    title="Ver detalles"
+                                                                    className="text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
                                                                 >
-                                                                    Ver Detalles
+                                                                    <Eye className="h-4 w-4" />
                                                                 </Button>
                                                             </td>
                                                         </tr>
@@ -268,13 +270,15 @@ export default function LegalEntityShow({ legalEntity }: Props) {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="pt-2">
+                                                    <div className="pt-2 flex justify-center">
                                                         <Button 
                                                             onClick={() => router.visit(route('legal-cases.show', legalCase.id))} 
-                                                            className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
-                                                            size="sm"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            title="Ver detalles"
+                                                            className="text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
                                                         >
-                                                            Ver Detalles
+                                                            <Eye className="h-5 w-5" />
                                                         </Button>
                                                     </div>
                                                 </div>
