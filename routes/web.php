@@ -19,17 +19,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Búsqueda pública
-Route::get('/search', [SearchController::class, 'index'])->name('search.index'); // Original
+Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/search/results', [SearchController::class, 'search'])->name('search.results');
 
 // Detalle de usuario
 Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
 
-// Detalle de individuo
-Route::get('/individuals/{individual}', [IndividualController::class, 'show'])->name('individuals.show');
+// CRUD Individuos (Personas Naturales)
+Route::resource('individuals', IndividualController::class);
 
-// Detalle de entidad legal
-Route::get('/legal-entities/{legalEntity}', [LegalEntityController::class, 'show'])->name('legal-entities.show');
+// CRUD Entidades Legales
+Route::resource('legal-entities', LegalEntityController::class);
 
 // Detalle de caso legal
 Route::get('/legal-cases/{legalCase}', [LegalCaseController::class, 'show'])->name('legal-cases.show');

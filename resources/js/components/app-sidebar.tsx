@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Search } from 'lucide-react';
+import { BookOpen, Building, Folder, LayoutGrid, Search, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -14,9 +14,19 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Search',
+        title: 'Búsqueda',
         href: '/search',
         icon: Search,
+    },
+    {
+        title: 'Personas Naturales',
+        href: route('individuals.index'),
+        icon: Users,
+    },
+    {
+        title: 'Entidades Legales',
+        href: route('legal-entities.index'),
+        icon: Building,
     },
 ];
 
