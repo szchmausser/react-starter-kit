@@ -5,6 +5,7 @@ use App\Http\Controllers\LegalCaseController;
 use App\Http\Controllers\LegalEntityController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CaseParticipantController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -33,6 +34,12 @@ Route::resource('legal-entities', LegalEntityController::class);
 
 // Detalle de caso legal
 Route::get('/legal-cases/{legalCase}', [LegalCaseController::class, 'show'])->name('legal-cases.show');
+
+// Rutas para gestionar participantes en expedientes
+Route::get('/legal-cases/{case}/participants/add', [CaseParticipantController::class, 'addForm'])->name('case-participants.add-form');
+Route::post('/legal-cases/{case}/participants/search', [CaseParticipantController::class, 'search'])->name('case-participants.search');
+Route::post('/legal-cases/{case}/participants', [CaseParticipantController::class, 'associate'])->name('case-participants.associate');
+Route::delete('/legal-cases/{case}/participants', [CaseParticipantController::class, 'remove'])->name('case-participants.remove');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

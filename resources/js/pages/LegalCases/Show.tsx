@@ -3,7 +3,18 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
-import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye } from 'lucide-react';
+import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface CaseType {
     id: number;
@@ -53,6 +64,9 @@ interface Props {
 }
 
 export default function LegalCaseShow({ legalCase }: Props) {
+    const [participantToRemove, setParticipantToRemove] = useState<{id: number, type: string, name: string} | null>(null);
+    const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+    
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Búsqueda',
@@ -80,18 +94,12 @@ export default function LegalCaseShow({ legalCase }: Props) {
             : entity.business_name;
     };
     
-    // Debug de los datos recibidos
-    console.log("Datos del expediente:", legalCase);
-    console.log("Individuos:", legalCase.individuals);
-    console.log("Entidades legales:", legalCase.legal_entities);
-    
     // Combinar todas las partes y agruparlas por rol
     const getAllParties = () => {
         const parties: {[key: string]: Array<{id: number, name: string, identifier: string, type: 'individual' | 'entity', entityObj: Individual | LegalEntity}>} = {};
         
         // Procesar individuos
         legalCase.individuals.forEach(individual => {
-            console.log("Individual:", individual.first_name, "Pivot:", individual.pivot, "Role:", individual.pivot?.role);
             const role = individual.pivot?.role || 'Sin rol asignado';
             if (!parties[role]) {
                 parties[role] = [];
@@ -107,7 +115,6 @@ export default function LegalCaseShow({ legalCase }: Props) {
         
         // Procesar entidades legales
         legalCase.legal_entities.forEach(entity => {
-            console.log("Entidad:", entity.business_name, "Pivot:", entity.pivot, "Role:", entity.pivot?.role);
             const role = entity.pivot?.role || 'Sin rol asignado';
             if (!parties[role]) {
                 parties[role] = [];
@@ -126,7 +133,6 @@ export default function LegalCaseShow({ legalCase }: Props) {
     
     // Obtener todas las partes agrupadas por rol
     const partiesByRole = getAllParties();
-    console.log("Partes por rol:", partiesByRole);
     
     // Orden de roles para mostrar en la interfaz
     const roleOrder = [
@@ -158,6 +164,24 @@ export default function LegalCaseShow({ legalCase }: Props) {
                 return <Users className="h-5 w-5 text-gray-500" aria-hidden="true" />;
         }
     };
+
+    // Función para manejar la eliminación de un participante
+    const confirmRemoveParticipant = (id: number, type: 'individual' | 'entity', name: string) => {
+        setParticipantToRemove({ id, type, name });
+        setIsRemoveDialogOpen(true);
+    };
+    
+    const handleRemoveParticipant = () => {
+        if (participantToRemove) {
+            router.delete(route('case-participants.remove', legalCase.id), {
+                data: {
+                    type: participantToRemove.type,
+                    id: participantToRemove.id
+                }
+            });
+        }
+        setIsRemoveDialogOpen(false);
+    };
     
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -169,7 +193,7 @@ export default function LegalCaseShow({ legalCase }: Props) {
                             <h1 className="text-2xl font-bold text-center uppercase">DETALLE DEL EXPEDIENTE</h1>
                         </div>
                         
-                        {/* Sección de Información General - Ahora con estilo de tarjeta */}
+                        {/* Sección de Información General */}
                         <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
                             <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
                                 <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" aria-hidden="true" />
@@ -202,7 +226,7 @@ export default function LegalCaseShow({ legalCase }: Props) {
                             </div>
                         </div>
                         
-                        {/* Sección de Descripción del Tipo de Caso - Ahora con estilo de tarjeta */}
+                        {/* Sección de Descripción del Tipo de Caso */}
                         {legalCase.case_type.description && (
                             <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
                                 <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
@@ -215,10 +239,20 @@ export default function LegalCaseShow({ legalCase }: Props) {
                             </div>
                         )}
 
-                        {/* Sección única para todas las partes relacionadas - Ya tiene estilo de tarjeta */}
+                        {/* Sección para todas las partes relacionadas */}
                         <div className="mb-6">
-                            <div className="mb-4">
+                            <div className="mb-4 flex flex-col sm:flex-row justify-between items-center">
                                 <h2 className="text-xl font-bold text-center uppercase">PARTES RELACIONADAS</h2>
+                                {!legalCase.closing_date && (
+                                    <Button
+                                        onClick={() => router.visit(route('case-participants.add-form', legalCase.id))}
+                                        className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white mt-2 sm:mt-0"
+                                        size="sm"
+                                    >
+                                        <UserPlus className="h-4 w-4 mr-2" />
+                                        Añadir Participante
+                                    </Button>
+                                )}
                             </div>
                             
                             {Object.keys(partiesByRole).length > 0 ? (
@@ -248,18 +282,31 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <div className="mt-2 sm:mt-0">
+                                                            <div className="mt-2 sm:mt-0 flex gap-1">
                                                                 <Button 
                                                                     onClick={() => router.visit(
                                                                         party.type === 'individual' 
                                                                             ? route('individuals.show', party.id) 
                                                                             : route('legal-entities.show', party.id)
                                                                     )} 
-                                                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
-                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    title="Ver detalles"
                                                                 >
-                                                                    Ver Detalles
+                                                                    <Eye className="h-4 w-4" />
                                                                 </Button>
+                                                                
+                                                                {!legalCase.closing_date && (
+                                                                    <Button 
+                                                                        onClick={() => confirmRemoveParticipant(party.id, party.type, party.name)}
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="text-red-500 hover:text-red-700"
+                                                                        title="Eliminar participante"
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -269,7 +316,19 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                     })}
                                 </div>
                             ) : (
-                                <p>No hay partes relacionadas con este expediente.</p>
+                                <div className="text-center py-8 bg-gray-50 dark:bg-zinc-800 rounded-md">
+                                    <p>No hay partes relacionadas con este expediente.</p>
+                                    {!legalCase.closing_date && (
+                                        <Button
+                                            onClick={() => router.visit(route('case-participants.add-form', legalCase.id))}
+                                            className="mt-4 bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white"
+                                            size="sm"
+                                        >
+                                            <UserPlus className="h-4 w-4 mr-2" />
+                                            Añadir Participante
+                                        </Button>
+                                    )}
+                                </div>
                             )}
                         </div>
 
@@ -284,6 +343,25 @@ export default function LegalCaseShow({ legalCase }: Props) {
                     </div>
                 </div>
             </div>
+            
+            {/* Diálogo de confirmación para eliminar participante */}
+            <AlertDialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Eliminar Participante</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            ¿Está seguro que desea eliminar a <strong>{participantToRemove?.name}</strong> de este expediente?
+                            Esta acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleRemoveParticipant} className="bg-red-600 hover:bg-red-700">
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 } 
