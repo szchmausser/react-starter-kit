@@ -29,5 +29,8 @@ class DatabaseSeeder extends Seeder
             // Crear un seeder para las relaciones entre expedientes, individuos y entidades legales
             CaseRelationsSeeder::class,
         ]);
+
+        // Llamar al seeder de estatus
+        \Database\Seeders\StatusSeeder::class;
     }
 }

@@ -3,8 +3,8 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
-import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +15,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { toast } from 'react-hot-toast';
 
 interface CaseType {
     id: number;
@@ -66,6 +69,15 @@ interface Props {
 export default function LegalCaseShow({ legalCase }: Props) {
     const [participantToRemove, setParticipantToRemove] = useState<{id: number, type: string, name: string} | null>(null);
     const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+    const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+    const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
+    const [statusHistory, setStatusHistory] = useState<any[]>([]);
+    const [selectedStatus, setSelectedStatus] = useState('');
+    const [statusReason, setStatusReason] = useState('');
+    const [creatingStatus, setCreatingStatus] = useState(false);
+    const [newStatus, setNewStatus] = useState('');
+    const [currentStatus, setCurrentStatus] = useState<string>('');
+    const [showStatusHistory, setShowStatusHistory] = useState(false);
     
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -182,7 +194,52 @@ export default function LegalCaseShow({ legalCase }: Props) {
         }
         setIsRemoveDialogOpen(false);
     };
-    
+
+    useEffect(() => {
+        fetch(route('legal-cases.statuses', legalCase.id))
+            .then(res => res.json())
+            .then(data => {
+                setStatusHistory(data);
+                setCurrentStatus(data[0]?.name || '');
+            });
+        fetch(route('legal-cases.available-statuses'))
+            .then(res => res.json())
+            .then(setAvailableStatuses);
+    }, [legalCase.id]);
+
+    const handleStatusChange = () => {
+        const statusToSet = creatingStatus ? newStatus : selectedStatus;
+        if (!statusToSet) {
+            toast.error('Debes seleccionar o crear un estatus.');
+            return;
+        }
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        fetch(route('legal-cases.set-status', legalCase.id), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken || ''
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ status: statusToSet, reason: statusReason })
+        })
+        .then(res => res.json())
+        .then(() => {
+            setStatusDialogOpen(false);
+            setStatusReason('');
+            setNewStatus('');
+            setCreatingStatus(false);
+            // Refrescar historial y estatus actual
+            fetch(route('legal-cases.statuses', legalCase.id))
+                .then(res => res.json())
+                .then(data => {
+                    setStatusHistory(data);
+                    setCurrentStatus(data[0]?.name || '');
+                });
+            toast.success('Estatus actualizado');
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detalle del Expediente: ${legalCase.code}`} />
@@ -193,7 +250,7 @@ export default function LegalCaseShow({ legalCase }: Props) {
                             <h1 className="text-2xl font-bold text-center uppercase">DETALLE DEL EXPEDIENTE</h1>
                         </div>
                         
-                        {/* Sección de Información General */}
+                        {/* Renderizar la tarjeta de Información General */}
                         <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
                             <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
                                 <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" aria-hidden="true" />
@@ -217,16 +274,42 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                         <strong>Fecha de Cierre:</strong> {formatDate(legalCase.closing_date)}
                                     </div>
                                     <div>
-                                        <strong>Estado:</strong> 
-                                        <span className={`ml-2 px-2 py-1 text-sm rounded-full ${legalCase.closing_date ? 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'}`}>
-                                            {legalCase.closing_date ? 'Cerrado' : 'Activo'}
+                                        <strong>Estado:</strong>
+                                        <span
+                                            className={`ml-2 px-2 py-1 text-sm rounded-full cursor-pointer inline-flex items-center gap-1 ${legalCase.closing_date ? 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'}`}
+                                            onClick={() => setStatusDialogOpen(true)}
+                                            title="Cambiar estatus"
+                                        >
+                                            {currentStatus || (legalCase.closing_date ? 'Cerrado' : 'Activo')}
+                                            <Pencil className="h-4 w-4 ml-1 text-gray-400 hover:text-blue-500 transition-colors" />
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        {/* Sección de Descripción del Tipo de Caso */}
+                        {/* Tarjeta de historial de estatus (fuera de Información General) */}
+                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
+                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center justify-between cursor-pointer" onClick={() => setShowStatusHistory(v => !v)}>
+                                <span className="dark:text-gray-200">Historial de Estatus</span>
+                                <span className="ml-2">{showStatusHistory ? '▲' : '▼'}</span>
+                            </div>
+                            {showStatusHistory && (
+                                <div className="p-4 dark:bg-zinc-900">
+                                    <ul className="space-y-1 text-sm">
+                                        {statusHistory.map((s, idx) => (
+                                            <li key={s.id || idx} className="flex items-center gap-2">
+                                                <span className="font-semibold">{s.name}</span>
+                                                <span className="text-gray-500">{formatDate(s.created_at)}</span>
+                                                {s.reason && <span className="italic text-gray-400">({s.reason})</span>}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Renderizar la tarjeta de Descripción del Tipo de Caso */}
                         {legalCase.case_type.description && (
                             <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
                                 <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
@@ -353,6 +436,44 @@ export default function LegalCaseShow({ legalCase }: Props) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Modal de cambio de estatus */}
+            <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Cambiar Estatus del Expediente</DialogTitle>
+                    </DialogHeader>
+                    <DialogDescription>
+                        Selecciona un estatus existente o crea uno nuevo e indica el motivo del cambio.
+                    </DialogDescription>
+                    <div className="space-y-4">
+                        {!creatingStatus ? (
+                            <>
+                                <select
+                                    className="w-full border rounded-md px-3 py-2 text-sm"
+                                    value={selectedStatus}
+                                    onChange={e => setSelectedStatus(e.target.value)}
+                                >
+                                    <option value="">Seleccione un estatus</option>
+                                    {availableStatuses.map(status => (
+                                        <option key={status} value={status}>{status}</option>
+                                    ))}
+                                </select>
+                                <Button variant="link" onClick={() => setCreatingStatus(true)} className="text-xs p-0">+ Crear nuevo estatus</Button>
+                            </>
+                        ) : (
+                            <div>
+                                <Input placeholder="Nuevo estatus" value={newStatus} onChange={e => setNewStatus(e.target.value)} />
+                                <Button variant="link" onClick={() => setCreatingStatus(false)} className="text-xs p-0">Seleccionar existente</Button>
+                            </div>
+                        )}
+                        <Input placeholder="Motivo del cambio (opcional)" value={statusReason} onChange={e => setStatusReason(e.target.value)} />
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={handleStatusChange} disabled={(!selectedStatus && !newStatus)}>Guardar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 } 

@@ -83,4 +83,53 @@ class LegalCaseController extends Controller
     {
         //
     }
+
+    /**
+     * Obtener historial de estatus del expediente.
+     */
+    public function statuses(string $id)
+    {
+        $legalCase = \App\Models\LegalCase::findOrFail($id);
+        $statuses = $legalCase->statuses()->orderByDesc('created_at')->get();
+        return response()->json($statuses);
+    }
+
+    /**
+     * Cambiar el estatus del expediente.
+     */
+    public function setStatus(Request $request, string $id)
+    {
+        $request->validate([
+            'status' => 'required|string|max:255',
+            'reason' => 'nullable|string|max:1000',
+        ]);
+        $legalCase = \App\Models\LegalCase::findOrFail($id);
+        $legalCase->setStatus($request->input('status'), $request->input('reason'));
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Listar estatus disponibles (pueden venir de la base de datos o ser configurables).
+     */
+    public function availableStatuses()
+    {
+        // Para demo, devolver los estatus de ejemplo. En producción, consultar tabla/configuración.
+        $statuses = [
+            'EN TRAMITE',
+            'EN FASE DE SUSTANCIACIÓN',
+            'EN FASE DE SENTENCIA DENTRO DEL LAPSO',
+            'EN FASE DE SENTENCIA FUERA DEL LAPSO',
+            'EN FASE DE NOTIFICACIÓN, INTERPOSICIÓN DE RECURSO',
+            'EN FASE DE EJECUCIÓN DE SENTENCIA',
+            'DISTRIBUIDOS SIN ACEPTAR',
+            'DISTRIBUIDOS Y ACEPTADOS SIN AUTO DE ADMISIÓN',
+            'EXPEDIENTES PROVENIENTES DE ARCHIVO JUDICIAL',
+            'SUSPENDIDOS',
+            'PARALIZADOS',
+            'PARALIZADOS EN EJECUCIÓN DE SENTENCIA',
+            'TERMINADOS',
+            'TERMINADOS POR REMITIR AL ARCHIVO JUDICIAL',
+        ];
+        return response()->json($statuses);
+    }
 }
