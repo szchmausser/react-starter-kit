@@ -296,15 +296,17 @@ export default function LegalCaseShow({ legalCase }: Props) {
                             </div>
                             {showStatusHistory && (
                                 <div className="p-4 dark:bg-zinc-900">
-                                    <ul className="space-y-1 text-sm">
+                                    <div className="flex flex-col gap-3">
                                         {statusHistory.map((s, idx) => (
-                                            <li key={s.id || idx} className="flex items-center gap-2">
-                                                <span className="font-semibold">{s.name}</span>
-                                                <span className="text-gray-500">{formatDate(s.created_at)}</span>
-                                                {s.reason && <span className="italic text-gray-400">({s.reason})</span>}
-                                            </li>
+                                            <div key={s.id || idx} className="bg-gray-50 dark:bg-zinc-800 rounded-md p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-xs border border-gray-200 dark:border-zinc-700">
+                                                <div className="flex-1">
+                                                    <span className="block font-semibold text-base mb-1">{s.name}</span>
+                                                    <span className="block text-gray-500 text-xs mb-1">{new Date(s.created_at).toLocaleString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                                    {s.reason && <span className="block italic text-gray-400 text-xs">({s.reason})</span>}
+                                                </div>
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 </div>
                             )}
                         </div>
