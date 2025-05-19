@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Searchable\Searchable;
 use Spatie\Searchable\SearchResult;
+use Spatie\ModelStatus\HasStatuses;
 
 class LegalCase extends Model implements Searchable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasStatuses;
 
     protected $fillable = [
         'code',
