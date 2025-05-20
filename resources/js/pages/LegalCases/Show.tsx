@@ -80,6 +80,7 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
     const [newStatus, setNewStatus] = useState('');
     const [currentStatus, setCurrentStatus] = useState<string>('');
     const [showStatusHistory, setShowStatusHistory] = useState(false);
+    const [partiesCollapsed, setPartiesCollapsed] = useState(false);
     
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -290,94 +291,96 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                             </div>
                         </div>
                         
-                        {/* Sección para todas las partes relacionadas */}
-                        <div className="mb-6">
-                            <div className="mb-4 flex flex-col sm:flex-row justify-between items-center">
-                                <h2 className="text-xl font-bold text-center uppercase">PARTES RELACIONADAS</h2>
-                                {!legalCase.closing_date && (
+                        {/* Tarjeta: Sujetos procesales */}
+                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
+                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center justify-between cursor-pointer select-none" onClick={() => setPartiesCollapsed(v => !v)}>
+                                <span className="dark:text-gray-200">Sujetos procesales</span>
+                                <div className="flex items-center gap-2">
                                     <Button
-                                        onClick={() => router.visit(route('case-participants.add-form', legalCase.id))}
-                                        className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white mt-2 sm:mt-0"
-                                        size="sm"
+                                        onClick={e => { e.stopPropagation(); router.visit(route('case-participants.add-form', legalCase.id)); }}
+                                        size="icon"
+                                        variant="ghost"
+                                        className="text-gray-500 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
+                                        title="Añadir Participante"
                                     >
-                                        <UserPlus className="h-4 w-4 mr-2" />
-                                        Añadir Participante
+                                        <UserPlus className="h-6 w-6" />
                                     </Button>
-                                )}
-                            </div>
-                            
-                            {Object.keys(partiesByRole).length > 0 ? (
-                                <div className="space-y-6">
-                                    {roleOrder.map(role => {
-                                        // Solo mostrar roles que tengan partes asignadas
-                                        if (!partiesByRole[role] || partiesByRole[role].length === 0) return null;
-                                        
-                                        return (
-                                            <div key={role} className="border dark:border-zinc-700 rounded-md overflow-hidden">
-                                                <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
-                                                    {getRoleIcon(role)}
-                                                    <span className="ml-2 dark:text-gray-200">{role}</span>
-                                                </div>
-                                                <div className="divide-y divide-gray-200 dark:divide-zinc-800 dark:bg-zinc-900">
-                                                    {partiesByRole[role].map(party => (
-                                                        <div key={`${party.type}-${party.id}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between">
-                                                            <div className="flex items-center">
-                                                                {party.type === 'individual' ? 
-                                                                    <UserCheck className="h-4 w-4 text-blue-500 dark:text-blue-400 mr-2" aria-hidden="true" /> : 
-                                                                    <Building className="h-4 w-4 text-green-500 dark:text-green-400 mr-2" aria-hidden="true" />
-                                                                }
-                                                                <div>
-                                                                    <p className="font-medium">{party.name}</p>
-                                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                                        {party.type === 'individual' ? 'Cédula:' : 'RIF:'} {party.identifier}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="mt-2 sm:mt-0 flex gap-1">
-                                                                <Button 
-                                                                    onClick={() => router.visit(
-                                                                        party.type === 'individual' 
-                                                                            ? route('individuals.show', party.id) 
-                                                                            : route('legal-entities.show', party.id)
-                                                                    )} 
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    title="Ver detalles"
-                                                                >
-                                                                    <Eye className="h-4 w-4" />
-                                                                </Button>
-                                                                
-                                                                {!legalCase.closing_date && (
-                                                                    <Button 
-                                                                        onClick={() => confirmRemoveParticipant(party.id, party.type, party.name)}
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="text-red-500 hover:text-red-700"
-                                                                        title="Eliminar participante"
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                    <span className="ml-2">{partiesCollapsed ? '▼' : '▲'}</span>
                                 </div>
-                            ) : (
-                                <div className="text-center py-8 bg-gray-50 dark:bg-zinc-800 rounded-md">
-                                    <p>No hay partes relacionadas con este expediente.</p>
-                                    {!legalCase.closing_date && (
-                                        <Button
-                                            onClick={() => router.visit(route('case-participants.add-form', legalCase.id))}
-                                            className="mt-4 bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white"
-                                            size="sm"
-                                        >
-                                            <UserPlus className="h-4 w-4 mr-2" />
-                                            Añadir Participante
-                                        </Button>
+                            </div>
+                            {!partiesCollapsed && (
+                                <div className="p-4 dark:bg-zinc-900">
+                                    {Object.keys(partiesByRole).length > 0 ? (
+                                        <div className="space-y-6">
+                                            {roleOrder.map(role => {
+                                                if (!partiesByRole[role] || partiesByRole[role].length === 0) return null;
+                                                return (
+                                                    <div key={role} className="border dark:border-zinc-700 rounded-md overflow-hidden">
+                                                        <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
+                                                            {getRoleIcon(role)}
+                                                            <span className="ml-2 dark:text-gray-200">{role}</span>
+                                                        </div>
+                                                        <div className="divide-y divide-gray-200 dark:divide-zinc-800 dark:bg-zinc-900">
+                                                            {partiesByRole[role].map(party => (
+                                                                <div key={`${party.type}-${party.id}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between">
+                                                                    <div className="flex items-center">
+                                                                        {party.type === 'individual' ? 
+                                                                            <UserCheck className="h-4 w-4 text-blue-500 dark:text-blue-400 mr-2" aria-hidden="true" /> : 
+                                                                            <Building className="h-4 w-4 text-green-500 dark:text-green-400 mr-2" aria-hidden="true" />
+                                                                        }
+                                                                        <div>
+                                                                            <p className="font-medium">{party.name}</p>
+                                                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                                                {party.type === 'individual' ? 'Cédula:' : 'RIF:'} {party.identifier}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-2 sm:mt-0 flex gap-1">
+                                                                        <Button 
+                                                                            onClick={() => router.visit(
+                                                                                party.type === 'individual' 
+                                                                                    ? route('individuals.show', party.id) 
+                                                                                    : route('legal-entities.show', party.id)
+                                                                            )} 
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            title="Ver detalles"
+                                                                        >
+                                                                            <Eye className="h-4 w-4" />
+                                                                        </Button>
+                                                                        {!legalCase.closing_date && (
+                                                                            <Button 
+                                                                                onClick={() => confirmRemoveParticipant(party.id, party.type, party.name)}
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                className="text-red-500 hover:text-red-700"
+                                                                                title="Eliminar participante"
+                                                                            >
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 bg-gray-50 dark:bg-zinc-800 rounded-md">
+                                            <p>No hay partes relacionadas con este expediente.</p>
+                                            {!legalCase.closing_date && (
+                                                <Button
+                                                    onClick={() => router.visit(route('case-participants.add-form', legalCase.id))}
+                                                    className="mt-4 bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white"
+                                                    size="sm"
+                                                >
+                                                    <UserPlus className="h-4 w-4 mr-2" />
+                                                    Añadir Participante
+                                                </Button>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             )}
