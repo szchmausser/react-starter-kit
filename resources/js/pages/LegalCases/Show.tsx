@@ -311,12 +311,12 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                             {!partiesCollapsed && (
                                 <div className="p-4 dark:bg-zinc-900">
                                     {Object.keys(partiesByRole).length > 0 ? (
-                                        <div className="space-y-6">
+                                        <div className="space-y-4">
                                             {roleOrder.map(role => {
                                                 if (!partiesByRole[role] || partiesByRole[role].length === 0) return null;
                                                 return (
                                                     <div key={role} className="border dark:border-zinc-700 rounded-md overflow-hidden">
-                                                        <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
+                                                        <div className="bg-gray-50 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
                                                             {getRoleIcon(role)}
                                                             <span className="ml-2 dark:text-gray-200">{role}</span>
                                                         </div>
