@@ -1,14 +1,14 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { TodoPanelContent } from './TodoPanelContent';
 
 interface TodoFloatingPanelProps {
   open: boolean;
   onClose: () => void;
   title?: string;
-  children: React.ReactNode;
 }
 
-export const TodoFloatingPanel: React.FC<TodoFloatingPanelProps> = ({ open, onClose, title = 'Lista de Tareas', children }) => {
+export const TodoFloatingPanel: React.FC<TodoFloatingPanelProps> = ({ open, onClose, title = 'Lista de Tareas' }) => {
   if (!open) return null;
   return (
     <>
@@ -35,7 +35,7 @@ export const TodoFloatingPanel: React.FC<TodoFloatingPanelProps> = ({ open, onCl
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4">
-          {children}
+          <TodoPanelContent />
         </div>
       </aside>
     </>
