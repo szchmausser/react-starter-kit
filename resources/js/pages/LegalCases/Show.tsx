@@ -263,33 +263,28 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                             <h1 className="text-2xl font-bold text-center uppercase">DETALLE DEL EXPEDIENTE</h1>
                         </div>
                         
-                        {/* Renderizar la tarjeta de Información General */}
-                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
-                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
+                        {/* Tarjeta de Información General con encabezado igual a las demás tarjetas */}
+                        <div className="mb-6 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                            {/* Encabezado de tarjeta estándar */}
+                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center border-b border-gray-200 dark:border-zinc-800">
                                 <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" aria-hidden="true" />
-                                <span className="dark:text-gray-200">Información General</span>
+                                <span className="dark:text-gray-200">Información General del Expediente</span>
                             </div>
-                            <div className="p-4 dark:bg-zinc-900">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <strong>Código de Expediente:</strong> {legalCase.code}
+                            {/* Campos principales en columnas, estilo ficha legal */}
+                            <div className="px-6 pt-6 pb-2">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="flex flex-col items-stretch bg-gray-100 dark:bg-zinc-800 rounded-md p-4 border border-gray-200 dark:border-zinc-700">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Código de Expediente</span>
+                                        <span className="text-xl font-bold text-gray-900 dark:text-gray-100 break-all">{legalCase.code}</span>
                                     </div>
-                                    <div>
-                                        <strong>Tipo de Caso:</strong> {legalCase.case_type.name}
+                                    <div className="flex flex-col items-stretch bg-gray-100 dark:bg-zinc-800 rounded-md p-4 border border-gray-200 dark:border-zinc-700">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Tipo de Caso</span>
+                                        <span className="text-xl font-bold text-gray-900 dark:text-gray-100 break-all">{legalCase.case_type.name}</span>
                                     </div>
-                                    <div>
-                                        <strong>Fecha de Entrada:</strong> {formatDate(legalCase.entry_date)}
-                                    </div>
-                                    <div>
-                                        <strong>Fecha de Sentencia:</strong> {formatDate(legalCase.sentence_date)}
-                                    </div>
-                                    <div>
-                                        <strong>Fecha de Cierre:</strong> {formatDate(legalCase.closing_date)}
-                                    </div>
-                                    <div>
-                                        <strong>Estado:</strong>
+                                    <div className="flex flex-col items-stretch bg-gray-100 dark:bg-zinc-800 rounded-md p-4 border border-gray-200 dark:border-zinc-700">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Estado</span>
                                         <span
-                                            className={`ml-2 px-2 py-1 text-sm rounded-full cursor-pointer inline-flex items-center gap-1 ${legalCase.closing_date ? 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'}`}
+                                            className="inline-flex items-center gap-1 text-xl font-bold text-gray-900 dark:text-gray-100 cursor-pointer mt-1"
                                             onClick={() => setStatusDialogOpen(true)}
                                             title="Cambiar estatus"
                                         >
@@ -297,6 +292,27 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                                             <Pencil className="h-4 w-4 ml-1 text-gray-400 hover:text-blue-500 transition-colors" />
                                         </span>
                                     </div>
+                                </div>
+                            </div>
+                            {/* Línea divisoria */}
+                            <div className="border-t border-gray-200 dark:border-zinc-700 my-4" />
+                            {/* Fechas importantes en la parte inferior, en recuadros */}
+                            <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Entrada</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDate(legalCase.entry_date)}</span>
+                                </div>
+                                <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Sentencia</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDate(legalCase.sentence_date)}</span>
+                                </div>
+                                <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Cierre</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDate(legalCase.closing_date)}</span>
+                                </div>
+                                <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Próxima Fecha Importante</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">N/A</span>
                                 </div>
                             </div>
                         </div>
