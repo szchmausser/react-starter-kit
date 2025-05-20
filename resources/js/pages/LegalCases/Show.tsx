@@ -18,6 +18,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
+import { CaseEvents } from '@/components/LegalCases/CaseEvents';
 
 interface CaseType {
     id: number;
@@ -64,9 +65,10 @@ interface LegalCase {
 
 interface Props {
     legalCase: LegalCase;
+    events: any[];
 }
 
-export default function LegalCaseShow({ legalCase }: Props) {
+export default function LegalCaseShow({ legalCase, events }: Props) {
     const [participantToRemove, setParticipantToRemove] = useState<{id: number, type: string, name: string} | null>(null);
     const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -288,42 +290,6 @@ export default function LegalCaseShow({ legalCase }: Props) {
                             </div>
                         </div>
                         
-                        {/* Tarjeta de historial de estatus (fuera de Información General) */}
-                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
-                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center justify-between cursor-pointer" onClick={() => setShowStatusHistory(v => !v)}>
-                                <span className="dark:text-gray-200">Historial de Estatus</span>
-                                <span className="ml-2">{showStatusHistory ? '▲' : '▼'}</span>
-                            </div>
-                            {showStatusHistory && (
-                                <div className="p-4 dark:bg-zinc-900">
-                                    <div className="flex flex-col gap-3">
-                                        {statusHistory.map((s, idx) => (
-                                            <div key={s.id || idx} className="bg-gray-50 dark:bg-zinc-800 rounded-md p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-xs border border-gray-200 dark:border-zinc-700">
-                                                <div className="flex-1">
-                                                    <span className="block font-semibold text-base mb-1">{s.name}</span>
-                                                    <span className="block text-gray-500 text-xs mb-1">{new Date(s.created_at).toLocaleString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                                                    {s.reason && <span className="block italic text-gray-400 text-xs">({s.reason})</span>}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        
-                        {/* Renderizar la tarjeta de Descripción del Tipo de Caso */}
-                        {legalCase.case_type.description && (
-                            <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
-                                <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center">
-                                    <FileQuestion className="h-5 w-5 text-amber-500 dark:text-amber-400 mr-2" aria-hidden="true" />
-                                    <span className="dark:text-gray-200">Descripción del Tipo de Caso</span>
-                                </div>
-                                <div className="p-4 dark:bg-zinc-900">
-                                    <p className="text-gray-700 dark:text-gray-300">{legalCase.case_type.description}</p>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Sección para todas las partes relacionadas */}
                         <div className="mb-6">
                             <div className="mb-4 flex flex-col sm:flex-row justify-between items-center">
@@ -415,6 +381,34 @@ export default function LegalCaseShow({ legalCase }: Props) {
                                     )}
                                 </div>
                             )}
+                        </div>
+
+                        {/* Tarjeta de historial de estatus (mover aquí) */}
+                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
+                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center justify-between cursor-pointer" onClick={() => setShowStatusHistory(v => !v)}>
+                                <span className="dark:text-gray-200">Historial de Estatus</span>
+                                <span className="ml-2">{showStatusHistory ? '▲' : '▼'}</span>
+                            </div>
+                            {showStatusHistory && (
+                                <div className="p-4 dark:bg-zinc-900">
+                                    <div className="flex flex-col gap-3">
+                                        {statusHistory.map((s, idx) => (
+                                            <div key={s.id || idx} className="bg-gray-50 dark:bg-zinc-800 rounded-md p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-xs border border-gray-200 dark:border-zinc-700">
+                                                <div className="flex-1">
+                                                    <span className="block font-semibold text-base mb-1">{s.name}</span>
+                                                    <span className="block text-gray-500 text-xs mb-1">{new Date(s.created_at).toLocaleString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                                    {s.reason && <span className="block italic text-gray-400 text-xs">({s.reason})</span>}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Módulo: Historial de Eventos */}
+                        <div className="mb-6">
+                            <CaseEvents legalCase={legalCase} events={events} />
                         </div>
                     </div>
                 </div>

@@ -37,6 +37,7 @@ class LegalCaseController extends Controller
     public function show(string $id)
     {
         $legalCase = \App\Models\LegalCase::with(['caseType', 'individuals', 'legalEntities'])->findOrFail($id);
+        $events = $legalCase->events()->with('user')->orderByDesc('date')->get();
         
         // Depurar los datos de roles
         Log::debug('Individuos con roles:', $legalCase->individuals->map(function($individual) {
@@ -56,7 +57,8 @@ class LegalCaseController extends Controller
         })->toArray());
         
         return \Inertia\Inertia::render('LegalCases/Show', [
-            'legalCase' => $legalCase
+            'legalCase' => $legalCase,
+            'events' => $events,
         ]);
     }
 

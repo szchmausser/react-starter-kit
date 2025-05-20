@@ -58,4 +58,9 @@ class LegalCase extends Model implements Searchable
                     ->withPivot('role')
                     ->withTimestamps();
     }
+
+    public function events()
+    {
+        return $this->hasMany(CaseEvent::class);
+    }
 } 

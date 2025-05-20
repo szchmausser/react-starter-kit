@@ -6,6 +6,7 @@ use App\Http\Controllers\LegalEntityController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CaseParticipantController;
+use App\Http\Controllers\CaseEventController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -45,6 +46,11 @@ Route::delete('/legal-cases/{case}/participants', [CaseParticipantController::cl
 Route::get('/legal-cases/{legalCase}/statuses', [LegalCaseController::class, 'statuses'])->name('legal-cases.statuses');
 Route::post('/legal-cases/{legalCase}/status', [LegalCaseController::class, 'setStatus'])->name('legal-cases.set-status');
 Route::get('/legal-cases/statuses/available', [LegalCaseController::class, 'availableStatuses'])->name('legal-cases.available-statuses');
+
+// Rutas para eventos procesales
+Route::post('/legal-cases/{legalCase}/events', [CaseEventController::class, 'store'])->name('case-events.store');
+Route::put('/legal-cases/{legalCase}/events/{event}', [CaseEventController::class, 'update'])->name('case-events.update');
+Route::delete('/legal-cases/{legalCase}/events/{event}', [CaseEventController::class, 'destroy'])->name('case-events.destroy');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
