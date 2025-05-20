@@ -383,10 +383,15 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                             )}
                         </div>
 
-                        {/* Tarjeta de historial de estatus (mover aquí) */}
+                        {/* Cronología del expediente (antes Historial de eventos) */}
+                        <div className="mb-6">
+                            <CaseEvents legalCase={legalCase} events={events} />
+                        </div>
+
+                        {/* Histórico de cambios de estatus (antes Historial de Estatus) */}
                         <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
                             <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center justify-between cursor-pointer" onClick={() => setShowStatusHistory(v => !v)}>
-                                <span className="dark:text-gray-200">Historial de Estatus</span>
+                                <span className="dark:text-gray-200">Histórico de cambios de estatus</span>
                                 <span className="ml-2">{showStatusHistory ? '▲' : '▼'}</span>
                             </div>
                             {showStatusHistory && (
@@ -404,11 +409,6 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                                     </div>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Módulo: Historial de Eventos */}
-                        <div className="mb-6">
-                            <CaseEvents legalCase={legalCase} events={events} />
                         </div>
                     </div>
                 </div>

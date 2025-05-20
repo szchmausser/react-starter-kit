@@ -94,7 +94,7 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
     return (
         <div className="border dark:border-zinc-700 rounded-md overflow-hidden">
             <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center justify-between cursor-pointer select-none" onClick={() => setCollapsed(v => !v)}>
-                <span className="dark:text-gray-200">Historial de Eventos</span>
+                <span className="dark:text-gray-200">Cronología del expediente</span>
                 <div className="flex items-center gap-2">
                     <Button
                         onClick={e => { e.stopPropagation(); setEditingEvent(null); setIsDialogOpen(true); }}
