@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { router, useForm } from '@inertiajs/react';
+import { format, parse } from 'date-fns';
+import { Plus } from 'lucide-react';
 
 interface Event {
     id: number;
@@ -30,6 +32,7 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
     const { errors, processing, reset } = useForm();
     const [collapsed, setCollapsed] = useState(true);
+    const [expanded, setExpanded] = useState<{ [id: number]: boolean }>({});
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,6 +42,7 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                 description,
                 date,
             }, {
+                preserveScroll: true,
                 onSuccess: () => {
                     setIsDialogOpen(false);
                     setTitle('');
@@ -54,6 +58,7 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                 description,
                 date,
             }, {
+                preserveScroll: true,
                 onSuccess: () => {
                     setIsDialogOpen(false);
                     setTitle('');
@@ -69,14 +74,21 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
         setEditingEvent(event);
         setTitle(event.title);
         setDescription(event.description);
-        setDate(event.date);
+        const dateValue = event.date ? new Date(event.date).toISOString().split('T')[0] : '';
+        setDate(dateValue);
         setIsDialogOpen(true);
     };
 
     const handleDelete = (eventId: number) => {
         if (confirm('¿Seguro que deseas eliminar este evento?')) {
-            router.delete(route('case-events.destroy', [legalCase.id, eventId]));
+            router.delete(route('case-events.destroy', [legalCase.id, eventId]), {
+                preserveScroll: true,
+            });
         }
+    };
+
+    const toggleExpand = (id: number) => {
+        setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
     return (
@@ -86,10 +98,12 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                 <div className="flex items-center gap-2">
                     <Button
                         onClick={e => { e.stopPropagation(); setEditingEvent(null); setIsDialogOpen(true); }}
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700"
+                        size="icon"
+                        variant="ghost"
+                        className="text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+                        title="Nuevo Evento"
                     >
-                        Nuevo Evento
+                        <Plus className="h-7 w-7 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
                     </Button>
                     <span className="ml-2">{collapsed ? '▼' : '▲'}</span>
                 </div>
@@ -98,17 +112,40 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                 <div className="p-4 dark:bg-zinc-900">
                     {events.length > 0 ? (
                         <div className="space-y-4">
-                            {events.map((event) => (
-                                <div key={event.id} className="bg-white dark:bg-zinc-800 rounded-lg p-4 shadow-sm">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold text-lg">{event.title}</h3>
-                                            <p className="text-gray-600 dark:text-gray-400 mt-1">{event.description}</p>
+                            {events.map((event) => {
+                                const isExpanded = expanded[event.id];
+                                const preview = event.description.length > 300 ? event.description.slice(0, 300) + '...' : event.description;
+                                return (
+                                    <div key={event.id} className="bg-gray-50 dark:bg-zinc-800 rounded-md p-4 shadow-xs border border-gray-200 dark:border-zinc-700 flex flex-col gap-2">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                            <div className="flex-1 min-w-0">
+                                                <span className="block font-semibold text-base mb-1 truncate">{event.title}</span>
+                                            </div>
+                                            <div className="flex-shrink-0 text-right">
+                                                <span className="block text-gray-500 text-xs mb-1">{event.date
+                                                    ? (() => {
+                                                        const [year, month, day] = event.date.substring(0, 10).split('-');
+                                                        return `${day}/${month}/${year}`;
+                                                    })()
+                                                    : 'Sin fecha'}</span>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm text-gray-500">{new Date(event.date).toLocaleDateString()}</p>
-                                            <p className="text-xs text-gray-400 mt-1">Registrado por: {event.user.name}</p>
-                                            <div className="flex gap-2 mt-2">
+                                        <div className="text-gray-600 dark:text-gray-400 text-sm whitespace-pre-line mb-2">
+                                            {isExpanded ? event.description : preview}
+                                            {event.description.length > 300 && (
+                                                <button
+                                                    className="ml-2 text-blue-600 dark:text-blue-400 text-xs underline focus:outline-none"
+                                                    onClick={() => toggleExpand(event.id)}
+                                                >
+                                                    {isExpanded ? 'Ver menos' : 'Ver más'}
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+                                            <div className="text-xs text-gray-400">
+                                                Registrado por: {event.user.name}
+                                            </div>
+                                            <div className="flex gap-2 justify-end">
                                                 <Button size="icon" variant="ghost" onClick={() => handleEdit(event)} title="Editar">
                                                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13zm0 0v3.586a2 2 0 002 2h3.586a2 2 0 002-2V13" /></svg>
                                                 </Button>
@@ -118,8 +155,8 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <p className="text-center text-gray-500 dark:text-gray-400 py-4">
@@ -151,8 +188,7 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 required
-                                maxLength={1000}
-                                rows={4}
+                                rows={6}
                             />
                             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                         </div>

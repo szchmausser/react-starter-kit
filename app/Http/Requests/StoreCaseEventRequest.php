@@ -25,7 +25,7 @@ final class StoreCaseEventRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string', 'max:2000'],
+            'description' => ['required', 'string', 'max:65535'],
             'date' => ['required', 'date'],
         ];
     }
