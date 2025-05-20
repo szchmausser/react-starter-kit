@@ -61,7 +61,17 @@ export default function IndividualShow({ individual }: Props) {
     ];
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout
+            breadcrumbs={breadcrumbs}
+            backButton={{
+                show: true,
+                onClick: () => router.visit(route('individuals.index'), {
+                    preserveState: false,
+                    replace: true,
+                }),
+                label: 'Volver',
+            }}
+        >
             <Head title={`Detalle de Persona: ${fullName}`} />
             <div className="p-4 sm:p-6">
                 <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">

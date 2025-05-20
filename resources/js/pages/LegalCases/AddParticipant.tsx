@@ -95,7 +95,17 @@ export default function AddParticipant({ legalCase, availableRoles }: Props) {
   };
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout
+      breadcrumbs={breadcrumbs}
+      backButton={{
+        show: true,
+        onClick: () => router.visit(route('legal-cases.show', legalCase.id), {
+          preserveState: false,
+          replace: true,
+        }),
+        label: 'Volver',
+      }}
+    >
       <Head title={`Añadir Participante al Expediente: ${legalCase.code}`} />
 
       <div className="p-4 sm:p-6">
@@ -104,14 +114,6 @@ export default function AddParticipant({ legalCase, availableRoles }: Props) {
             <div className="mb-4">
               <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Añadir Participante al Expediente</h1>
-                <Button 
-                  variant="outline"
-                  onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Volver
-                </Button>
               </div>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
                 Expediente: {legalCase.code}

@@ -72,7 +72,17 @@ export default function LegalEntityShow({ legalEntity }: Props) {
     ];
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout
+            breadcrumbs={breadcrumbs}
+            backButton={{
+                show: true,
+                onClick: () => router.visit(route('legal-entities.index'), {
+                    preserveState: false,
+                    replace: true,
+                }),
+                label: 'Volver',
+            }}
+        >
             <Head title={`Detalle de Entidad Legal: ${legalEntity.business_name}`} />
             <div className="p-4 sm:p-6">
                 <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">

@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateSafe } from '@/lib/utils';
 import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil, ListTodo, StickyNote, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
@@ -67,9 +67,14 @@ interface LegalCase {
 interface Props {
     legalCase: LegalCase;
     events: any[];
+    nextImportantDate?: {
+        id: number;
+        title: string;
+        end_date: string;
+    } | null;
 }
 
-export default function LegalCaseShow({ legalCase, events }: Props) {
+export default function LegalCaseShow({ legalCase, events, nextImportantDate }: Props) {
     const [participantToRemove, setParticipantToRemove] = useState<{id: number, type: string, name: string} | null>(null);
     const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -253,6 +258,14 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
         window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
     };
 
+    useEffect(() => {
+        const onPopState = () => {
+            router.reload(); // Recarga todos los datos de la página
+        };
+        window.addEventListener('popstate', onPopState);
+        return () => window.removeEventListener('popstate', onPopState);
+    }, []);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detalle del Expediente: ${legalCase.code}`} />
@@ -300,19 +313,34 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                             <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
                                     <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Entrada</span>
-                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDate(legalCase.entry_date)}</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDateSafe(legalCase.entry_date)}</span>
                                 </div>
                                 <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
                                     <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Sentencia</span>
-                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDate(legalCase.sentence_date)}</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDateSafe(legalCase.sentence_date ?? '')}</span>
                                 </div>
                                 <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
                                     <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Cierre</span>
-                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDate(legalCase.closing_date)}</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDateSafe(legalCase.closing_date ?? '')}</span>
                                 </div>
                                 <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
                                     <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Próxima Fecha Importante</span>
-                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">N/A</span>
+                                    {nextImportantDate ? (
+                                        <span className="text-lg font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                                            {nextImportantDate.title}
+                                            <span className="text-xs text-gray-500">({formatDateSafe(nextImportantDate.end_date)})</span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">N/A</span>
+                                    )}
+                                    <Button
+                                        size="sm"
+                                        className="mt-2 w-fit"
+                                        variant="outline"
+                                        onClick={() => router.visit(route('legal-cases.important-dates.index', legalCase.id))}
+                                    >
+                                        Gestionar Fechas Importantes
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -467,10 +495,10 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Cambiar Estatus del Expediente</DialogTitle>
+                        <DialogDescription>
+                            Selecciona un estatus existente o crea uno nuevo e indica el motivo del cambio.
+                        </DialogDescription>
                     </DialogHeader>
-                    <DialogDescription>
-                        Selecciona un estatus existente o crea uno nuevo e indica el motivo del cambio.
-                    </DialogDescription>
                     <div className="space-y-4">
                         {!creatingStatus ? (
                             <>

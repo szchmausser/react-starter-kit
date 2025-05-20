@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { router, useForm } from '@inertiajs/react';
 import { format, parse } from 'date-fns';
@@ -169,6 +169,11 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>{editingEvent ? 'Editar Evento' : 'Registrar Nuevo Evento'}</DialogTitle>
+                        <DialogDescription>
+                            {editingEvent 
+                                ? 'Modifique los detalles del evento seleccionado.'
+                                : 'Complete los detalles del nuevo evento para el expediente.'}
+                        </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>

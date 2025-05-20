@@ -83,7 +83,17 @@ export default function SearchResults({ results, query }: Props) {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout
+            breadcrumbs={breadcrumbs}
+            backButton={{
+                show: true,
+                onClick: () => router.visit(route('search.index'), {
+                    preserveState: false,
+                    replace: true,
+                }),
+                label: 'Volver',
+            }}
+        >
             <Head title="Resultados de Búsqueda" />
             <div className="p-4 sm:p-6">
                 <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
@@ -93,14 +103,6 @@ export default function SearchResults({ results, query }: Props) {
                                 <Search className="h-6 w-6 text-gray-500 dark:text-gray-400 mr-2" />
                                 <h1 className="text-2xl font-semibold">Resultados de búsqueda</h1>
                             </div>
-                            <Button
-                                onClick={() => router.visit(route('search.index'))}
-                                className="inline-flex items-center justify-center bg-gray-800 hover:bg-gray-700 dark:bg-gray-200 dark:hover:bg-gray-100 dark:text-gray-900 text-white"
-                                size="sm"
-                            >
-                                <ArrowLeft className="h-4 w-4 mr-2" />
-                                Nueva búsqueda
-                            </Button>
                         </div>
 
                         <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">

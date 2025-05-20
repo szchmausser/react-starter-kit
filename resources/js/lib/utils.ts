@@ -6,13 +6,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Función para formatear fechas
-export function formatDate(dateString?: string): string {
-    if (!dateString) return 'N/A';
-    
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
+export function formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
     });
+}
+
+// Formatea fechas YYYY-MM-DD sin desfase de zona horaria
+export function formatDateSafe(dateString: string): string {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.substring(0, 10).split('-');
+    return `${day}/${month}/${year}`;
 }

@@ -63,4 +63,9 @@ class LegalCase extends Model implements Searchable
     {
         return $this->hasMany(CaseEvent::class);
     }
+
+    public function importantDates()
+    {
+        return $this->hasMany(CaseImportantDate::class);
+    }
 } 

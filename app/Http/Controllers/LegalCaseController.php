@@ -38,6 +38,13 @@ class LegalCaseController extends Controller
     {
         $legalCase = \App\Models\LegalCase::with(['caseType', 'individuals', 'legalEntities'])->findOrFail($id);
         $events = $legalCase->events()->with('user')->orderByDesc('date')->get();
+
+        // Obtener la próxima fecha importante directamente de la base de datos
+        $nextImportantDate = $legalCase->importantDates()
+            ->where('is_expired', false)
+            ->whereDate('end_date', '>=', now()->toDateString())
+            ->orderBy('end_date')
+            ->first();
         
         // Depurar los datos de roles
         Log::debug('Individuos con roles:', $legalCase->individuals->map(function($individual) {
@@ -59,6 +66,11 @@ class LegalCaseController extends Controller
         return \Inertia\Inertia::render('LegalCases/Show', [
             'legalCase' => $legalCase,
             'events' => $events,
+            'nextImportantDate' => $nextImportantDate ? [
+                'id' => $nextImportantDate->id,
+                'title' => $nextImportantDate->title,
+                'end_date' => $nextImportantDate->end_date->toDateString(),
+            ] : null,
         ]);
     }
 

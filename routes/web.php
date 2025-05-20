@@ -52,5 +52,12 @@ Route::post('/legal-cases/{legalCase}/events', [CaseEventController::class, 'sto
 Route::put('/legal-cases/{legalCase}/events/{event}', [CaseEventController::class, 'update'])->name('case-events.update');
 Route::delete('/legal-cases/{legalCase}/events/{event}', [CaseEventController::class, 'destroy'])->name('case-events.destroy');
 
+// Gestión de fechas importantes de expedientes
+Route::get('/legal-cases/{legalCase}/important-dates', [\App\Http\Controllers\CaseImportantDateController::class, 'index'])->name('legal-cases.important-dates.index');
+Route::post('/legal-cases/{legalCase}/important-dates', [\App\Http\Controllers\CaseImportantDateController::class, 'store'])->name('legal-cases.important-dates.store');
+Route::patch('/legal-cases/{legalCase}/important-dates/{importantDate}/set-expired', [\App\Http\Controllers\CaseImportantDateController::class, 'setExpired'])->name('legal-cases.important-dates.set-expired');
+Route::put('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\Http\Controllers\CaseImportantDateController::class, 'update'])->name('legal-cases.important-dates.update');
+Route::delete('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\Http\Controllers\CaseImportantDateController::class, 'destroy'])->name('legal-cases.important-dates.destroy');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

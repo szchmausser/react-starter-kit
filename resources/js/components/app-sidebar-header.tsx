@@ -5,9 +5,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { router } from '@inertiajs/react';
 
-export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
+export function AppSidebarHeader({ breadcrumbs = [], backButton }: { breadcrumbs?: BreadcrumbItemType[], backButton?: { show: boolean, onClick?: () => void, label?: string } }) {
     const goBack = () => {
-        window.history.back();
+        if (backButton?.onClick) {
+            backButton.onClick();
+        } else {
+            window.history.back();
+        }
     };
 
     return (
@@ -17,16 +21,18 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
             <div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={goBack}
-                    title="Volver atrás"
-                    className="flex items-center gap-1"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    <span>Volver</span>
-                </Button>
+                {backButton?.show && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={goBack}
+                        title={backButton.label || "Volver atrás"}
+                        className="flex items-center gap-1"
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                        <span>Volver</span>
+                    </Button>
+                )}
             </div>
         </header>
     );
