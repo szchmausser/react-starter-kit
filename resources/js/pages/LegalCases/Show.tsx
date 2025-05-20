@@ -342,7 +342,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                             </Button>
                                         </div>
                                     ) : (
-                                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">N/A</span>
+                                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">NO DEFINIDA</span>
                                     )}
                                 </div>
                             </div>
