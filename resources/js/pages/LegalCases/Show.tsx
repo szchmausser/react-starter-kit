@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatDateSafe } from '@/lib/utils';
-import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil, ListTodo, StickyNote, ArrowUp, ArrowDown } from 'lucide-react';
+import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil, ListTodo, StickyNote, ArrowUp, ArrowDown, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
   AlertDialog,
@@ -86,7 +86,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     const [newStatus, setNewStatus] = useState('');
     const [currentStatus, setCurrentStatus] = useState<string>('');
     const [showStatusHistory, setShowStatusHistory] = useState(false);
-    const [partiesCollapsed, setPartiesCollapsed] = useState(false);
+    const [partiesCollapsed, setPartiesCollapsed] = useState(true);
     
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -280,29 +280,29 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                         <div className="mb-6 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
                             {/* Encabezado de tarjeta estándar */}
                             <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center border-b border-gray-200 dark:border-zinc-800">
-                                <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" aria-hidden="true" />
+                                <Info className="h-5 w-5 text-gray-600 hover:text-blue-800 mr-2" aria-hidden="true" />
                                 <span className="dark:text-gray-200">Información General del Expediente</span>
                             </div>
                             {/* Campos principales en columnas, estilo ficha legal */}
                             <div className="px-6 pt-6 pb-2">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="flex flex-col items-stretch bg-gray-100 dark:bg-zinc-800 rounded-md p-4 border border-gray-200 dark:border-zinc-700">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Código de Expediente</span>
-                                        <span className="text-xl font-bold text-gray-900 dark:text-gray-100 break-all">{legalCase.code}</span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">CÓDIGO DE EXPEDIENTE</span>
+                                        <span className="text-xl font-bold text-gray-900 dark:text-gray-100 break-all uppercase">{legalCase.code}</span>
                                     </div>
                                     <div className="flex flex-col items-stretch bg-gray-100 dark:bg-zinc-800 rounded-md p-4 border border-gray-200 dark:border-zinc-700">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Tipo de Caso</span>
-                                        <span className="text-xl font-bold text-gray-900 dark:text-gray-100 break-all">{legalCase.case_type.name}</span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">TIPO DE CASO</span>
+                                        <span className="text-xl font-bold text-gray-900 dark:text-gray-100 break-all uppercase">{legalCase.case_type.name}</span>
                                     </div>
                                     <div className="flex flex-col items-stretch bg-gray-100 dark:bg-zinc-800 rounded-md p-4 border border-gray-200 dark:border-zinc-700">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Estado</span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">ESTADO</span>
                                         <span
-                                            className="inline-flex items-center gap-1 text-xl font-bold text-gray-900 dark:text-gray-100 cursor-pointer mt-1"
+                                            className="inline-flex items-center gap-1 text-xl font-bold text-gray-900 dark:text-gray-100 cursor-pointer mt-1 uppercase"
                                             onClick={() => setStatusDialogOpen(true)}
                                             title="Cambiar estatus"
                                         >
-                                            {currentStatus || (legalCase.closing_date ? 'Cerrado' : 'Activo')}
-                                            <Pencil className="h-4 w-4 ml-1 text-gray-400 hover:text-blue-500 transition-colors" />
+                                            {currentStatus || (legalCase.closing_date ? 'CERRADO' : 'ACTIVO')}
+                                            <Pencil className="h-4 w-4 ml-2 text-gray-600 hover:text-blue-800 transition-colors flex-shrink-0" />
                                         </span>
                                     </div>
                                 </div>
@@ -312,35 +312,38 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                             {/* Fechas importantes en la parte inferior, en recuadros */}
                             <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Entrada</span>
-                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDateSafe(legalCase.entry_date)}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">FECHA DE ENTRADA</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">{formatDateSafe(legalCase.entry_date)}</span>
                                 </div>
                                 <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Sentencia</span>
-                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDateSafe(legalCase.sentence_date ?? '')}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">FECHA DE SENTENCIA</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">{legalCase.sentence_date ? formatDateSafe(legalCase.sentence_date) : 'NO DEFINIDA'}</span>
                                 </div>
                                 <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Fecha de Cierre</span>
-                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatDateSafe(legalCase.closing_date ?? '')}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">FECHA DE CIERRE</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">{legalCase.closing_date ? formatDateSafe(legalCase.closing_date) : 'NO DEFINIDA'}</span>
                                 </div>
                                 <div className="flex flex-col items-stretch bg-gray-50 dark:bg-zinc-800 rounded-md p-3 border border-gray-100 dark:border-zinc-700">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">Próxima Fecha Importante</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">PRÓXIMA FECHA IMPORTANTE</span>
                                     {nextImportantDate ? (
-                                        <span className="text-lg font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                                            {nextImportantDate.title}
-                                            <span className="text-xs text-gray-500">({formatDateSafe(nextImportantDate.end_date)})</span>
-                                        </span>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex flex-col">
+                                                <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">{formatDateSafe(nextImportantDate.end_date)}</span>
+                                                <span className="text-base text-gray-800 dark:text-gray-200 font-semibold mt-1">{nextImportantDate.title}</span>
+                                            </div>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-blue-800"
+                                                onClick={() => router.visit(route('legal-cases.important-dates.index', legalCase.id))}
+                                                title="Editar fechas importantes"
+                                            >
+                                                <Calendar className="h-6 w-6" />
+                                            </Button>
+                                        </div>
                                     ) : (
-                                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">N/A</span>
+                                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">N/A</span>
                                     )}
-                                    <Button
-                                        size="sm"
-                                        className="mt-2 w-fit"
-                                        variant="outline"
-                                        onClick={() => router.visit(route('legal-cases.important-dates.index', legalCase.id))}
-                                    >
-                                        Gestionar Fechas Importantes
-                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -444,29 +447,6 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                         <div className="mb-6">
                             <CaseEvents legalCase={legalCase} events={events} />
                         </div>
-
-                        {/* Histórico de cambios de estatus (antes Historial de Estatus) */}
-                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
-                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center justify-between cursor-pointer" onClick={() => setShowStatusHistory(v => !v)}>
-                                <span className="dark:text-gray-200">Histórico de cambios de estatus</span>
-                                <span className="ml-2">{showStatusHistory ? '▲' : '▼'}</span>
-                            </div>
-                            {showStatusHistory && (
-                                <div className="p-4 dark:bg-zinc-900">
-                                    <div className="flex flex-col gap-3">
-                                        {statusHistory.map((s, idx) => (
-                                            <div key={s.id || idx} className="bg-gray-50 dark:bg-zinc-800 rounded-md p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-xs border border-gray-200 dark:border-zinc-700">
-                                                <div className="flex-1">
-                                                    <span className="block font-semibold text-base mb-1">{s.name}</span>
-                                                    <span className="block text-gray-500 text-xs mb-1">{new Date(s.created_at).toLocaleString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                                                    {s.reason && <span className="block italic text-gray-400 text-xs">({s.reason})</span>}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </div>
             </div>
@@ -495,6 +475,13 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Cambiar Estatus del Expediente</DialogTitle>
+                        <div className="flex justify-center my-3">
+                            <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-md px-6 py-3 flex items-center justify-center">
+                                <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase text-center">
+                                    {currentStatus || (legalCase.closing_date ? 'CERRADO' : 'ACTIVO')}
+                                </span>
+                            </div>
+                        </div>
                         <DialogDescription>
                             Selecciona un estatus existente o crea uno nuevo e indica el motivo del cambio.
                         </DialogDescription>
@@ -521,6 +508,23 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                             </div>
                         )}
                         <Input placeholder="Motivo del cambio (opcional)" value={statusReason} onChange={e => setStatusReason(e.target.value)} />
+                    </div>
+                    {/* Histórico de cambios de estatus dentro del modal */}
+                    <div className="mt-6">
+                        <div className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">Histórico de cambios de estatus</div>
+                        <div className="flex flex-col gap-3 max-h-48 overflow-y-auto">
+                            {statusHistory.length > 0 ? statusHistory.map((s, idx) => (
+                                <div key={s.id || idx} className="bg-gray-50 dark:bg-zinc-800 rounded-md p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-xs border border-gray-200 dark:border-zinc-700">
+                                    <div className="flex-1">
+                                        <span className="block font-semibold text-base mb-1">{s.name}</span>
+                                        <span className="block text-gray-500 text-xs mb-1">{new Date(s.created_at).toLocaleString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                        {s.reason && <span className="block italic text-gray-400 text-xs">({s.reason})</span>}
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="text-xs text-gray-500">No hay historial de estatus.</div>
+                            )}
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button onClick={handleStatusChange} disabled={(!selectedStatus && !newStatus)}>Guardar</Button>

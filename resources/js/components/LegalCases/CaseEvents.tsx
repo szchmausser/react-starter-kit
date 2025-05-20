@@ -103,7 +103,7 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                         className="text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
                         title="Nuevo Evento"
                     >
-                        <Plus className="h-7 w-7 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
+                        <Plus className="h-7 w-7 text-gray-500 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400" strokeWidth={2.5} />
                     </Button>
                     <span className="ml-2">{collapsed ? '▼' : '▲'}</span>
                 </div>
