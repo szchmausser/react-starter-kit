@@ -6,6 +6,8 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Building, Folder, LayoutGrid, Search, Users } from 'lucide-react';
 import AppLogo from './app-logo';
+import { useState } from 'react';
+import { TodoFloatingPanel } from '@/components/ui/TodoFloatingPanel';
 
 const mainNavItems: NavItem[] = [
     {
@@ -44,7 +46,9 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const [todoOpen, setTodoOpen] = useState(false);
     return (
+        <>
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
@@ -59,7 +63,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={mainNavItems} onOpenTodoPanel={() => setTodoOpen(true)} />
             </SidebarContent>
 
             <SidebarFooter>
@@ -67,5 +71,11 @@ export function AppSidebar() {
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
+        <TodoFloatingPanel open={todoOpen} onClose={() => setTodoOpen(false)}>
+            <div className="text-center text-gray-500 dark:text-gray-400">
+                Aquí irá la lista de tareas (próximamente)
+            </div>
+        </TodoFloatingPanel>
+        </>
     );
 }

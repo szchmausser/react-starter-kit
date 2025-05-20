@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
-import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil } from 'lucide-react';
+import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil, ListTodo, StickyNote, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
   AlertDialog,
@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
 import { CaseEvents } from '@/components/LegalCases/CaseEvents';
+import { TodoFloatingPanel } from '@/components/ui/TodoFloatingPanel';
 
 interface CaseType {
     id: number;
@@ -241,6 +242,15 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                 });
             toast.success('Estatus actualizado');
         });
+    };
+
+    // Funciones para hacer scroll
+    const scrollAmount = 400; // píxeles por clic
+    const handleScrollUp = () => {
+        window.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
+    };
+    const handleScrollDown = () => {
+        window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
     };
 
     return (
@@ -473,6 +483,28 @@ export default function LegalCaseShow({ legalCase, events }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Botones flotantes para scroll vertical (gris 200, cuadrados) */}
+            <div className="fixed bottom-3 right-3 z-50 flex flex-col gap-2">
+                <button
+                    onClick={handleScrollUp}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 shadow-lg p-2 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-md border border-gray-300"
+                    title="Desplazar hacia arriba"
+                    aria-label="Desplazar hacia arriba"
+                    style={{ width: 38, height: 38 }}
+                >
+                    <ArrowUp className="h-4 w-4" />
+                </button>
+                <button
+                    onClick={handleScrollDown}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 shadow-lg p-2 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-md border border-gray-300"
+                    title="Desplazar hacia abajo"
+                    aria-label="Desplazar hacia abajo"
+                    style={{ width: 38, height: 38 }}
+                >
+                    <ArrowDown className="h-4 w-4" />
+                </button>
+            </div>
         </AppLayout>
     );
 } 
