@@ -147,40 +147,41 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
         setIsDeleteDialogOpen(true);
     };
 
-    const getBadgeColor = (is_expired: boolean, end_date: string) => {
+    const getStatus = (is_expired: boolean, end_date: string) => {
         if (is_expired) {
-            return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+            return {
+                label: 'Cerrado',
+                color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+                bg: 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/30',
+            };
         }
-        // Si no está vencido pero la fecha ya pasó
-        if (new Date(end_date) < new Date()) {
-            return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+        // Parsear end_date como local (no UTC)
+        let end;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
+            const [year, month, day] = end_date.split('-').map(Number);
+            end = new Date(year, month - 1, day);
+        } else {
+            end = new Date(end_date);
         }
-        // Si está activo y la fecha no ha pasado
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-    };
-
-    const getBadgeText = (is_expired: boolean, end_date: string) => {
-        if (is_expired) {
-            return 'Inactivo';
+        const today = new Date();
+        const todayYMD = [today.getFullYear(), today.getMonth(), today.getDate()];
+        const endYMD = [end.getFullYear(), end.getMonth(), end.getDate()];
+        const isEndBeforeToday =
+            endYMD[0] < todayYMD[0] ||
+            (endYMD[0] === todayYMD[0] && endYMD[1] < todayYMD[1]) ||
+            (endYMD[0] === todayYMD[0] && endYMD[1] === todayYMD[1] && endYMD[2] < todayYMD[2]);
+        if (isEndBeforeToday) {
+            return {
+                label: 'Transcurrido',
+                color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+                bg: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/30',
+            };
         }
-        // Si no está vencido pero la fecha ya pasó
-        if (new Date(end_date) < new Date()) {
-            return 'Expirado';
-        }
-        // Si está activo y la fecha no ha pasado
-        return 'Activo';
-    };
-
-    const getBackgroundColor = (is_expired: boolean, end_date: string) => {
-        if (is_expired) {
-            return 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/30';
-        }
-        // Si no está vencido pero la fecha ya pasó
-        if (new Date(end_date) < new Date()) {
-            return 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/30';
-        }
-        // Si está activo y la fecha no ha pasado
-        return 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/30';
+        return {
+            label: 'En curso',
+            color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+            bg: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/30',
+        };
     };
 
     return (
@@ -208,25 +209,6 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                             </Button>
                         </div>
 
-                        {/* Leyenda de estados */}
-                        <div className="mb-6 p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
-                            <h2 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Leyenda de Estados:</h2>
-                            <div className="flex flex-wrap gap-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-green-100 dark:bg-green-900 border border-green-800 dark:border-green-300"></span>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos activos con fecha futura</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-orange-100 dark:bg-orange-900 border border-orange-800 dark:border-orange-300"></span>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos activos pero con fecha ya pasada (Expirado)</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-red-100 dark:bg-red-900 border border-red-800 dark:border-red-300"></span>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos marcados como vencidos</span>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Próxima fecha importante */}
                         {nextImportantDate && (
                             <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -243,6 +225,25 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                             </div>
                         )}
 
+                        {/* Leyenda de estados */}
+                        <div className="mb-6 p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+                            <h2 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Leyenda de Estados:</h2>
+                            <div className="flex flex-wrap gap-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-full bg-orange-100 dark:bg-orange-900 border border-orange-800 dark:border-orange-300"></span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos activos pero con fecha ya pasada <span className="font-semibold">(Transcurrido)</span></span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-full bg-green-100 dark:bg-green-900 border border-green-800 dark:border-green-300"></span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos activos con fecha futura <span className="font-semibold">(En curso)</span></span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-full bg-red-100 dark:bg-red-900 border border-red-800 dark:border-red-300"></span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos que ya no están activos y se conservan solo para referencia <span className="font-semibold">(Cerrado)</span></span>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Lista de fechas importantes */}
                         <div className="space-y-4">
                             {importantDates
@@ -254,49 +255,68 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                     // Si ambos están vencidos o no vencidos, ordenamos por fecha de fin
                                     return new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
                                 })
-                                .map((date) => (
-                                <div
-                                    key={date.id}
-                                    className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 rounded-lg border ${getBackgroundColor(date.is_expired, date.end_date)}`}
-                                >
-                                    <div className="flex-1 space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-medium">{date.title}</h3>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getBadgeColor(date.is_expired, date.end_date)}`}>
-                                                {getBadgeText(date.is_expired, date.end_date)}
-                                            </span>
-                                        </div>
-                                        {date.description && (
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                {date.description}
-                                            </p>
-                                        )}
-                                        <div className="flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                            <span>Inicio: {formatDateSafe(date.start_date)}</span>
-                                            <span>Fin: {formatDateSafe(date.end_date)}</span>
-                                            <span>Creado por: {date.created_by && date.created_by.name ? date.created_by.name : 'N/A'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2 justify-end mt-2 sm:mt-0">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => openEditDialog(date)}
+                                .map((date) => {
+                                    const status = getStatus(date.is_expired, date.end_date);
+                                    return (
+                                        <div
+                                            key={date.id}
+                                            className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 rounded-lg border ${status.bg}`}
                                         >
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-red-500 hover:text-red-700"
-                                            onClick={() => openDeleteDialog(date)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
+                                            <div className="flex-1 space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="font-medium">{date.title}</h3>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                                                        {status.label}
+                                                    </span>
+                                                </div>
+                                                {date.description && (
+                                                    <>
+                                                        <div className="flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                                            <span>Inicio: {formatDateSafe(date.start_date)}</span>
+                                                            <span>Fin: {formatDateSafe(date.end_date)}</span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                                            {date.description}
+                                                        </p>
+                                                    </>
+                                                )}
+                                                <div className="flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                                    <span>Creado por: {date.created_by && date.created_by.name ? date.created_by.name : 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 justify-end mt-2 sm:mt-0">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => openEditDialog(date)}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-500 hover:text-red-700"
+                                                    onClick={() => openDeleteDialog(date)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                         </div>
+
+                        {/* Sugerencia sobre la próxima fecha importante */}
+                        <div className="mt-8 mb-4 p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                                <span className="inline-flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z" /></svg></span>
+                                ¿Cómo se determina la próxima fecha importante?
+                            </h3>
+                            <p className="text-sm text-gray-700 dark:text-gray-200 mb-2 block">
+                                El plazo activo con fecha de finalización más cercana a la fecha actual será considerado la <b>fecha importante</b> para el expediente. Esta fecha se resalta automáticamente en la parte superior de la página.
+                            </p>
+                        </div>
+
                         {/* Leyenda de discriminación de días hábiles/no hábiles */}
                         <div className="mt-8">
                             <div className="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
@@ -309,7 +329,7 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                     Para mayor claridad, aparte de un titulo descriptivo para el rango de fechas, se recomienda que en la descripción indiques explícitamente qué días son hábiles y cuáles no, por ejemplo:
                                 </p>
                                 <div className="bg-gray-100 dark:bg-zinc-900 rounded p-3 text-xs text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-zinc-700">
-                                    <p className="mb-1">Días hábiles: 19/05/2025, 22/05/2025, 23/05/2025 | Días no hábiles: 20/05/2025, 21/05/2025</p>
+                                    <p className="mb-1">Días hábiles: 12/05/2025, 13/05/2025, 14/05/2025, 19/05/2025 {'< | >'} Días no hábiles: 15/05/2025, 16/05/2025, 17/05/2025, 18/05/2025</p>
                                 </div>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex items-center gap-2">
                                     <span className="inline-flex items-center justify-center"></span>
