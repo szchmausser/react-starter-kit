@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('case_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 100);
-            $table->text('description')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('case_types')) {
+            Schema::create('case_types', function (Blueprint $table) {
+                $table->id();
+                $table->string('name', 100);
+                $table->text('description')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('case_types');
+        // No eliminamos la tabla aquí para evitar conflictos con otras migraciones
     }
 };

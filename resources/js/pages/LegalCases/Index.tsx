@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { type LegalCase } from '@/types';
 import { formatDateSafe } from '@/lib/utils';
+import { PageProps } from '@inertiajs/core';
 
-interface Props {
+interface Props extends PageProps {
     legalCases: LegalCase[];
 }
 
@@ -40,7 +41,7 @@ export default function Index() {
                                     {legalCases.map((legalCase) => (
                                         <TableRow key={legalCase.id}>
                                             <TableCell className="font-medium">{legalCase.code}</TableCell>
-                                            <TableCell>{legalCase.case_type.name}</TableCell>
+                                            <TableCell>{legalCase.case_type?.name || 'Sin tipo definido'}</TableCell>
                                             <TableCell>{formatDateSafe(legalCase.entry_date)}</TableCell>
                                             <TableCell>
                                                 <div className="flex gap-2">

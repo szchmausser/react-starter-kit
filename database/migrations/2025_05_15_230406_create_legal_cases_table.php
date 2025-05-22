@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('legal_cases', function (Blueprint $table) {
-            $table->id();
-            $table->string('code', 50)->unique();
-            $table->date('entry_date');
-            $table->foreignId('case_type_id')->constrained()->onDelete('cascade');
-            $table->date('sentence_date')->nullable();
-            $table->date('closing_date')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('legal_cases')) {
+            Schema::create('legal_cases', function (Blueprint $table) {
+                $table->id();
+                $table->string('code', 50)->unique();
+                $table->date('entry_date');
+                $table->foreignId('case_type_id')->constrained()->onDelete('cascade');
+                $table->date('sentence_date')->nullable();
+                $table->date('closing_date')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     /**
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('legal_cases');
+        // No eliminamos la tabla aquí para evitar conflictos con otras migraciones
     }
 };
