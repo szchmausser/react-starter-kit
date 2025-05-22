@@ -114,7 +114,6 @@ const Page = ({ statuses, filters }: Props) => {
                             <div key={status.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
                                 <div className="font-bold text-base">{status.name}</div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">{status.description || '-'}</div>
-                                <div className="text-xs text-gray-400">{new Date(status.created_at).toLocaleDateString()}</div>
                                 <div className="flex gap-2 mt-2 justify-end">
                                     <Link href={route('status-lists.edit', status.id)}>
                                         <Button variant="outline" size="icon" className="h-8 w-8">
@@ -141,7 +140,6 @@ const Page = ({ statuses, filters }: Props) => {
                                 <TableRow>
                                     <TableHead>Nombre</TableHead>
                                     <TableHead>Descripción</TableHead>
-                                    <TableHead>Fecha de Creación</TableHead>
                                     <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -151,7 +149,6 @@ const Page = ({ statuses, filters }: Props) => {
                                         <TableRow key={status.id}>
                                             <TableCell className="font-medium">{status.name}</TableCell>
                                             <TableCell>{status.description || '-'}</TableCell>
-                                            <TableCell>{new Date(status.created_at).toLocaleDateString()}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Link href={route('status-lists.edit', status.id)}>
@@ -168,7 +165,7 @@ const Page = ({ statuses, filters }: Props) => {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                        <TableCell colSpan={3} className="text-center py-8 text-gray-500 dark:text-gray-400">
                                             No se encontraron estatus.
                                         </TableCell>
                                     </TableRow>

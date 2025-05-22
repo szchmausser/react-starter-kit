@@ -42,7 +42,7 @@ export default function LegalEntitiesEdit({ legalEntity, representatives }: Prop
     phone_number_1: legalEntity.phone_number_1 || '',
     phone_number_2: legalEntity.phone_number_2 || '',
     website: legalEntity.website || '',
-    legal_representative_id: legalEntity.legal_representative_id ? String(legalEntity.legal_representative_id) : '',
+    legal_representative_id: legalEntity.legal_representative_id ? String(legalEntity.legal_representative_id) : 'none',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -75,8 +75,14 @@ export default function LegalEntitiesEdit({ legalEntity, representatives }: Prop
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setProcessing(true);
+    
+    // Preparar los datos para enviar, convirtiendo 'none' a null/vacío para el backend
+    const dataToSubmit = { ...formData };
+    if (dataToSubmit.legal_representative_id === 'none') {
+      dataToSubmit.legal_representative_id = '';
+    }
 
-    router.put(route('legal-entities.update', legalEntity.id), formData, {
+    router.put(route('legal-entities.update', legalEntity.id), dataToSubmit, {
       onSuccess: () => {
         setProcessing(false);
       },
@@ -213,7 +219,7 @@ export default function LegalEntitiesEdit({ legalEntity, representatives }: Prop
                       <SelectValue placeholder="Seleccionar representante" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Ninguno</SelectItem>
+                      <SelectItem value="none">Ninguno</SelectItem>
                       {representatives.map(rep => (
                         <SelectItem key={rep.id} value={String(rep.id)}>
                           {rep.first_name} {rep.last_name} ({rep.national_id})
