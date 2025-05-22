@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Folder, LayoutGrid, Search, Users } from 'lucide-react';
+import { BookOpen, Building, Folder, LayoutGrid, Search, Users, Tag } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useState } from 'react';
 import { TodoFloatingPanel } from '@/components/ui/TodoFloatingPanel';
@@ -29,6 +29,11 @@ const mainNavItems: NavItem[] = [
         title: 'Entidades Legales',
         href: route('legal-entities.index'),
         icon: Building,
+    },
+    {
+        title: 'Estatus',
+        href: route('status-lists.index'),
+        icon: Tag,
     },
 ];
 

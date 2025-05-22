@@ -9,6 +9,8 @@ use App\Http\Controllers\CaseParticipantController;
 use App\Http\Controllers\CaseEventController;
 use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\TodoController;
+use App\Http\Controllers\StatusController;
+use App\Http\Controllers\StatusListController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -65,6 +67,9 @@ Route::post('/legal-cases/{legalCase}/important-dates', [\App\Http\Controllers\C
 Route::patch('/legal-cases/{legalCase}/important-dates/{importantDate}/set-expired', [\App\Http\Controllers\CaseImportantDateController::class, 'setExpired'])->name('legal-cases.important-dates.set-expired');
 Route::put('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\Http\Controllers\CaseImportantDateController::class, 'update'])->name('legal-cases.important-dates.update');
 Route::delete('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\Http\Controllers\CaseImportantDateController::class, 'destroy'])->name('legal-cases.important-dates.destroy');
+
+// Rutas para gestión de estatus generales
+Route::resource('status-lists', StatusListController::class);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

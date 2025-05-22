@@ -127,23 +127,8 @@ class LegalCaseController extends Controller
      */
     public function availableStatuses()
     {
-        // Para demo, devolver los estatus de ejemplo. En producción, consultar tabla/configuración.
-        $statuses = [
-            'EN TRAMITE',
-            'EN FASE DE SUSTANCIACIÓN',
-            'EN FASE DE SENTENCIA DENTRO DEL LAPSO',
-            'EN FASE DE SENTENCIA FUERA DEL LAPSO',
-            'EN FASE DE NOTIFICACIÓN, INTERPOSICIÓN DE RECURSO',
-            'EN FASE DE EJECUCIÓN DE SENTENCIA',
-            'DISTRIBUIDOS SIN ACEPTAR',
-            'DISTRIBUIDOS Y ACEPTADOS SIN AUTO DE ADMISIÓN',
-            'EXPEDIENTES PROVENIENTES DE ARCHIVO JUDICIAL',
-            'SUSPENDIDOS',
-            'PARALIZADOS',
-            'PARALIZADOS EN EJECUCIÓN DE SENTENCIA',
-            'TERMINADOS',
-            'TERMINADOS POR REMITIR AL ARCHIVO JUDICIAL',
-        ];
+        // Obtener los nombres de los estatus desde la nueva tabla status_lists
+        $statuses = \App\Models\StatusList::orderBy('name')->pluck('name');
         return response()->json($statuses);
     }
 }

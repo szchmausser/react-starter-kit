@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { useState, useMemo } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, LegalEntity } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Building, Edit, Eye, PlusCircle, Search, Trash2 } from 'lucide-react';
+import { Building, Edit, Eye, Plus, Search, Trash2, Pencil } from 'lucide-react';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 interface Props {
   legalEntities: {
@@ -90,7 +91,14 @@ export default function LegalEntitiesIndex({ legalEntities, filters }: Props) {
 
   const handleDelete = () => {
     if (entityToDelete) {
-      router.delete(route('legal-entities.destroy', entityToDelete.id));
+      router.delete(route('legal-entities.destroy', entityToDelete.id), {
+        onSuccess: () => {
+          toast.success('Entidad eliminada exitosamente');
+        },
+        onError: () => {
+          toast.error('Error al eliminar la entidad');
+        },
+      });
     }
     setIsDeleteDialogOpen(false);
   };
@@ -101,42 +109,81 @@ export default function LegalEntitiesIndex({ legalEntities, filters }: Props) {
         : entity.business_name;
   };
 
+  const ITEMS_PER_PAGE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(legalEntities.data.length / ITEMS_PER_PAGE);
+  const paginatedEntities = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return legalEntities.data.slice(start, start + ITEMS_PER_PAGE);
+  }, [legalEntities.data, currentPage]);
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Entidades Legales" />
 
-      <div className="p-4 sm:p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Entidades Legales</h1>
-          <Button 
-            onClick={() => router.visit(route('legal-entities.create'))}
-            className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white"
-          >
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Nueva Entidad
-          </Button>
-        </div>
-
-        {/* Filtros de búsqueda */}
-        <div className="mb-6">
-          <form onSubmit={handleSearchSubmit} className="flex gap-2">
-            <div className="flex-1">
+      <div className="p-4 sm:p-6 relative">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+          <h1 className="text-2xl font-bold">Gestión de Entidades Legales</h1>
+          <div className="flex flex-1 gap-2 items-center justify-end">
+            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-xs">
               <Input
                 placeholder="Buscar por nombre o RIF..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full"
               />
-            </div>
-            <Button type="submit" variant="outline" className="flex gap-2 items-center">
-              <Search className="h-4 w-4" />
-              Buscar
-            </Button>
-          </form>
+              <Button type="submit" variant="outline" className="shrink-0">
+                <Search className="h-4 w-4" />
+              </Button>
+            </form>
+            <Link href={route('legal-entities.create')}>
+              <Button className="hidden sm:inline-flex">
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Entidad
+              </Button>
+              <Button className="sm:hidden" size="icon">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        {/* Tabla de entidades legales */}
-        <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
+        {/* Vista tipo card para móvil */}
+        <div className="block sm:hidden space-y-2 mb-16">
+          {paginatedEntities.length > 0 ? (
+            paginatedEntities.map((entity) => (
+              <div key={entity.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
+                <div className="font-bold text-base flex items-center"><span className="mr-2"><Building className="h-4 w-4 text-gray-500" /></span>{getEntityName(entity)}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">RIF: {entity.rif}</div>
+                <div className="text-xs text-gray-400">Correo: {entity.email_1 || '-'}</div>
+                <div className="text-xs text-gray-400">Teléfono: {entity.phone_number_1 || '-'}</div>
+                <div className="flex gap-2 mt-2 justify-end">
+                  <Link href={route('legal-entities.show', entity.id)}>
+                    <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href={route('legal-entities.edit', entity.id)}>
+                    <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(entity)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              No se encontraron registros.
+            </div>
+          )}
+        </div>
+
+        {/* Tabla solo visible en escritorio/tablet */}
+        <div className="hidden sm:block bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -149,56 +196,92 @@ export default function LegalEntitiesIndex({ legalEntities, filters }: Props) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {legalEntities.data.length > 0 ? (
-                  legalEntities.data.map((entity) => (
+                {paginatedEntities.length > 0 ? (
+                  paginatedEntities.map((entity) => (
                     <TableRow key={entity.id}>
                       <TableCell className="font-medium">{entity.rif}</TableCell>
-                      <TableCell className="flex items-center">
-                        <Building className="h-4 w-4 mr-2 text-gray-500" />
-                        {getEntityName(entity)}
-                      </TableCell>
+                      <TableCell className="flex items-center"><Building className="h-4 w-4 mr-2 text-gray-500" />{getEntityName(entity)}</TableCell>
                       <TableCell>{entity.email_1 || '-'}</TableCell>
                       <TableCell>{entity.phone_number_1 || '-'}</TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button 
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => router.visit(route('legal-entities.show', entity.id))}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => router.visit(route('legal-entities.edit', entity.id))}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => confirmDelete(entity)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Link href={route('legal-entities.show', entity.id)}>
+                            <Button variant="outline" size="icon">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Link href={route('legal-entities.edit', entity.id)}>
+                            <Button variant="outline" size="icon">
+                            <Pencil className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button variant="destructive" size="icon" onClick={() => confirmDelete(entity)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-4">
-                      No se encontraron registros
+                    <TableCell colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      No se encontraron registros.
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
           </div>
+        </div>
 
-          {/* Paginación */}
-          {legalEntities.meta.last_page > 1 && (
-            <div className="px-4 py-2">
+        {/* Paginación sticky en móvil, normal en escritorio */}
+        {totalPages > 1 && (
+          <>
+            <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-zinc-900 border-t z-50 sm:hidden">
+              <div className="px-4 py-2 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={e => {
+                            e.preventDefault();
+                            setCurrentPage(currentPage - 1);
+                          }}
+                        />
+                      </PaginationItem>
+                    )}
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <PaginationItem key={i}>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === i + 1}
+                          onClick={e => {
+                            e.preventDefault();
+                            setCurrentPage(i + 1);
+                          }}
+                        >
+                          {i + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    {currentPage < totalPages && (
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={e => {
+                            e.preventDefault();
+                            setCurrentPage(currentPage + 1);
+                          }}
+                        />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            </div>
+            <div className="hidden sm:block px-4 py-2">
               <Pagination>
                 <PaginationContent>
                   {legalEntities.meta.current_page > 1 && (
@@ -212,7 +295,6 @@ export default function LegalEntitiesIndex({ legalEntities, filters }: Props) {
                       />
                     </PaginationItem>
                   )}
-                  
                   {legalEntities.meta.links.slice(1, -1).map((link, i) => (
                     <PaginationItem key={i}>
                       {link.url ? (
@@ -231,7 +313,6 @@ export default function LegalEntitiesIndex({ legalEntities, filters }: Props) {
                       )}
                     </PaginationItem>
                   ))}
-                  
                   {legalEntities.meta.current_page < legalEntities.meta.last_page && (
                     <PaginationItem>
                       <PaginationNext 
@@ -246,28 +327,26 @@ export default function LegalEntitiesIndex({ legalEntities, filters }: Props) {
                 </PaginationContent>
               </Pagination>
             </div>
-          )}
-        </div>
-      </div>
+          </>
+        )}
 
-      {/* Diálogo de confirmación de eliminación */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Está seguro de eliminar este registro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente a{' '}
-              {entityToDelete && getEntityName(entityToDelete)} de la base de datos.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 text-white hover:bg-red-700">
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Está seguro de eliminar esta entidad?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente la entidad <b>{entityToDelete ? getEntityName(entityToDelete) : ''}</b> de la base de datos.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-red-600 text-white hover:bg-red-700">
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </AppLayout>
   );
 } 
