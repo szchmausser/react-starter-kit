@@ -17,14 +17,25 @@ final class LegalCaseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $legalCases = LegalCase::with(['caseType', 'individuals', 'legalEntities'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $search = $request->input('search', '');
+        
+        $query = LegalCase::with(['caseType', 'individuals', 'legalEntities']);
+        
+        if ($search) {
+            $query->where('code', 'like', "%{$search}%");
+        }
+        
+        $legalCases = $query->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('LegalCases/Index', [
             'legalCases' => $legalCases,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 

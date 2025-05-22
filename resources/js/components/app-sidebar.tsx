@@ -21,6 +21,11 @@ const mainNavItems: NavItem[] = [
         icon: Search,
     },
     {
+        title: 'Expedientes Legales',
+        href: route('legal-cases.index'),
+        icon: Folder,
+    },
+    {
         title: 'Personas Naturales',
         href: route('individuals.index'),
         icon: Users,
@@ -29,11 +34,6 @@ const mainNavItems: NavItem[] = [
         title: 'Entidades Legales',
         href: route('legal-entities.index'),
         icon: Building,
-    },
-    {
-        title: 'Expedientes Legales',
-        href: route('legal-cases.index'),
-        icon: Folder,
     },
     {
         title: 'Tipos de Caso',

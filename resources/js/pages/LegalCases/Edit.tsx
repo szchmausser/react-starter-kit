@@ -5,19 +5,45 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
 import { type LegalCase, type CaseType } from '@/types';
+import { useEffect } from 'react';
+import { PageProps } from '@inertiajs/core';
 
-interface Props {
+interface Props extends PageProps {
     legalCase: LegalCase;
     caseTypes: CaseType[];
 }
 
 export default function Edit() {
     const { legalCase, caseTypes } = usePage<Props>().props;
+    
+    // Formato correcto para input type="date" YYYY-MM-DD
+    const formatDateForInput = (dateString: string): string => {
+        if (!dateString) return '';
+        // Si ya está en formato ISO, usamos los primeros 10 caracteres (YYYY-MM-DD)
+        if (dateString.includes('-') && dateString.length >= 10) {
+            return dateString.substring(0, 10);
+        }
+        // Si está en otro formato, intentamos convertirlo
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            return date.toISOString().substring(0, 10);
+        } catch (e) {
+            console.error('Error al formatear la fecha:', e);
+            return '';
+        }
+    };
+    
     const { data, setData, put, processing, errors } = useForm({
         code: legalCase.code,
-        entry_date: legalCase.entry_date,
-        case_type_id: legalCase.case_type_id,
+        entry_date: '', // Inicializamos vacío y lo configuramos en el useEffect
+        case_type_id: String(legalCase.case_type_id), // Convertimos a string para evitar problemas de tipo
     });
+
+    // Configuramos la fecha correctamente cuando el componente se monta
+    useEffect(() => {
+        setData('entry_date', formatDateForInput(legalCase.entry_date));
+    }, [legalCase]);
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
