@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatDateSafe } from '@/lib/utils';
-import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil, ListTodo, StickyNote, ArrowUp, ArrowDown, Calendar } from 'lucide-react';
+import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil, ListTodo, StickyNote, ArrowUp, ArrowDown, Calendar, Edit } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
   AlertDialog,
@@ -296,14 +296,20 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                     </div>
                                     <div className="flex flex-col items-stretch bg-gray-100 dark:bg-zinc-800 rounded-md p-4 border border-gray-200 dark:border-zinc-700">
                                         <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1">ESTADO</span>
-                                        <span
-                                            className="inline-flex items-center gap-1 text-xl font-bold text-gray-900 dark:text-gray-100 cursor-pointer mt-1 uppercase"
-                                            onClick={() => setStatusDialogOpen(true)}
-                                            title="Cambiar estatus"
-                                        >
-                                            {currentStatus ? currentStatus : (legalCase.closing_date ? 'CERRADO' : 'NO DEFINIDO')}
-                                            <Pencil className="h-4 w-4 ml-2 text-gray-600 hover:text-blue-800 transition-colors flex-shrink-0" />
-                                        </span>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-xl font-bold text-gray-900 dark:text-gray-100 uppercase">
+                                                {currentStatus ? currentStatus : (legalCase.closing_date ? 'CERRADO' : 'NO DEFINIDO')}
+                                            </span>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-blue-800"
+                                                onClick={() => setStatusDialogOpen(true)}
+                                                title="Cambiar estatus"
+                                            >
+                                                <Edit className="h-6 w-6" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -342,7 +348,18 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                             </Button>
                                         </div>
                                     ) : (
-                                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">NO DEFINIDA</span>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-lg font-bold text-gray-900 dark:text-gray-100 uppercase">NO DEFINIDA</span>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-blue-800"
+                                                onClick={() => router.visit(route('legal-cases.important-dates.index', legalCase.id))}
+                                                title="Gestionar fechas importantes"
+                                            >
+                                                <Calendar className="h-6 w-6" />
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                             </div>
