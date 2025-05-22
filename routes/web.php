@@ -11,6 +11,7 @@ use App\Http\Controllers\TodoListController;
 use App\Http\Controllers\TodoController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StatusListController;
+use App\Http\Controllers\CaseTypeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -42,8 +43,8 @@ Route::resource('individuals', IndividualController::class);
 // CRUD Entidades Legales
 Route::resource('legal-entities', LegalEntityController::class);
 
-// Detalle de caso legal
-Route::get('/legal-cases/{legalCase}', [LegalCaseController::class, 'show'])->name('legal-cases.show');
+// CRUD Expedientes Legales
+Route::resource('legal-cases', LegalCaseController::class);
 
 // Rutas para gestionar participantes en expedientes
 Route::get('/legal-cases/{case}/participants/add', [CaseParticipantController::class, 'addForm'])->name('case-participants.add-form');
@@ -70,6 +71,13 @@ Route::delete('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\
 
 // Rutas para gestión de estatus generales
 Route::resource('status-lists', StatusListController::class);
+
+// CRUD Tipos de Casos
+Route::resource('case-types', CaseTypeController::class);
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('statuses', StatusController::class);
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

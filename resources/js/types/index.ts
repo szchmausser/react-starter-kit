@@ -53,4 +53,66 @@ export interface LegalEntity {
   legal_representative?: Individual;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface Status {
+    id: number;
+    name: string;
+    color: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+}
+
+export interface CaseType {
+    id: number;
+    name: string;
+    description: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface LegalCase {
+    id: number;
+    code: string;
+    entry_date: string;
+    sentence_date: string | null;
+    closing_date: string | null;
+    case_type_id: number;
+    case_type: CaseType;
+    individuals: Individual[];
+    legal_entities: LegalEntity[];
+    statuses: Status[];
+    events: any[]; // TODO: Definir tipo específico para eventos
+    importantDates: any[]; // TODO: Definir tipo específico para fechas importantes
+    created_at: string;
+    updated_at: string;
+}
+
+export interface NavItem {
+    title: string;
+    href: string;
+    icon?: React.ElementType | null;
+    isActive?: boolean;
+}
+
+export interface TodoList {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  todos: Todo[];
+}
+
+export interface Todo {
+  id: number;
+  todo_list_id: number;
+  title: string;
+  is_completed: boolean;
+  status_id?: number | null;
+  status?: Status | null;
+  due_date?: string | null;
+  created_at: string;
+  updated_at: string;
 } 

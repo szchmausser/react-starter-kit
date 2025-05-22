@@ -13,49 +13,51 @@ final class StatusController extends Controller
 {
     public function index(): Response
     {
-        $statuses = Status::orderBy('name')->get();
-        
-        return Inertia::render('Statuses/Index', [
-            'statuses' => $statuses
+        return Inertia::render('Status/Index', [
+            'statuses' => Status::query()
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('Statuses/Create');
+        return Inertia::render('Status/Create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:statuses,name',
-            'reason' => 'nullable|string|max:1000',
+            'name' => ['required', 'string', 'max:255'],
+            'color' => ['required', 'string', 'max:7'],
+            'is_active' => ['boolean'],
         ]);
 
         Status::create($validated);
 
         return redirect()->route('statuses.index')
-            ->with('success', 'Estatus creado exitosamente.');
+            ->with('success', 'Status created successfully.');
     }
 
     public function edit(Status $status): Response
     {
-        return Inertia::render('Statuses/Edit', [
-            'status' => $status
+        return Inertia::render('Status/Edit', [
+            'status' => $status,
         ]);
     }
 
     public function update(Request $request, Status $status)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:statuses,name,' . $status->id,
-            'reason' => 'nullable|string|max:1000',
+            'name' => ['required', 'string', 'max:255'],
+            'color' => ['required', 'string', 'max:7'],
+            'is_active' => ['boolean'],
         ]);
 
         $status->update($validated);
 
         return redirect()->route('statuses.index')
-            ->with('success', 'Estatus actualizado exitosamente.');
+            ->with('success', 'Status updated successfully.');
     }
 
     public function destroy(Status $status)
@@ -63,6 +65,6 @@ final class StatusController extends Controller
         $status->delete();
 
         return redirect()->route('statuses.index')
-            ->with('success', 'Estatus eliminado exitosamente.');
+            ->with('success', 'Status deleted successfully.');
     }
 } 

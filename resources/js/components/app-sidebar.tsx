@@ -31,6 +31,16 @@ const mainNavItems: NavItem[] = [
         icon: Building,
     },
     {
+        title: 'Expedientes Legales',
+        href: route('legal-cases.index'),
+        icon: Folder,
+    },
+    {
+        title: 'Tipos de Caso',
+        href: route('case-types.index'),
+        icon: BookOpen,
+    },
+    {
         title: 'Estatus',
         href: route('status-lists.index'),
         icon: Tag,

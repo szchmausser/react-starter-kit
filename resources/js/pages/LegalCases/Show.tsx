@@ -301,7 +301,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                             onClick={() => setStatusDialogOpen(true)}
                                             title="Cambiar estatus"
                                         >
-                                            {currentStatus || (legalCase.closing_date ? 'CERRADO' : 'ACTIVO')}
+                                            {currentStatus ? currentStatus : (legalCase.closing_date ? 'CERRADO' : 'NO DEFINIDO')}
                                             <Pencil className="h-4 w-4 ml-2 text-gray-600 hover:text-blue-800 transition-colors flex-shrink-0" />
                                         </span>
                                     </div>

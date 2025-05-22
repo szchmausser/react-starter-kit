@@ -1,18 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Models\LegalCase;
+use App\Models\CaseType;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
 
-class LegalCaseController extends Controller
+final class LegalCaseController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $legalCases = LegalCase::with(['caseType', 'individuals', 'legalEntities'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('LegalCases/Index', [
+            'legalCases' => $legalCases,
+        ]);
     }
 
     /**
@@ -20,15 +33,27 @@ class LegalCaseController extends Controller
      */
     public function create()
     {
-        //
+        $caseTypes = CaseType::orderBy('name')->get();
+        return Inertia::render('LegalCases/Create', [
+            'caseTypes' => $caseTypes,
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        //
+        $validated = $request->validate([
+            'code' => 'required|string|max:255|unique:legal_cases',
+            'entry_date' => 'required|date',
+            'case_type_id' => 'required|exists:case_types,id',
+        ]);
+
+        LegalCase::create($validated);
+
+        return Redirect::route('legal-cases.index')
+            ->with('success', 'Expediente creado exitosamente.');
     }
 
     /**
@@ -36,7 +61,7 @@ class LegalCaseController extends Controller
      */
     public function show(string $id)
     {
-        $legalCase = \App\Models\LegalCase::with(['caseType', 'individuals', 'legalEntities'])->findOrFail($id);
+        $legalCase = LegalCase::with(['caseType', 'individuals', 'legalEntities'])->findOrFail($id);
         $events = $legalCase->events()->with('user')->orderByDesc('date')->get();
 
         // Obtener la próxima fecha importante directamente de la base de datos
@@ -63,7 +88,7 @@ class LegalCaseController extends Controller
             ];
         })->toArray());
         
-        return \Inertia\Inertia::render('LegalCases/Show', [
+        return Inertia::render('LegalCases/Show', [
             'legalCase' => $legalCase,
             'events' => $events,
             'nextImportantDate' => $nextImportantDate ? [
@@ -79,23 +104,44 @@ class LegalCaseController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $legalCase = LegalCase::with(['caseType'])->findOrFail($id);
+        $caseTypes = CaseType::orderBy('name')->get();
+
+        return Inertia::render('LegalCases/Edit', [
+            'legalCase' => $legalCase,
+            'caseTypes' => $caseTypes,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): RedirectResponse
     {
-        //
+        $legalCase = LegalCase::findOrFail($id);
+
+        $validated = $request->validate([
+            'code' => 'required|string|max:255|unique:legal_cases,code,' . $id,
+            'entry_date' => 'required|date',
+            'case_type_id' => 'required|exists:case_types,id',
+        ]);
+
+        $legalCase->update($validated);
+
+        return Redirect::route('legal-cases.index')
+            ->with('success', 'Expediente actualizado exitosamente.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): RedirectResponse
     {
-        //
+        $legalCase = LegalCase::findOrFail($id);
+        $legalCase->delete();
+
+        return Redirect::route('legal-cases.index')
+            ->with('success', 'Expediente eliminado exitosamente.');
     }
 
     /**
@@ -103,7 +149,7 @@ class LegalCaseController extends Controller
      */
     public function statuses(string $id)
     {
-        $legalCase = \App\Models\LegalCase::findOrFail($id);
+        $legalCase = LegalCase::findOrFail($id);
         $statuses = $legalCase->statuses()->orderByDesc('created_at')->get();
         return response()->json($statuses);
     }
@@ -117,7 +163,7 @@ class LegalCaseController extends Controller
             'status' => 'required|string|max:255',
             'reason' => 'nullable|string|max:1000',
         ]);
-        $legalCase = \App\Models\LegalCase::findOrFail($id);
+        $legalCase = LegalCase::findOrFail($id);
         $legalCase->setStatus($request->input('status'), $request->input('reason'));
         return response()->json(['success' => true]);
     }
