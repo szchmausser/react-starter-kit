@@ -1,5 +1,5 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Plus } from 'lucide-react';
 import { TodoPanelContent } from './TodoPanelContent';
 
 interface TodoFloatingPanelProps {
@@ -9,6 +9,7 @@ interface TodoFloatingPanelProps {
 }
 
 export const TodoFloatingPanel: React.FC<TodoFloatingPanelProps> = ({ open, onClose, title = 'Lista de Tareas' }) => {
+  const [createListTrigger, setCreateListTrigger] = useState(0);
   if (!open) return null;
   return (
     <>
@@ -26,16 +27,25 @@ export const TodoFloatingPanel: React.FC<TodoFloatingPanelProps> = ({ open, onCl
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-800">
           <h2 className="text-lg font-semibold">{title}</h2>
-          <button
-            onClick={onClose}
-            className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none"
-            aria-label="Cerrar"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCreateListTrigger(t => t + 1)}
+              className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none"
+              aria-label="Crear nueva lista"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none"
+              aria-label="Cerrar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto p-4">
-          <TodoPanelContent />
+          <TodoPanelContent createListTrigger={createListTrigger} panelOpen={false} />
         </div>
       </aside>
     </>

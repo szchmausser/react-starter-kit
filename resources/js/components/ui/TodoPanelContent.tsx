@@ -14,17 +14,33 @@ import {
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
 
-export const TodoPanelContent: React.FC = () => {
+interface TodoPanelContentProps {
+  createListTrigger?: number;
+  panelOpen?: boolean;
+}
+
+export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTrigger, panelOpen }) => {
   const [lists, setLists] = useState<TodoList[]>([]);
   const [selectedListId, setSelectedListId] = useState<number | null>(null);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newListName, setNewListName] = useState('');
+  const [showCreateList, setShowCreateList] = useState(false);
   const [newTodo, setNewTodo] = useState('');
-  const [editingList, setEditingList] = useState(false);
+  const [editMode, setEditMode] = useState<null | 'edit'>(null);
   const [editListName, setEditListName] = useState('');
   const [loading, setLoading] = useState(false);
   const [confirmDeleteListId, setConfirmDeleteListId] = useState<number | null>(null);
   const [confirmDeleteTodo, setConfirmDeleteTodo] = useState<Todo | null>(null);
+
+  // Mostrar formulario de creación de lista cuando se dispare el trigger externo
+  useEffect(() => {
+    if (typeof createListTrigger === 'number' && createListTrigger > 0) {
+      setNewListName('');
+      setEditListName('');
+      setShowCreateList(true);
+    }
+    // eslint-disable-next-line
+  }, [createListTrigger]);
 
   // Cargar listas desde el backend al montar
   useEffect(() => {
@@ -81,6 +97,7 @@ export const TodoPanelContent: React.FC = () => {
     });
     if (res.ok) {
       setNewListName('');
+      setShowCreateList(false);
       fetchLists();
     }
   };
@@ -121,7 +138,8 @@ export const TodoPanelContent: React.FC = () => {
       body: JSON.stringify({ name: editListName }),
     });
     if (res.ok) {
-      setEditingList(false);
+      setEditMode(null);
+      setEditListName('');
       fetchLists();
     }
   };
@@ -178,6 +196,13 @@ export const TodoPanelContent: React.FC = () => {
     setConfirmDeleteTodo(null);
   };
 
+  // Ocultar el formulario de crear lista cuando el panel se cierra
+  useEffect(() => {
+    if (panelOpen === false) {
+      setShowCreateList(false);
+    }
+  }, [panelOpen]);
+
   // Render
   if (!lists.length) {
     return (
@@ -210,10 +235,40 @@ export const TodoPanelContent: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 h-full">
+      {/* Formulario de creación de lista */}
+      {showCreateList && (
+        <div className="flex gap-2 items-center mt-2">
+          <input
+            className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+            value={newListName}
+            onChange={e => setNewListName(e.target.value)}
+            placeholder="Nombre para la nueva lista de tareas"
+            autoFocus
+            onKeyDown={e => e.key === 'Enter' && handleCreateList()}
+          />
+          <button
+            className="p-2 rounded bg-gray-200 hover:bg-gray-300"
+            onClick={handleCreateList}
+            title="Crear"
+          >
+            <Check className="h-4 w-4 text-green-600" />
+          </button>
+          <button
+            className="p-2 rounded hover:bg-gray-100"
+            onClick={() => {
+              setShowCreateList(false);
+              setNewListName('');
+            }}
+            title="Cancelar"
+          >
+            <X className="h-4 w-4 text-gray-500" />
+          </button>
+        </div>
+      )}
       {/* Selector de lista */}
       <div className="flex items-center gap-2">
         <select
-          className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+          className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm bg-gray-100"
           value={selectedListId ?? ''}
           onChange={e => setSelectedListId(Number(e.target.value))}
         >
@@ -223,7 +278,14 @@ export const TodoPanelContent: React.FC = () => {
         </select>
         <button
           className="rounded p-2 hover:bg-gray-100"
-          onClick={() => setEditingList(true)}
+          onClick={() => {
+            if (selectedListId) {
+              const list = lists.find(l => l.id === selectedListId);
+              setEditListName(list ? list.name : '');
+              setNewListName('');
+              setEditMode('edit');
+            }
+          }}
           title="Renombrar lista"
         >
           <Edit className="h-4 w-4 text-gray-500" />
@@ -236,20 +298,32 @@ export const TodoPanelContent: React.FC = () => {
           <Trash2 className="h-4 w-4 text-red-500" />
         </button>
       </div>
-      {/* Renombrar lista */}
-      {editingList && (
-        <div className="flex gap-2 items-center">
+      {/* Formulario de edición de lista */}
+      {editMode === 'edit' && (
+        <div className="flex gap-2 items-center mt-2">
           <input
             className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
             value={editListName}
             onChange={e => setEditListName(e.target.value)}
             placeholder="Nuevo nombre"
             autoFocus
+            onKeyDown={e => e.key === 'Enter' && handleRenameList()}
           />
-          <button className="p-2 rounded bg-gray-200 hover:bg-gray-300" onClick={handleRenameList} title="Guardar">
+          <button
+            className="p-2 rounded bg-gray-200 hover:bg-gray-300"
+            onClick={handleRenameList}
+            title="Guardar"
+          >
             <Check className="h-4 w-4 text-green-600" />
           </button>
-          <button className="p-2 rounded hover:bg-gray-100" onClick={() => setEditingList(false)} title="Cancelar">
+          <button
+            className="p-2 rounded hover:bg-gray-100"
+            onClick={() => {
+              setEditMode(null);
+              setEditListName('');
+            }}
+            title="Cancelar"
+          >
             <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
@@ -313,7 +387,7 @@ export const TodoPanelContent: React.FC = () => {
       {/* Agregar nueva tarea */}
       <div className="flex gap-2 mt-2">
         <input
-          className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+          className="flex-1 rounded border border-green-500 px-2 py-1 text-sm"
           placeholder="Nueva tarea"
           value={newTodo}
           onChange={e => setNewTodo(e.target.value)}
