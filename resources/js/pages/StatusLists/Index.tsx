@@ -4,7 +4,7 @@ import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import PaginationComponent from '@/components/PaginationComponent'; // Importar el nuevo componente de paginación
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
@@ -176,94 +176,11 @@ const Page = ({ statuses, filters }: Props) => {
                 </div>
 
                 {totalPages > 1 && (
-                    <>
-                        <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-zinc-900 border-t z-50 sm:hidden">
-                            <div className="px-4 py-2 flex justify-center">
-                                <Pagination>
-                                    <PaginationContent>
-                                        {currentPage > 1 && (
-                                            <PaginationItem>
-                                                <PaginationPrevious
-                                                    href="#"
-                                                    onClick={e => {
-                                                        e.preventDefault();
-                                                        setCurrentPage(currentPage - 1);
-                                                    }}
-                                                />
-                                            </PaginationItem>
-                                        )}
-                                        {Array.from({ length: totalPages }, (_, i) => (
-                                            <PaginationItem key={i}>
-                                                <PaginationLink
-                                                    href="#"
-                                                    isActive={currentPage === i + 1}
-                                                    onClick={e => {
-                                                        e.preventDefault();
-                                                        setCurrentPage(i + 1);
-                                                    }}
-                                                >
-                                                    {i + 1}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        ))}
-                                        {currentPage < totalPages && (
-                                            <PaginationItem>
-                                                <PaginationNext
-                                                    href="#"
-                                                    onClick={e => {
-                                                        e.preventDefault();
-                                                        setCurrentPage(currentPage + 1);
-                                                    }}
-                                                />
-                                            </PaginationItem>
-                                        )}
-                                    </PaginationContent>
-                                </Pagination>
-                            </div>
-                        </div>
-                        <div className="hidden sm:block px-4 py-2">
-                            <Pagination>
-                                <PaginationContent>
-                                    {currentPage > 1 && (
-                                        <PaginationItem>
-                                            <PaginationPrevious
-                                                href="#"
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    setCurrentPage(currentPage - 1);
-                                                }}
-                                            />
-                                        </PaginationItem>
-                                    )}
-                                    {Array.from({ length: totalPages }, (_, i) => (
-                                        <PaginationItem key={i}>
-                                            <PaginationLink
-                                                href="#"
-                                                isActive={currentPage === i + 1}
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    setCurrentPage(i + 1);
-                                                }}
-                                            >
-                                                {i + 1}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    ))}
-                                    {currentPage < totalPages && (
-                                        <PaginationItem>
-                                            <PaginationNext
-                                                href="#"
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    setCurrentPage(currentPage + 1);
-                                                }}
-                                            />
-                                        </PaginationItem>
-                                    )}
-                                </PaginationContent>
-                            </Pagination>
-                        </div>
-                    </>
+                    <PaginationComponent
+                        data={filteredStatuses}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
                 )}
 
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -289,4 +206,4 @@ const Page = ({ statuses, filters }: Props) => {
 
 Page.layout = (page: React.ReactNode) => <AppSidebarLayout>{page}</AppSidebarLayout>;
 
-export default Page; 
+export default Page;

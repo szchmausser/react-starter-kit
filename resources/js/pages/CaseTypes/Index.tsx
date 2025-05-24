@@ -4,22 +4,15 @@ import AppLayout from '@/layouts/app-layout';
 import { type CaseType, type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
-} from '@/components/ui/table';
 import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from '@/components/ui/pagination';
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from '@/components/ui/table';
+import PaginationComponent from '@/components/PaginationComponent'; // Importar el nuevo componente de paginación
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -57,8 +50,8 @@ export default function Index() {
         if (!search) return caseTypes;
         const s = search.toLowerCase();
         return caseTypes.filter(
-            type => type.name.toLowerCase().includes(s) || 
-                   (type.description && type.description.toLowerCase().includes(s))
+            type => type.name.toLowerCase().includes(s) ||
+                (type.description && type.description.toLowerCase().includes(s))
         );
     }, [caseTypes, search]);
 
@@ -195,94 +188,11 @@ export default function Index() {
 
                 {/* Paginación sticky en móvil, normal en escritorio */}
                 {totalPages > 1 && (
-                    <>
-                        <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-zinc-900 border-t z-50 sm:hidden">
-                            <div className="px-4 py-2 flex justify-center">
-                                <Pagination>
-                                    <PaginationContent>
-                                        {currentPage > 1 && (
-                                            <PaginationItem>
-                                                <PaginationPrevious
-                                                    href="#"
-                                                    onClick={e => {
-                                                        e.preventDefault();
-                                                        setCurrentPage(currentPage - 1);
-                                                    }}
-                                                />
-                                            </PaginationItem>
-                                        )}
-                                        {Array.from({ length: totalPages }, (_, i) => (
-                                            <PaginationItem key={i}>
-                                                <PaginationLink
-                                                    href="#"
-                                                    isActive={currentPage === i + 1}
-                                                    onClick={e => {
-                                                        e.preventDefault();
-                                                        setCurrentPage(i + 1);
-                                                    }}
-                                                >
-                                                    {i + 1}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        ))}
-                                        {currentPage < totalPages && (
-                                            <PaginationItem>
-                                                <PaginationNext
-                                                    href="#"
-                                                    onClick={e => {
-                                                        e.preventDefault();
-                                                        setCurrentPage(currentPage + 1);
-                                                    }}
-                                                />
-                                            </PaginationItem>
-                                        )}
-                                    </PaginationContent>
-                                </Pagination>
-                            </div>
-                        </div>
-                        <div className="hidden sm:block px-4 py-2">
-                            <Pagination>
-                                <PaginationContent>
-                                    {currentPage > 1 && (
-                                        <PaginationItem>
-                                            <PaginationPrevious
-                                                href="#"
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    setCurrentPage(currentPage - 1);
-                                                }}
-                                            />
-                                        </PaginationItem>
-                                    )}
-                                    {Array.from({ length: totalPages }, (_, i) => (
-                                        <PaginationItem key={i}>
-                                            <PaginationLink
-                                                href="#"
-                                                isActive={currentPage === i + 1}
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    setCurrentPage(i + 1);
-                                                }}
-                                            >
-                                                {i + 1}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    ))}
-                                    {currentPage < totalPages && (
-                                        <PaginationItem>
-                                            <PaginationNext
-                                                href="#"
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    setCurrentPage(currentPage + 1);
-                                                }}
-                                            />
-                                        </PaginationItem>
-                                    )}
-                                </PaginationContent>
-                            </Pagination>
-                        </div>
-                    </>
+                    <PaginationComponent
+                        data={filteredTypes}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
                 )}
 
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
