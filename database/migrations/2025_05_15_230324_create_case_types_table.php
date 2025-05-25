@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // No eliminamos la tabla aquí para evitar conflictos con otras migraciones
+        Schema::dropIfExists('case_types');
     }
 };
