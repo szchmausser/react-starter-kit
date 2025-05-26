@@ -74,6 +74,13 @@ Route::patch('/legal-cases/{legalCase}/important-dates/{importantDate}/set-expir
 Route::put('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\Http\Controllers\CaseImportantDateController::class, 'update'])->name('legal-cases.important-dates.update');
 Route::delete('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\Http\Controllers\CaseImportantDateController::class, 'destroy'])->name('legal-cases.important-dates.destroy');
 
+// Gestión de etiquetas de expedientes
+Route::get('/api/legal-cases/all-tags', [LegalCaseController::class, 'getAllTags'])->name('legal-cases.all-tags');
+Route::get('/legal-cases/{legalCase}/tags', [LegalCaseController::class, 'getTags'])->name('legal-cases.tags');
+Route::post('/legal-cases/{legalCase}/tags', [LegalCaseController::class, 'attachTags'])->name('legal-cases.attach-tags');
+Route::delete('/legal-cases/{legalCase}/tag', [LegalCaseController::class, 'detachTag'])->name('legal-cases.detach-tag');
+Route::put('/legal-cases/{legalCase}/tags', [LegalCaseController::class, 'syncTags'])->name('legal-cases.sync-tags');
+
 // Rutas para gestión de estatus generales
 Route::resource('status-lists', StatusListController::class);
 

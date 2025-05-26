@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { type LegalCase, type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem } from '@/types';
 import { formatDateSafe } from '@/lib/utils';
 import { PageProps } from '@inertiajs/core';
 import {
@@ -19,6 +19,7 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Briefcase, Eye, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import type { LegalCase } from '@/types/index';
 
 interface Props extends PageProps {
     legalCases: {

@@ -89,6 +89,6 @@ final class LegalCase extends Model implements Searchable
      */
     public function tags()
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(\Spatie\Tags\Tag::class, 'taggable');
     }
 } 

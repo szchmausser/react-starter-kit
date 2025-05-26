@@ -188,4 +188,163 @@ final class LegalCaseController extends Controller
         $statuses = \App\Models\StatusList::orderBy('name')->pluck('name');
         return response()->json($statuses);
     }
+
+    /**
+     * Obtener las etiquetas de un expediente legal.
+     *
+     * @param string $id ID del expediente
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTags(string $id)
+    {
+        try {
+            $legalCase = LegalCase::findOrFail($id);
+            $tags = $legalCase->tags()->get()->map(function($tag) {
+                // Log para depuración
+                \Log::debug('Tag obtenido del expediente:', [
+                    'id' => $tag->id,
+                    'name' => $tag->name,
+                    'type' => $tag->type
+                ]);
+                
+                return [
+                    'id' => $tag->id,
+                    'name' => $tag->name,
+                    'type' => $tag->type,
+                    'slug' => $tag->slug,
+                ];
+            });
+            
+            return response()->json($tags);
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener etiquetas del expediente: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'expediente_id' => $id
+            ]);
+            return response()->json(['error' => 'Error al obtener las etiquetas del expediente'], 500);
+        }
+    }
+
+    /**
+     * Obtener todas las etiquetas disponibles para asignar.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllTags()
+    {
+        try {
+            // Obtener el total de etiquetas para debugging
+            $totalTags = \Spatie\Tags\Tag::count();
+            \Log::debug("Total de etiquetas en la base de datos: {$totalTags}");
+            
+            $tags = \Spatie\Tags\Tag::orderBy('order_column')->get();
+            
+            \Log::debug("Etiquetas recuperadas de la BD:", [
+                'count' => $tags->count(),
+                'tags' => $tags->toArray()
+            ]);
+            
+            $formattedTags = $tags->map(function($tag) {
+                // Asegurarse de que el nombre se procese correctamente
+                $name = $tag->name;
+                // Asegurarse de que el slug se procese correctamente
+                $slug = $tag->slug;
+                
+                // Para depuración
+                \Log::debug('Tag encontrado:', [
+                    'id' => $tag->id,
+                    'name_raw' => $tag->getAttributes()['name'],
+                    'name_processed' => $name,
+                    'type' => $tag->type,
+                    'locale' => app()->getLocale()
+                ]);
+                
+                return [
+                    'id' => $tag->id,
+                    'name' => $name,
+                    'type' => $tag->type,
+                    'slug' => $slug,
+                ];
+            });
+            
+            \Log::debug("Enviando etiquetas formateadas:", [
+                'count' => $formattedTags->count(),
+                'tags' => $formattedTags->toArray()
+            ]);
+            
+            return response()->json($formattedTags);
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener todas las etiquetas: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Error al obtener las etiquetas: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Agregar etiquetas a un expediente legal.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $id ID del expediente
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function attachTags(Request $request, string $id)
+    {
+        $request->validate([
+            'tags' => 'required|array',
+            'tags.*' => 'string',
+        ]);
+
+        $legalCase = LegalCase::findOrFail($id);
+        $tags = $request->input('tags');
+        
+        foreach ($tags as $tag) {
+            $legalCase->attachTag($tag);
+        }
+        
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Eliminar una etiqueta de un expediente legal.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $id ID del expediente
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function detachTag(Request $request, string $id)
+    {
+        $request->validate([
+            'tag' => 'required|string',
+        ]);
+
+        $legalCase = LegalCase::findOrFail($id);
+        $tag = $request->input('tag');
+        
+        $legalCase->detachTag($tag);
+        
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Sincronizar las etiquetas de un expediente legal.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $id ID del expediente
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function syncTags(Request $request, string $id)
+    {
+        $request->validate([
+            'tags' => 'required|array',
+            'tags.*' => 'string',
+        ]);
+
+        $legalCase = LegalCase::findOrFail($id);
+        $tags = $request->input('tags');
+        
+        $legalCase->syncTags($tags);
+        
+        return response()->json(['success' => true]);
+    }
 }

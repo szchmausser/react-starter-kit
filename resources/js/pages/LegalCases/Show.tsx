@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatDateSafe } from '@/lib/utils';
-import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil, ListTodo, StickyNote, ArrowUp, ArrowDown, Calendar, Edit } from 'lucide-react';
+import { FileText, Info, FileQuestion, Users, Gavel, UserCheck, ScrollText, Building, UserCog, Eye, UserPlus, Trash2, Pencil, ListTodo, StickyNote, ArrowUp, ArrowDown, Calendar, Edit, Tag, Plus, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
   AlertDialog,
@@ -53,6 +53,13 @@ interface LegalEntity {
     };
 }
 
+interface TagType {
+    id: number;
+    name: string | Record<string, string>;
+    type: string | null;
+    slug: string | Record<string, string>;
+}
+
 interface LegalCase {
     id: number;
     code: string;
@@ -87,6 +94,14 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     const [currentStatus, setCurrentStatus] = useState<string>('');
     const [showStatusHistory, setShowStatusHistory] = useState(false);
     const [partiesCollapsed, setPartiesCollapsed] = useState(true);
+    
+    // Estado para manejo de etiquetas
+    const [tags, setTags] = useState<TagType[]>([]);
+    const [tagsCollapsed, setTagsCollapsed] = useState(false);
+    const [allTags, setAllTags] = useState<TagType[]>([]);
+    const [selectedTag, setSelectedTag] = useState<string>('');
+    const [tagDialogOpen, setTagDialogOpen] = useState(false);
+    const [isLoadingTags, setIsLoadingTags] = useState(false);
     
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -204,18 +219,121 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
         setIsRemoveDialogOpen(false);
     };
 
-    useEffect(() => {
-        fetch(route('legal-cases.statuses', legalCase.id))
-            .then(res => res.json())
+    // Función para obtener el nombre de la etiqueta según el idioma actual
+    const getTagName = (tag: TagType): string => {
+        // Agregar log para depuración
+        console.log('Procesando tag:', tag);
+        
+        if (!tag.name) return 'Sin nombre';
+        
+        if (typeof tag.name === 'string') return tag.name;
+        
+        // Si es un objeto, intentar obtener el valor en el idioma actual
+        const locale = document.documentElement.lang || 'es';
+        
+        // Si tenemos el idioma actual, usarlo, sino el primer valor disponible
+        if (tag.name[locale]) return tag.name[locale];
+        
+        // Caso fallback: tomar cualquier valor no nulo del objeto
+        const firstValue = Object.values(tag.name).find(val => val);
+        return firstValue || 'Sin nombre';
+    };
+    
+    // Cargar etiquetas del expediente
+    const loadTags = () => {
+        setIsLoadingTags(true);
+        fetch(route('legal-cases.tags', legalCase.id))
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`Error HTTP: ${res.status}`);
+                }
+                return res.json();
+            })
             .then(data => {
-                setStatusHistory(data);
-                setCurrentStatus(data[0]?.name || '');
+                console.log('Etiquetas del expediente cargadas:', data);
+                setTags(data);
+                setIsLoadingTags(false);
+            })
+            .catch(error => {
+                console.error('Error al cargar etiquetas:', error);
+                setIsLoadingTags(false);
+                toast.error('Error al cargar etiquetas');
             });
-        fetch(route('legal-cases.available-statuses'))
-            .then(res => res.json())
-            .then(setAvailableStatuses);
-    }, [legalCase.id]);
-
+    };
+    
+    // Cargar todas las etiquetas disponibles
+    const loadAllTags = () => {
+        // Usar la nueva ruta API
+        fetch('/api/legal-cases/all-tags')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`Error HTTP: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log('Etiquetas disponibles cargadas:', data);
+                setAllTags(data);
+            })
+            .catch(error => {
+                console.error('Error al cargar todas las etiquetas:', error);
+                toast.error('Error al cargar el listado de etiquetas');
+                // No cargamos etiquetas hardcodeadas
+                setAllTags([]);
+            });
+    };
+    
+    // Agregar una etiqueta
+    const handleAddTag = () => {
+        if (!selectedTag) return;
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        fetch(route('legal-cases.attach-tags', legalCase.id), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken || ''
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ tags: [selectedTag] })
+        })
+        .then(res => res.json())
+        .then(() => {
+            loadTags();
+            setSelectedTag('');
+            setTagDialogOpen(false);
+            toast.success('Etiqueta agregada correctamente');
+        })
+        .catch(error => {
+            console.error('Error al agregar etiqueta:', error);
+            toast.error('Error al agregar la etiqueta');
+        });
+    };
+    
+    // Eliminar una etiqueta
+    const handleRemoveTag = (tagName: string) => {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        fetch(route('legal-cases.detach-tag', legalCase.id), {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken || ''
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ tag: tagName })
+        })
+        .then(res => res.json())
+        .then(() => {
+            loadTags();
+            toast.success('Etiqueta eliminada correctamente');
+        })
+        .catch(error => {
+            console.error('Error al eliminar etiqueta:', error);
+            toast.error('Error al eliminar la etiqueta');
+        });
+    };
+    
+    // Actualizar el estatus del expediente
     const handleStatusChange = () => {
         const statusToSet = creatingStatus ? newStatus : selectedStatus;
         if (!statusToSet) {
@@ -248,6 +366,22 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
             toast.success('Estatus actualizado');
         });
     };
+
+    useEffect(() => {
+        fetch(route('legal-cases.statuses', legalCase.id))
+            .then(res => res.json())
+            .then(data => {
+                setStatusHistory(data);
+                setCurrentStatus(data[0]?.name || '');
+            });
+        fetch(route('legal-cases.available-statuses'))
+            .then(res => res.json())
+            .then(setAvailableStatuses);
+            
+        // Cargar etiquetas al iniciar
+        loadTags();
+        loadAllTags();
+    }, [legalCase.id]);
 
     // Funciones para hacer scroll
     const scrollAmount = 400; // píxeles por clic
@@ -363,6 +497,68 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                     )}
                                 </div>
                             </div>
+                        </div>
+                        
+                        {/* Tarjeta: Etiquetas */}
+                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
+                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium flex items-center justify-between cursor-pointer select-none" onClick={() => setTagsCollapsed(v => !v)}>
+                                <div className="flex items-center">
+                                    <Tag className="h-5 w-5 text-gray-600 dark:text-gray-300 mr-2" />
+                                    <span className="dark:text-gray-200">Etiquetas</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        onClick={e => { e.stopPropagation(); setTagDialogOpen(true); }}
+                                        size="icon"
+                                        variant="ghost"
+                                        className="text-gray-500 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400"
+                                        title="Añadir Etiqueta"
+                                    >
+                                        <Plus className="h-6 w-6" />
+                                    </Button>
+                                    <span className="ml-2">{tagsCollapsed ? '▼' : '▲'}</span>
+                                </div>
+                            </div>
+                            {!tagsCollapsed && (
+                                <div className="p-4 dark:bg-zinc-900">
+                                    {isLoadingTags ? (
+                                        <div className="text-center py-4">
+                                            <p>Cargando etiquetas...</p>
+                                        </div>
+                                    ) : tags.length > 0 ? (
+                                        <div className="flex flex-wrap gap-2">
+                                            {tags.map((tag) => (
+                                                <div 
+                                                    key={tag.id} 
+                                                    className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full text-sm"
+                                                >
+                                                    <span>{getTagName(tag)}</span>
+                                                    {tag.type && <span className="text-xs text-blue-600 dark:text-blue-300">({tag.type})</span>}
+                                                    <button 
+                                                        onClick={() => handleRemoveTag(getTagName(tag))}
+                                                        className="ml-1 text-blue-600 dark:text-blue-300 hover:text-red-600 dark:hover:text-red-400"
+                                                        title="Eliminar etiqueta"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 bg-gray-50 dark:bg-zinc-800 rounded-md">
+                                            <p>No hay etiquetas asociadas a este expediente.</p>
+                                            <Button
+                                                onClick={() => setTagDialogOpen(true)}
+                                                className="mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
+                                                size="sm"
+                                            >
+                                                <Tag className="h-4 w-4 mr-2" />
+                                                Añadir Etiqueta
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         
                         {/* Tarjeta: Sujetos procesales */}
@@ -545,6 +741,51 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                     </div>
                     <DialogFooter>
                         <Button onClick={handleStatusChange} disabled={(!selectedStatus && !newStatus)}>Guardar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal para agregar etiquetas */}
+            <Dialog open={tagDialogOpen} onOpenChange={setTagDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Agregar Etiqueta al Expediente</DialogTitle>
+                        <DialogDescription>
+                            Selecciona una etiqueta existente para agregar a este expediente.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <select
+                            className="w-full border rounded-md px-3 py-2 text-sm"
+                            value={selectedTag}
+                            onChange={e => setSelectedTag(e.target.value)}
+                            disabled={allTags.length === 0}
+                        >
+                            {allTags.length > 0 ? (
+                                <>
+                                    <option value="">Selecciona una etiqueta</option>
+                                    {allTags.map(tag => {
+                                        const displayName = getTagName(tag);
+                                        console.log('Renderizando opción:', { tag, displayName });
+                                        return (
+                                            <option key={tag.id} value={displayName}>
+                                                {displayName} {tag.type ? `(${tag.type})` : ''}
+                                            </option>
+                                        );
+                                    })}
+                                </>
+                            ) : (
+                                <option value="">No hay etiquetas disponibles</option>
+                            )}
+                        </select>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setTagDialogOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleAddTag} disabled={!selectedTag || allTags.length === 0}>
+                            Agregar
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
