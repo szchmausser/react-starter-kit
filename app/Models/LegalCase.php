@@ -13,10 +13,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Searchable\Searchable;
 use Spatie\Searchable\SearchResult;
 use Spatie\ModelStatus\HasStatuses;
+use Spatie\Tags\HasTags;
 
 final class LegalCase extends Model implements Searchable
 {
-    use HasFactory, SoftDeletes, HasStatuses;
+    use HasFactory, SoftDeletes, HasStatuses, HasTags;
 
     protected $fillable = [
         'code',
@@ -79,5 +80,15 @@ final class LegalCase extends Model implements Searchable
             'name' => $status,
             'reason' => $reason,
         ]);
+    }
+    
+    /**
+     * Obtener las etiquetas del caso legal.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     */
+    public function tags()
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 } 

@@ -16,6 +16,7 @@
         "spatie/laravel-model-status": "^1.18",
         "spatie/laravel-permission": "^6.18",
         "spatie/laravel-searchable": "^1.13",
+        "spatie/laravel-tags": "^4.10",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {

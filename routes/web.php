@@ -4,7 +4,7 @@ use App\Http\Controllers\IndividualController;
 use App\Http\Controllers\LegalCaseController;
 use App\Http\Controllers\LegalEntityController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\TagController;
+use App\Http\Controllers\TagListController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CaseParticipantController;
 use App\Http\Controllers\CaseEventController;
@@ -25,8 +25,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    // Rutas para Tags
-    Route::resource('tags', TagController::class);
+    // Rutas para la lista de etiquetas disponibles
+    Route::resource('tag-lists', TagListController::class)->names('tag-lists');
+    Route::get('tag-lists-search', [TagListController::class, 'search'])->name('tag-lists.search');
 
     // Listas de tareas
     Route::resource('todo-lists', TodoListController::class)->except(['create', 'edit', 'show']);

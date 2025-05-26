@@ -47,7 +47,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Etiquetas',
-        href: route('tags.index'),
+        href: route('tag-lists.index'),
         icon: Tag,
     },
 ];
@@ -69,29 +69,29 @@ export function AppSidebar() {
     const [todoOpen, setTodoOpen] = useState(false);
     return (
         <>
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
+            <Sidebar collapsible="icon" variant="inset">
+                <SidebarHeader>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton size="lg" asChild>
+                                <Link href="/dashboard" prefetch>
+                                    <AppLogo />
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} onOpenTodoPanel={() => setTodoOpen(true)} />
-            </SidebarContent>
+                <SidebarContent>
+                    <NavMain items={mainNavItems} onOpenTodoPanel={() => setTodoOpen(true)} />
+                </SidebarContent>
 
-            <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
-                <NavUser />
-            </SidebarFooter>
-        </Sidebar>
-        <TodoFloatingPanel open={todoOpen} onClose={() => setTodoOpen(false)} />
+                <SidebarFooter>
+                    <NavFooter items={footerNavItems} className="mt-auto" />
+                    <NavUser />
+                </SidebarFooter>
+            </Sidebar>
+            <TodoFloatingPanel open={todoOpen} onClose={() => setTodoOpen(false)} />
         </>
     );
 }

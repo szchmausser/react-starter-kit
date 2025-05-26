@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 
-interface Props {}
+interface Props { }
 
 const Page = () => {
     const { data, setData, post, processing, errors } = useForm({
@@ -16,13 +16,13 @@ const Page = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('tags.store'));
+        post(route('tag-lists.store'));
     };
 
     return (
         <>
-            <Head title="Crear Tag" />
-            
+            <Head title="Crear Etiqueta" />
+
             <div className="container mx-auto py-6">
                 <div className="max-w-2xl mx-auto">
                     <Card>
