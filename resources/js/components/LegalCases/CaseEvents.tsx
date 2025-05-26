@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from '@/components/ui/input';
 import { router, useForm } from '@inertiajs/react';
 import { format, parse } from 'date-fns';
-import { Plus } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 
 interface Event {
     id: number;
@@ -209,10 +209,7 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                                             </div>
                                             <div className="flex gap-2 justify-end">
                                                 <Button size="icon" variant="ghost" onClick={() => handleEdit(event)} title="Editar" className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                                                        <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
-                                                        <path d="m15 5 4 4"></path>
-                                                    </svg>
+                                                <Edit className="h-6 w-6" />
                                                 </Button>
                                                 <Button size="icon" variant="ghost" onClick={() => handleDelete(event.id)} title="Eliminar" className="h-8 w-8 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">

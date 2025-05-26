@@ -1,13 +1,13 @@
 import { CaseEvents } from '@/components/LegalCases/CaseEvents';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -16,24 +16,7 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDateSafe } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import {
-    ArrowDown,
-    ArrowUp,
-    Building,
-    Calendar,
-    Edit,
-    Eye,
-    Gavel,
-    Info,
-    Plus,
-    Tag,
-    Trash2,
-    UserCheck,
-    UserCog,
-    UserPlus,
-    Users,
-    X,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp, Building, Calendar, Edit, Eye, Gavel, Info, Plus, Tag, UserCheck, UserCog, UserPlus, Users, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -110,7 +93,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     const [currentStatus, setCurrentStatus] = useState<string>('');
     const [showStatusHistory, setShowStatusHistory] = useState(false);
     const [partiesCollapsed, setPartiesCollapsed] = useState(true);
-    
+
     // Estado para expandir/contraer títulos truncados
     const [expandedTitles, setExpandedTitles] = useState<{ [key: string]: boolean }>({});
 
@@ -123,7 +106,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     const [isLoadingTags, setIsLoadingTags] = useState(false);
     const [tagToRemove, setTagToRemove] = useState<{ name: string } | null>(null);
     const [isRemoveTagDialogOpen, setIsRemoveTagDialogOpen] = useState(false);
-    
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Búsqueda',
@@ -148,7 +131,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     const getEntityName = (entity: LegalEntity): string => {
         return entity.trade_name ? `${entity.business_name} (${entity.trade_name})` : entity.business_name;
     };
-    
+
     // Combinar todas las partes y agruparlas por rol
     const getAllParties = () => {
         const parties: {
@@ -160,7 +143,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 entityObj: Individual | LegalEntity;
             }>;
         } = {};
-        
+
         // Procesar individuos
         legalCase.individuals.forEach((individual) => {
             const role = individual.pivot?.role || 'Sin rol asignado';
@@ -168,14 +151,14 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 parties[role] = [];
             }
             parties[role].push({
-                id: individual.id, 
-                name: getFullName(individual), 
+                id: individual.id,
+                name: getFullName(individual),
                 identifier: individual.national_id,
                 type: 'individual',
                 entityObj: individual,
             });
         });
-        
+
         // Procesar entidades legales
         legalCase.legal_entities.forEach((entity) => {
             const role = entity.pivot?.role || 'Sin rol asignado';
@@ -183,29 +166,29 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 parties[role] = [];
             }
             parties[role].push({
-                id: entity.id, 
-                name: getEntityName(entity), 
+                id: entity.id,
+                name: getEntityName(entity),
                 identifier: entity.rif,
                 type: 'entity',
                 entityObj: entity,
             });
         });
-        
+
         return parties;
     };
-    
+
     // Obtener todas las partes agrupadas por rol
     const partiesByRole = getAllParties();
-    
+
     // Orden de roles para mostrar en la interfaz
     const roleOrder = ['Juez', 'Solicitante', 'Abogado de Solicitante', 'Demandado', 'Abogado de Demandado', 'Testigo', 'Sin rol asignado'];
-    
+
     // Función para obtener el icono según el rol
     const getRoleIcon = (role: string) => {
         switch (role) {
-            case 'Juez': 
+            case 'Juez':
                 return <Gavel className="h-5 w-5 text-purple-500" aria-hidden="true" />;
-            case 'Solicitante': 
+            case 'Solicitante':
                 return <UserCheck className="h-5 w-5 text-blue-500" aria-hidden="true" />;
             case 'Abogado de Solicitante':
                 return <UserCog className="h-5 w-5 text-blue-700" aria-hidden="true" />;
@@ -223,9 +206,9 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     // Función para alternar la expansión del título
     const toggleTitleExpand = (key: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        setExpandedTitles(prev => ({
+        setExpandedTitles((prev) => ({
             ...prev,
-            [key]: !prev[key]
+            [key]: !prev[key],
         }));
     };
 
@@ -234,7 +217,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
         setParticipantToRemove({ id, type, name });
         setIsRemoveDialogOpen(true);
     };
-    
+
     const handleRemoveParticipant = () => {
         if (participantToRemove) {
             router.delete(route('case-participants.remove', legalCase.id), {
@@ -442,20 +425,20 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
             body: JSON.stringify({ status: statusToSet, reason: statusReason }),
         })
             .then((res) => res.json())
-        .then(() => {
-            setStatusDialogOpen(false);
-            setStatusReason('');
-            setNewStatus('');
-            setCreatingStatus(false);
-            // Refrescar historial y estatus actual
-            fetch(route('legal-cases.statuses', legalCase.id))
+            .then(() => {
+                setStatusDialogOpen(false);
+                setStatusReason('');
+                setNewStatus('');
+                setCreatingStatus(false);
+                // Refrescar historial y estatus actual
+                fetch(route('legal-cases.statuses', legalCase.id))
                     .then((res) => res.json())
                     .then((data) => {
-                    setStatusHistory(data);
-                    setCurrentStatus(data[0]?.name || '');
-                });
-            toast.success('Estatus actualizado');
-        });
+                        setStatusHistory(data);
+                        setCurrentStatus(data[0]?.name || '');
+                    });
+                toast.success('Estatus actualizado');
+            });
     };
 
     useEffect(() => {
@@ -502,12 +485,12 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                         </div>
 
                         {/* Etiquetas con separador visual */}
-                        <div className="mb-8 relative">
-                            <div className="flex items-center justify-between mb-3">
+                        <div className="relative mb-8">
+                            <div className="mb-3 flex items-center justify-between">
                                 <div className="flex items-center">
                                     <Tag className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400" />
                                     <span className="font-medium text-gray-800 dark:text-gray-200">Etiquetas</span>
-                                    {isLoadingTags && <span className="ml-2 text-sm text-gray-500 animate-pulse">(Cargando...)</span>}
+                                    {isLoadingTags && <span className="ml-2 animate-pulse text-sm text-gray-500">(Cargando...)</span>}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Button
@@ -524,27 +507,35 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                         size="icon"
                                         variant="ghost"
                                         className="h-8 w-8 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                                        title={tagsCollapsed ? "Mostrar etiquetas" : "Ocultar etiquetas"}
+                                        title={tagsCollapsed ? 'Mostrar etiquetas' : 'Ocultar etiquetas'}
                                     >
                                         {tagsCollapsed ? (
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
                                                 <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                                                <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                                    clipRule="evenodd"
+                                                />
                                             </svg>
                                         ) : (
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                                <path fillRule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clipRule="evenodd" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z"
+                                                    clipRule="evenodd"
+                                                />
                                                 <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />
                                             </svg>
                                         )}
                                     </Button>
                                 </div>
                             </div>
-                            
+
                             {!tagsCollapsed && (
                                 <div className={`mt-2 ${tags.length > 0 ? 'pb-2' : ''} px-1`}>
                                     {!isLoadingTags && tags.length === 0 ? (
-                                        <div className="text-center py-6 text-gray-500 text-sm italic border border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                                        <div className="rounded-lg border border-dashed border-gray-200 py-6 text-center text-sm text-gray-500 italic dark:border-gray-700">
                                             No hay etiquetas asociadas a este expediente
                                         </div>
                                     ) : (
@@ -558,19 +549,19 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                         key={tag.id}
                                                         className={`group inline-flex items-center gap-1 ${bg} ${text} rounded-md border px-3 py-1.5 text-sm ${border} transition-all hover:shadow-sm`}
                                                     >
-                                                        <div 
+                                                        <div
                                                             onClick={(e) => toggleTitleExpand(tagId, e)}
-                                                            className="cursor-pointer font-medium flex items-center"
+                                                            className="flex cursor-pointer items-center font-medium"
                                                             title="Haz clic para expandir/contraer el nombre"
                                                         >
-                                                            <span className={expandedTitles[tagId] ? '' : 'truncate max-w-[120px] sm:max-w-[200px]'}>
+                                                            <span className={expandedTitles[tagId] ? '' : 'max-w-[120px] truncate sm:max-w-[200px]'}>
                                                                 {tagName}
                                                             </span>
                                                         </div>
                                                         {tag.type && (
                                                             <div className="flex items-center gap-1 opacity-70">
                                                                 <div className={`h-2 w-2 rounded-full bg-current`}></div>
-                                                                <span className="text-xs hidden sm:inline">{tag.type}</span>
+                                                                <span className="hidden text-xs sm:inline">{tag.type}</span>
                                                             </div>
                                                         )}
                                                         <button
@@ -578,7 +569,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                                 e.stopPropagation();
                                                                 confirmRemoveTag(tagName);
                                                             }}
-                                                            className="ml-1 opacity-0 group-hover:opacity-70 transition-opacity hover:text-red-600 hover:opacity-100 dark:hover:text-red-400 focus:opacity-100"
+                                                            className="ml-1 opacity-0 transition-opacity group-hover:opacity-70 hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:text-red-400"
                                                             title="Eliminar etiqueta"
                                                         >
                                                             <X className="h-4 w-4" />
@@ -590,11 +581,11 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                     )}
                                 </div>
                             )}
-                            
+
                             {/* Separador visual */}
                             <div className="mt-4 border-b border-gray-100 dark:border-gray-800"></div>
                         </div>
-                        
+
                         {/* Tarjeta de Información General con encabezado igual a las demás tarjetas */}
                         <div className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
                             {/* Encabezado de tarjeta estándar */}
@@ -711,7 +702,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Tarjeta: Sujetos procesales */}
                         <div className="mb-6 overflow-hidden rounded-md border dark:border-zinc-700">
                             <div
@@ -719,7 +710,16 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                 onClick={() => setPartiesCollapsed((v) => !v)}
                             >
                                 <div className="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400"
+                                    >
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                         <circle cx="9" cy="7" r="4"></circle>
                                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -738,7 +738,16 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                         className="h-8 w-8 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-500"
                                         title="Añadir Participante"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            className="h-4 w-4"
+                                        >
                                             <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                             <circle cx="8.5" cy="7" r="4"></circle>
                                             <line x1="20" y1="8" x2="20" y2="14"></line>
@@ -749,16 +758,24 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                         size="icon"
                                         variant="ghost"
                                         className="h-8 w-8 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                                        title={partiesCollapsed ? "Mostrar sujetos" : "Ocultar sujetos"}
+                                        title={partiesCollapsed ? 'Mostrar sujetos' : 'Ocultar sujetos'}
                                     >
                                         {partiesCollapsed ? (
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
                                                 <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                                                <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                                    clipRule="evenodd"
+                                                />
                                             </svg>
                                         ) : (
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                                <path fillRule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clipRule="evenodd" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z"
+                                                    clipRule="evenodd"
+                                                />
                                                 <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />
                                             </svg>
                                         )}
@@ -796,24 +813,28 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                                             />
                                                                         )}
                                                                         <div>
-                                                                            <div 
+                                                                            <div
                                                                                 onClick={(e) => toggleTitleExpand(`party-${party.id}`, e)}
-                                                                                className={`cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700/70 rounded px-2 -mx-2 py-1 -my-1 transition-colors`}
+                                                                                className={`-mx-2 -my-1 cursor-pointer rounded px-2 py-1 transition-colors hover:bg-gray-100 dark:hover:bg-zinc-700/70`}
                                                                                 title="Haz clic para expandir/contraer el nombre"
                                                                             >
-                                                                                <p className={`font-medium ${expandedTitles[`party-${party.id}`] ? '' : 'truncate max-w-[180px] sm:max-w-full'}`}>{party.name}</p>
+                                                                                <p
+                                                                                    className={`font-medium ${expandedTitles[`party-${party.id}`] ? '' : 'max-w-[180px] truncate sm:max-w-full'}`}
+                                                                                >
+                                                                                    {party.name}
+                                                                                </p>
                                                                             </div>
                                                                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                                                                 {party.type === 'individual' ? 'Cédula:' : 'RIF:'} {party.identifier}
                                                                             </p>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="mt-2 flex gap-1 sm:mt-0">
-                                                                        <Button 
+                                                                    <div className="mt-2 flex w-full justify-end gap-1 sm:mt-0">
+                                                                        <Button
                                                                             onClick={() =>
                                                                                 router.visit(
-                                                                                party.type === 'individual' 
-                                                                                    ? route('individuals.show', party.id) 
+                                                                                    party.type === 'individual'
+                                                                                        ? route('individuals.show', party.id)
                                                                                         : route('legal-entities.show', party.id),
                                                                                 )
                                                                             }
@@ -824,7 +845,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                                             <Eye className="h-4 w-4" />
                                                                         </Button>
                                                                         {!legalCase.closing_date && (
-                                                                            <Button 
+                                                                            <Button
                                                                                 onClick={() =>
                                                                                     confirmRemoveParticipant(party.id, party.type, party.name)
                                                                                 }
@@ -833,7 +854,20 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                                                 className="text-red-500 hover:text-red-700"
                                                                                 title="Eliminar participante"
                                                                             >
-                                                                                <Trash2 className="h-4 w-4" />
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    strokeWidth="2"
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    className="h-5 w-5"
+                                                                                >
+                                                                                    <path d="M3 6h18"></path>
+                                                                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                                                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                                                                </svg>
                                                                             </Button>
                                                                         )}
                                                                     </div>
@@ -864,11 +898,11 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                         </div>
 
                         {/* Cronología del expediente */}
-                            <CaseEvents legalCase={legalCase} events={events} />
+                        <CaseEvents legalCase={legalCase} events={events} />
                     </div>
                 </div>
             </div>
-            
+
             {/* Diálogo de confirmación para eliminar participante */}
             <AlertDialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
                 <AlertDialogContent>
@@ -941,7 +975,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                         key={s.id || idx}
                                         className="flex flex-col rounded-md border border-gray-200 bg-gray-50 p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700 dark:bg-zinc-800"
                                     >
-                                    <div className="flex-1">
+                                        <div className="flex-1">
                                             <span className="mb-1 block text-base font-semibold">{s.name}</span>
                                             <span className="mb-1 block text-xs text-gray-500">
                                                 {new Date(s.created_at).toLocaleString('es-VE', {
@@ -1054,6 +1088,4 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
             </div>
         </AppLayout>
     );
-} 
-
-
+}
