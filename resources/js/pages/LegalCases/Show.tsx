@@ -547,7 +547,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                 return (
                                                     <div
                                                         key={tag.id}
-                                                        className={`group inline-flex items-center gap-1 ${bg} ${text} rounded-md border px-3 py-1.5 text-sm ${border} transition-all hover:shadow-sm`}
+                                                        className={`group inline-flex items-center gap-1 ${bg} ${text} rounded-full border px-3 py-1.5 text-sm ${border} transition-all hover:shadow-sm`}
                                                     >
                                                         <div
                                                             onClick={(e) => toggleTitleExpand(tagId, e)}
