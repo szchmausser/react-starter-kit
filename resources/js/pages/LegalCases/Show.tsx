@@ -16,7 +16,25 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDateSafe } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, Building, Calendar, Edit, Eye, Gavel, Info, Plus, Tag, UserCheck, UserCog, UserPlus, Users, X } from 'lucide-react';
+import { 
+    ArrowDown, 
+    ArrowUp, 
+    BookOpen,
+    Building, 
+    Calendar, 
+    ChevronsUpDown,
+    Edit, 
+    Eye, 
+    Gavel, 
+    Info, 
+    Plus, 
+    Tag, 
+    UserCheck, 
+    UserCog, 
+    UserPlus, 
+    Users, 
+    X 
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -595,16 +613,16 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                                 <span className="hidden text-xs sm:inline">{tag.type}</span>
                                                             </div>
                                                         )}
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                confirmRemoveTag(tagName);
-                                                            }}
-                                                            className="ml-1 opacity-0 transition-opacity group-hover:opacity-70 hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:text-red-400"
-                                                            title="Eliminar etiqueta"
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </button>
+                                                                                                                    <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    confirmRemoveTag(tagName);
+                                                                }}
+                                                                className="ml-1 opacity-70 transition-opacity hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-70"
+                                                                title="Eliminar etiqueta"
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </button>
                                                     </div>
                                                 );
                                             })}
@@ -628,25 +646,39 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                             <div className="px-6 pt-6 pb-2">
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                     <div className="flex flex-col items-stretch rounded-md border border-gray-200 bg-gray-100 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                                        <span className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                            CÓDIGO DE EXPEDIENTE
-                                        </span>
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400">
+                                                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+                                                <path d="M18 14h-8"></path>
+                                                <path d="M15 18h-5"></path>
+                                                <path d="M10 6h8v4h-8V6Z"></path>
+                                            </svg>
+                                            <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                                CÓDIGO DE EXPEDIENTE
+                                            </span>
+                                        </div>
                                         <span className="text-xl font-bold break-all text-gray-900 uppercase dark:text-gray-100">
                                             {legalCase.code}
                                         </span>
                                     </div>
                                     <div className="flex flex-col items-stretch rounded-md border border-gray-200 bg-gray-100 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                                        <span className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                            TIPO DE CASO
-                                        </span>
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                            <BookOpen className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                                TIPO DE CASO
+                                            </span>
+                                        </div>
                                         <span className="text-xl font-bold break-all text-gray-900 uppercase dark:text-gray-100">
                                             {legalCase.case_type.name}
                                         </span>
                                     </div>
                                     <div className="flex flex-col items-stretch rounded-md border border-gray-200 bg-gray-100 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                                        <span className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                            ESTADO
-                                        </span>
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                            <ChevronsUpDown className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                                ESTADO
+                                            </span>
+                                        </div>
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="text-xl font-bold text-gray-900 uppercase dark:text-gray-100">
                                                 {currentStatus ? currentStatus : legalCase.closing_date ? 'CERRADO' : 'NO DEFINIDO'}
@@ -669,33 +701,49 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                             {/* Fechas importantes en la parte inferior, en recuadros */}
                             <div className="grid grid-cols-1 gap-6 px-6 pb-6 md:grid-cols-4">
                                 <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <span className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                        FECHA DE ENTRADA
-                                    </span>
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            FECHA DE ENTRADA
+                                        </span>
+                                    </div>
                                     <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
                                         {formatDateSafe(legalCase.entry_date)}
                                     </span>
                                 </div>
                                 <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <span className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                        FECHA DE SENTENCIA
-                                    </span>
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            FECHA DE SENTENCIA
+                                        </span>
+                                    </div>
                                     <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
                                         {legalCase.sentence_date ? formatDateSafe(legalCase.sentence_date) : 'NO DEFINIDA'}
                                     </span>
                                 </div>
                                 <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <span className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                        FECHA DE CIERRE
-                                    </span>
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            FECHA DE CIERRE
+                                        </span>
+                                    </div>
                                     <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
                                         {legalCase.closing_date ? formatDateSafe(legalCase.closing_date) : 'NO DEFINIDA'}
                                     </span>
                                 </div>
                                 <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <span className="mb-1 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                        PRÓXIMA FECHA IMPORTANTE
-                                    </span>
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" x2="12" y1="8" y2="12"></line>
+                                            <line x1="12" x2="12.01" y1="16" y2="16"></line>
+                                        </svg>
+                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                            PRÓXIMA FECHA IMPORTANTE
+                                        </span>
+                                    </div>
                                     {nextImportantDate ? (
                                         <div className="flex items-center justify-between gap-2">
                                             <div className="flex flex-col">
