@@ -1,16 +1,18 @@
 import React from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
+import { toast } from 'sonner';
 
 interface Tag {
     id: number;
-    name: string;
-    description: string | null;
+    name: string | Record<string, string>;
+    type: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
 interface Props {
@@ -19,13 +21,21 @@ interface Props {
 
 const Page = ({ tag }: Props) => {
     const { data, setData, put, processing, errors } = useForm({
-        name: tag.name,
-        description: tag.description || '',
+        name: typeof tag.name === 'string' ? tag.name : tag.name[Object.keys(tag.name)[0]] || '',
+        type: tag.type || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('tag-lists.update', tag.id));
+        put(route('tags.update', tag.id), {
+            onSuccess: () => {
+                toast.success('Etiqueta actualizada exitosamente');
+            },
+            onError: () => {
+                toast.error('Error al actualizar la etiqueta');
+            },
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -36,47 +46,62 @@ const Page = ({ tag }: Props) => {
                 <div className="max-w-2xl mx-auto">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Editar Etiqueta</CardTitle>
+                            <div className="flex items-center justify-between">
+                                <CardTitle>Editar Etiqueta</CardTitle>
+                                <Button 
+                                    variant="ghost" 
+                                    onClick={() => router.visit(route('tags.index'))}
+                                >
+                                    Volver al listado
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Nombre</Label>
-                                    <Input
-                                        id="name"
-                                        value={data.name}
-                                        onChange={e => setData('name', e.target.value)}
-                                        required
-                                    />
-                                    {errors.name && (
-                                        <p className="text-sm text-red-500">{errors.name}</p>
-                                    )}
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Nombre *</Label>
+                                        <Input
+                                            id="name"
+                                            value={data.name}
+                                            onChange={e => setData('name', e.target.value)}
+                                            placeholder="Ej: Importante, Urgente, Pendiente"
+                                            required
+                                        />
+                                        {errors.name && (
+                                            <p className="text-sm text-red-500">{errors.name}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="type">Tipo (opcional)</Label>
+                                        <Input
+                                            id="type"
+                                            value={data.type}
+                                            onChange={e => setData('type', e.target.value)}
+                                            placeholder="Ej: prioridad, estado, categoría"
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            El tipo ayuda a agrupar etiquetas similares
+                                        </p>
+                                        {errors.type && (
+                                            <p className="text-sm text-red-500">{errors.type}</p>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="description">Descripción (opcional)</Label>
-                                    <Textarea
-                                        id="description"
-                                        value={data.description}
-                                        onChange={e => setData('description', e.target.value)}
-                                    />
-                                    {errors.description && (
-                                        <p className="text-sm text-red-500">{errors.description}</p>
-                                    )}
-                                </div>
-
-                                <div className="flex justify-end gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => window.history.back()}
+                                <CardFooter className="px-0 pb-0 flex justify-end gap-2">
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        onClick={() => router.visit(route('tags.index'))}
                                     >
                                         Cancelar
                                     </Button>
                                     <Button type="submit" disabled={processing}>
-                                        Actualizar Etiqueta
+                                        {processing ? 'Actualizando...' : 'Actualizar etiqueta'}
                                     </Button>
-                                </div>
+                                </CardFooter>
                             </form>
                         </CardContent>
                     </Card>

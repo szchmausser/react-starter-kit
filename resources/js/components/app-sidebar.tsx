@@ -47,7 +47,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Etiquetas',
-        href: route('tag-lists.index'),
+        href: route('tags.index'),
         icon: Tag,
     },
 ];

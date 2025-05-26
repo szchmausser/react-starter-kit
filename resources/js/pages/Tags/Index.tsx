@@ -3,37 +3,52 @@ import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import PaginationComponent from '@/components/PaginationComponent';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import type { TagModel } from '@/types';
 import { useState, useMemo } from 'react';
-import { usePage } from '@inertiajs/react';
+
+interface Tag {
+    id: number;
+    name: string | Record<string, string>;
+    type: string | null;
+    created_at: string;
+    updated_at: string;
+}
 
 interface Props {
-    tags: TagModel[];
+    tags: Tag[];
     filters: {
-        search: string;
+        search?: string;
+        type?: string;
     };
 }
 
 const ITEMS_PER_PAGE = 10;
 
-export default function Index({ tags, filters }: Props) {
+export default function Index({ tags: initialTags, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [tagToDelete, setTagToDelete] = useState<TagModel | null>(null);
+    const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
+
+    // Función para obtener el nombre de la etiqueta en el idioma actual
+    const getTagName = (tag: Tag) => {
+        if (typeof tag.name === 'string') return tag.name;
+        const locale = document.documentElement.lang || 'es';
+        return tag.name[locale] || Object.values(tag.name)[0] || 'Sin nombre';
+    };
 
     // Filtrado y paginación local
     const filteredTags = useMemo(() => {
-        if (!search) return tags;
+        if (!search) return initialTags;
         const s = search.toLowerCase();
-        return tags.filter(
-            tag => tag.name.toLowerCase().includes(s)
-        );
-    }, [tags, search]);
+        return initialTags.filter(tag => {
+            const name = getTagName(tag).toLowerCase();
+            return name.includes(s) || 
+                   (tag.type && tag.type.toLowerCase().includes(s));
+        });
+    }, [initialTags, search]);
 
     const totalPages = Math.ceil(filteredTags.length / ITEMS_PER_PAGE);
     const paginatedTags = useMemo(() => {
@@ -43,22 +58,32 @@ export default function Index({ tags, filters }: Props) {
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setCurrentPage(1);
+        router.get(route('tags.index'), { search }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
 
-    const confirmDelete = (tag: TagModel) => {
+    const confirmDelete = (tag: Tag) => {
         setIsDeleteDialogOpen(true);
         setTagToDelete(tag);
     };
 
     const handleDelete = () => {
         if (tagToDelete) {
-            router.delete(route('tag-lists.destroy', tagToDelete.id));
-            toast.success('Etiqueta eliminada exitosamente');
+            router.delete(route('tags.destroy', tagToDelete.id), {
+                onSuccess: () => {
+                    toast.success('Etiqueta eliminada exitosamente');
+                },
+                onError: () => {
+                    toast.error('No se pudo eliminar la etiqueta');
+                },
+                preserveScroll: true,
+            });
         }
         setIsDeleteDialogOpen(false);
     };
@@ -82,7 +107,7 @@ export default function Index({ tags, filters }: Props) {
                                 <Search className="h-4 w-4" />
                             </Button>
                         </form>
-                        <Link href={route('tag-lists.create')}>
+                        <Link href={route('tags.create')}>
                             <Button className="hidden sm:inline-flex">
                                 <Plus className="h-4 w-4 mr-2" />
                                 Nueva Etiqueta
@@ -96,25 +121,38 @@ export default function Index({ tags, filters }: Props) {
 
                 <div className="block sm:hidden space-y-2 mb-16">
                     {paginatedTags.length > 0 ? (
-                        paginatedTags.map((tag) => (
-                            <div key={tag.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
-                                <div className="font-bold text-base">{tag.name}</div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">{tag.description || '-'}</div>
-                                <div className="flex gap-2 mt-2 justify-end">
-                                    <Link href={route('tag-lists.edit', tag.id)}>
-                                        <Button variant="outline" size="icon" className="h-8 w-8">
-                                            <Pencil className="h-4 w-4" />
+                        paginatedTags.map((tag) => {
+                            const tagName = getTagName(tag);
+                            return (
+                                <div key={tag.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
+                                    <div className="font-bold text-base">{tagName}</div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                        {tag.type ? `Tipo: ${tag.type}` : 'Sin tipo'}
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                        Creado: {new Date(tag.created_at).toLocaleDateString()}
+                                    </div>
+                                    <div className="flex gap-2 mt-2 justify-end">
+                                        <Link href={route('tags.edit', tag.id)}>
+                                            <Button variant="outline" size="icon" className="h-8 w-8">
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
+                                        <Button 
+                                            variant="destructive" 
+                                            size="icon" 
+                                            className="h-8 w-8" 
+                                            onClick={() => confirmDelete(tag)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
-                                    </Link>
-                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(tag)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            No se encontraron tags.
+                            No se encontraron etiquetas.
                         </div>
                     )}
                 </div>
@@ -125,33 +163,46 @@ export default function Index({ tags, filters }: Props) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Nombre</TableHead>
-                                    <TableHead>Descripción</TableHead>
+                                    <TableHead>Tipo</TableHead>
+                                    <TableHead>Fecha de creación</TableHead>
                                     <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {paginatedTags.length > 0 ? (
-                                    paginatedTags.map((tag) => (
-                                        <TableRow key={tag.id}>
-                                            <TableCell className="font-medium">{tag.name}</TableCell>
-                                            <TableCell>{tag.description || '-'}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Link href={route('tag-lists.edit', tag.id)}>
-                                                        <Button variant="outline" size="icon">
-                                                            <Pencil className="h-4 w-4" />
+                                    paginatedTags.map((tag) => {
+                                        const tagName = getTagName(tag);
+                                        return (
+                                            <TableRow key={tag.id}>
+                                                <TableCell className="font-medium">
+                                                    {tagName}
+                                                </TableCell>
+                                                <TableCell>{tag.type || '-'}</TableCell>
+                                                <TableCell>
+                                                    {new Date(tag.created_at).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        <Link href={route('tags.edit', tag.id)}>
+                                                            <Button variant="outline" size="icon">
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Button 
+                                                            variant="destructive" 
+                                                            size="icon" 
+                                                            onClick={() => confirmDelete(tag)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
                                                         </Button>
-                                                    </Link>
-                                                    <Button variant="destructive" size="icon" onClick={() => confirmDelete(tag)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={3} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                        <TableCell colSpan={4} className="text-center py-8 text-gray-500 dark:text-gray-400">
                                             No se encontraron etiquetas.
                                         </TableCell>
                                     </TableRow>
@@ -162,11 +213,20 @@ export default function Index({ tags, filters }: Props) {
                 </div>
 
                 {totalPages > 1 && (
-                    <PaginationComponent
-                        data={filteredTags}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                        onPageChange={handlePageChange}
-                    />
+                    <div className="mt-4 flex justify-center">
+                        <div className="flex gap-2">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? 'default' : 'outline'}
+                                    onClick={() => handlePageChange(page)}
+                                    className="w-10 h-10 p-0"
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
                 )}
 
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -174,7 +234,7 @@ export default function Index({ tags, filters }: Props) {
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Estás seguro de eliminar esta etiqueta?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Esta acción no se puede deshacer. Esto eliminará permanentemente la etiqueta <b>{tagToDelete?.name}</b> de la base de datos.
+                                Esta acción no se puede deshacer. Esto eliminará permanentemente la etiqueta <b>{tagToDelete ? (typeof tagToDelete.name === 'string' ? tagToDelete.name : tagToDelete.name[Object.keys(tagToDelete.name)[0]]) : ''}</b> de la base de datos.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

@@ -13,6 +13,7 @@ use App\Http\Controllers\TodoController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StatusListController;
 use App\Http\Controllers\CaseTypeController;
+use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -25,9 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    // Rutas para la lista de etiquetas disponibles
-    Route::resource('tag-lists', TagListController::class)->names('tag-lists');
-    Route::get('tag-lists-search', [TagListController::class, 'search'])->name('tag-lists.search');
+    // Rutas para la gestión de etiquetas
+    Route::resource('tags', TagController::class);
 
     // Listas de tareas
     Route::resource('todo-lists', TodoListController::class)->except(['create', 'edit', 'show']);
