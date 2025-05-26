@@ -157,7 +157,7 @@ export const CaseEvents: React.FC<Props> = ({ legalCase, events }) => {
                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                             <div className="flex-1 min-w-0 flex items-center">
                                                 <div className="flex-shrink-0 mr-3 bg-gray-100 dark:bg-zinc-800/70 p-2 rounded-md">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-gray-600 dark:text-gray-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-teal-500 dark:text-green-500">
                                                         <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"></path>
                                                         <path d="M16 2v4"></path>
                                                         <path d="M8 2v4"></path>

@@ -349,9 +349,25 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
             });
     };
 
-    // Agregar una etiqueta
+    // Agregar una etiqueta (existente o nueva)
     const handleAddTag = () => {
-        if (!selectedTag) return;
+        if (!selectedTag.trim()) return;
+        
+        const tagExists = allTags.some(tag => 
+            (typeof tag.name === 'string' && tag.name.toLowerCase() === selectedTag.toLowerCase()) || 
+            (typeof tag.name === 'object' && Object.values(tag.name).some(name => 
+                typeof name === 'string' && name.toLowerCase() === selectedTag.toLowerCase()
+            ))
+        );
+
+        // Validación adicional para evitar duplicados
+        if (tagExists) {
+            const tagsAsociadas = tags.map(tag => getTagName(tag).toLowerCase());
+            if (tagsAsociadas.includes(selectedTag.toLowerCase())) {
+                toast.error('Esta etiqueta ya está asociada al expediente');
+                return;
+            }
+        }
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         fetch(route('legal-cases.attach-tags', legalCase.id), {
@@ -361,16 +377,31 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 'X-CSRF-TOKEN': csrfToken || '',
             },
             credentials: 'same-origin',
-            body: JSON.stringify({ tags: [selectedTag] }),
+            body: JSON.stringify({ 
+                tags: [selectedTag],
+                create_if_not_exists: true // Parámetro para indicar que se debe crear si no existe
+            }),
         })
-            .then((res) => res.json())
-            .then(() => {
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return res.json();
+            })
+            .then((data) => {
                 loadTags();
+                loadAllTags(); // Recargar todas las etiquetas para actualizar la lista
                 setSelectedTag('');
                 setTagDialogOpen(false);
-                toast.success('Etiqueta agregada correctamente');
+                
+                if (data.created) {
+                    toast.success('Etiqueta creada y agregada correctamente');
+                } else {
+                    toast.success('Etiqueta agregada correctamente');
+                }
             })
             .catch((error) => {
+                console.error('Error:', error);
                 toast.error('Error al agregar la etiqueta');
             });
     };
@@ -1009,37 +1040,75 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Agregar Etiqueta al Expediente</DialogTitle>
-                        <DialogDescription>Selecciona una etiqueta existente para agregar a este expediente.</DialogDescription>
+                        <DialogDescription>Selecciona una etiqueta existente o crea una nueva para agregar a este expediente.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
-                        <select
-                            className="w-full rounded-md border px-3 py-2 text-sm"
-                            value={selectedTag}
-                            onChange={(e) => setSelectedTag(e.target.value)}
-                            disabled={allTags.length === 0}
-                        >
-                            {allTags.length > 0 ? (
-                                <>
-                                    <option value="">Selecciona una etiqueta</option>
-                                    {allTags.map((tag) => {
-                                        const displayName = getTagName(tag);
-                                        return (
-                                            <option key={tag.id} value={displayName}>
-                                                {displayName} {tag.type ? `(${tag.type})` : ''}
-                                            </option>
-                                        );
-                                    })}
-                                </>
-                            ) : (
-                                <option value="">No hay etiquetas disponibles</option>
-                            )}
-                        </select>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="tag-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Seleccionar etiqueta existente
+                            </label>
+                            <select
+                                id="tag-select"
+                                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100"
+                                value={selectedTag}
+                                onChange={(e) => setSelectedTag(e.target.value)}
+                                disabled={allTags.length === 0}
+                            >
+                                {allTags.length > 0 ? (
+                                    <>
+                                        <option value="" className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">Selecciona una etiqueta</option>
+                                        {allTags.map((tag) => {
+                                            const displayName = getTagName(tag);
+                                            return (
+                                                <option key={tag.id} value={displayName} className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">
+                                                    {displayName} {tag.type ? `(${tag.type})` : ''}
+                                                </option>
+                                            );
+                                        })}
+                                    </>
+                                ) : (
+                                    <option value="" className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">No hay etiquetas disponibles</option>
+                                )}
+                            </select>
+                        </div>
+                        
+                        <div className="my-2 flex items-center">
+                            <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                            <span className="mx-2 text-xs text-gray-500 dark:text-gray-400">O</span>
+                            <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="new-tag" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Crear nueva etiqueta
+                            </label>
+                            <Input
+                                id="new-tag"
+                                type="text"
+                                placeholder="Nombre de la nueva etiqueta"
+                                value={selectedTag === '' ? selectedTag : undefined}
+                                onChange={(e) => setSelectedTag(e.target.value)}
+                                className="border-gray-300 text-gray-900 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100"
+                            />
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {allTags.some(tag => 
+                                    (typeof tag.name === 'string' && tag.name.toLowerCase() === selectedTag.toLowerCase()) || 
+                                    (typeof tag.name === 'object' && Object.values(tag.name).some(name => 
+                                        typeof name === 'string' && name.toLowerCase() === selectedTag.toLowerCase()))
+                                ) && selectedTag !== '' ? 
+                                    '⚠️ Ya existe una etiqueta con este nombre' : 
+                                    'La etiqueta se creará y asignará al expediente'}
+                            </p>
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setTagDialogOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleAddTag} disabled={!selectedTag || allTags.length === 0}>
+                        <Button 
+                            onClick={handleAddTag} 
+                            disabled={!selectedTag.trim()}
+                        >
                             Agregar
                         </Button>
                     </DialogFooter>

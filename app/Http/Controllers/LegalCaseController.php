@@ -283,6 +283,7 @@ final class LegalCaseController extends Controller
 
     /**
      * Agregar etiquetas a un expediente legal.
+     * Permite crear etiquetas nuevas si no existen.
      *
      * @param \Illuminate\Http\Request $request
      * @param string $id ID del expediente
@@ -293,16 +294,44 @@ final class LegalCaseController extends Controller
         $request->validate([
             'tags' => 'required|array',
             'tags.*' => 'string',
+            'create_if_not_exists' => 'sometimes|boolean',
         ]);
 
         $legalCase = LegalCase::findOrFail($id);
         $tags = $request->input('tags');
+        $createIfNotExists = $request->input('create_if_not_exists', false);
+        $created = false;
         
-        foreach ($tags as $tag) {
-            $legalCase->attachTag($tag);
+        try {
+            foreach ($tags as $tag) {
+                // Verificar si la etiqueta ya existe
+                $existingTag = \Spatie\Tags\Tag::findFromString($tag);
+                
+                if (!$existingTag && $createIfNotExists) {
+                    // Crear la etiqueta si no existe y está habilitada la opción
+                    \Spatie\Tags\Tag::findOrCreate($tag);
+                    $created = true;
+                    \Log::info("Se ha creado una nueva etiqueta: {$tag}");
+                }
+                
+                $legalCase->attachTag($tag);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'created' => $created
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("Error al agregar etiquetas: " . $e->getMessage(), [
+                'exception' => $e,
+                'tags' => $tags,
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al agregar etiquetas: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json(['success' => true]);
     }
 
     /**
