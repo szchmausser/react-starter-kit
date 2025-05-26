@@ -55,6 +55,7 @@ export default function Index() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [caseToDelete, setCaseToDelete] = useState<LegalCase | null>(null);
     const [search, setSearch] = useState(filters?.search || '');
+    const [expandedTitles, setExpandedTitles] = useState<Record<number, boolean>>({});
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -89,6 +90,15 @@ export default function Index() {
             });
         }
         setIsDeleteDialogOpen(false);
+    };
+
+    // Toggle para expandir o contraer títulos
+    const toggleTitleExpand = (id: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setExpandedTitles(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
     };
 
     // Si no hay paginación del backend, usamos paginación del cliente
@@ -140,12 +150,25 @@ export default function Index() {
                     {paginatedCases.length > 0 ? (
                         paginatedCases.map((legalCase) => (
                             <div key={legalCase.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
-                                <div className="font-bold text-base flex items-center">
-                                    <span className="mr-2"><Briefcase className="h-4 w-4 text-gray-500" /></span>
-                                    {legalCase.code}
+                                <div 
+                                    className="font-bold text-base flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors" 
+                                    onClick={(e) => toggleTitleExpand(legalCase.id, e)}
+                                    title="Clic para expandir/contraer el texto"
+                                >
+                                    <span className="mr-2 mt-0.5 flex-shrink-0">
+                                        <Briefcase className="h-4 w-4 text-gray-500" />
+                                    </span>
+                                    <span className={expandedTitles[legalCase.id] ? '' : 'truncate'}>
+                                        {legalCase.code}
+                                    </span>
                                 </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {legalCase.case_type?.name || 'Sin tipo definido'}
+                                <div 
+                                    className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors" 
+                                    onClick={(e) => toggleTitleExpand(legalCase.id, e)}
+                                >
+                                    <div className={expandedTitles[legalCase.id] ? '' : 'truncate'}>
+                                        {legalCase.case_type?.name || 'Sin tipo definido'}
+                                    </div>
                                 </div>
                                 <div className="text-xs text-gray-400">
                                     Fecha: {formatDateSafe(legalCase.entry_date)}
