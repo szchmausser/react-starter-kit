@@ -73,7 +73,49 @@ class LegalCaseSeeder extends Seeder
                 'case_type_id' => $caseTypes->where('name', 'Partición de Herencia')->first()->id,
                 'sentence_date' => null,
                 'closing_date' => null
-            ]
+            ],
+            [
+                'code' => 'EXP-2023-006',
+                'entry_date' => '2023-06-12',
+                'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
+                'sentence_date' => null,
+                'closing_date' => null
+            ],
+            [
+                'code' => 'EXP-2023-007',
+                'entry_date' => '2023-07-12',
+                'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
+                'sentence_date' => null,
+                'closing_date' => null
+            ],
+            [
+                'code' => 'EXP-2023-008',
+                'entry_date' => '2023-08-12',
+                'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
+                'sentence_date' => null,
+                'closing_date' => null
+            ],
+            [
+                'code' => 'EXP-2023-009',
+                'entry_date' => '2023-09-12',
+                'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
+                'sentence_date' => null,
+                'closing_date' => null
+            ],
+            [
+                'code' => 'EXP-2023-010',
+                'entry_date' => '2023-10-12',
+                'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
+                'sentence_date' => null,
+                'closing_date' => null
+            ],
+            [
+                'code' => 'EXP-2023-011',
+                'entry_date' => '2023-11-12',
+                'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
+                'sentence_date' => null,
+                'closing_date' => null
+            ],
         ];
 
         foreach ($legalCases as $legalCaseData) {

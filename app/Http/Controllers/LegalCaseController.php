@@ -20,6 +20,11 @@ final class LegalCaseController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search', '');
+        $perPage = (int) $request->input('per_page', 10);
+        $page = (int) $request->input('page', 1);
+        
+        // Validamos que perPage tenga un valor razonable para evitar problemas de rendimiento
+        $perPage = in_array($perPage, [5, 10, 20, 50, 100, 200, 500, 1000]) ? $perPage : 10;
         
         $query = LegalCase::with(['caseType', 'individuals', 'legalEntities']);
         
@@ -27,14 +32,94 @@ final class LegalCaseController extends Controller
             $query->where('code', 'like', "%{$search}%");
         }
         
+        // Contar el total de registros para depuración
+        // Importante: Clonar la query para evitar que el count afecte a la paginación
+        $totalRecords = (clone $query)->count();
+        
+        // Logs de depuración comentados para mejorar el rendimiento
+        /*
+        \Log::debug("Total de expedientes: {$totalRecords}");
+        \Log::debug("Expedientes por página: {$perPage}");
+        \Log::debug("Página actual: {$page}");
+        \Log::debug("Total de páginas calculado: " . ceil($totalRecords / $perPage));
+        */
+        
+        // Usamos paginación estándar de Laravel con límite de registros por rendimiento
         $legalCases = $query->orderBy('created_at', 'desc')
-            ->paginate(10)
+            ->paginate($perPage, ['*'], 'page', $page)
             ->withQueryString();
-
+            
+        // Verificar información de paginación - comentado para mejorar rendimiento
+        /*
+        \Log::debug("Meta de paginación:", [
+            'total' => $legalCases->total(),
+            'per_page' => $legalCases->perPage(),
+            'current_page' => $legalCases->currentPage(),
+            'last_page' => $legalCases->lastPage(),
+            'has_pages' => $legalCases->hasPages(),
+        ]);
+        */
+        
+        // Obtener los links generados manualmente para el frontend
+        $paginationLinks = [];
+        
+        // Agregar link para página anterior
+        $paginationLinks[] = [
+            'url' => $legalCases->currentPage() > 1 ? $legalCases->url($legalCases->currentPage() - 1) : null,
+            'label' => '&laquo; Previous',
+            'active' => false
+        ];
+        
+        // Agregar links para todas las páginas
+        for ($i = 1; $i <= $legalCases->lastPage(); $i++) {
+            $paginationLinks[] = [
+                'url' => $legalCases->url($i),
+                'label' => (string)$i,
+                'active' => $i === $legalCases->currentPage()
+            ];
+        }
+        
+        // Agregar link para página siguiente
+        $paginationLinks[] = [
+            'url' => $legalCases->currentPage() < $legalCases->lastPage() ? $legalCases->url($legalCases->currentPage() + 1) : null,
+            'label' => 'Next &raquo;',
+            'active' => false
+        ];
+        
+        // Asignar los links generados manualmente a la respuesta JSON que irá al frontend
+        $legalCasesResponse = $legalCases->toArray();
+        
+        // Asegurarse de que la estructura meta exista
+        if (!isset($legalCasesResponse['meta'])) {
+            $legalCasesResponse['meta'] = [];
+        }
+        
+        // Asegurarse de que tengamos todos los metadatos necesarios
+        $totalPages = ceil($totalRecords / $perPage);
+        $from = ($page - 1) * $perPage + 1;
+        $to = min($from + $perPage - 1, $totalRecords);
+        
+        // Rellenar/corregir los metadatos
+        $legalCasesResponse['meta']['current_page'] = $page;
+        $legalCasesResponse['meta']['last_page'] = $totalPages;
+        $legalCasesResponse['meta']['from'] = $from;
+        $legalCasesResponse['meta']['to'] = $to;
+        $legalCasesResponse['meta']['total'] = $totalRecords;
+        $legalCasesResponse['meta']['per_page'] = $perPage;
+        $legalCasesResponse['meta']['links'] = $paginationLinks;
+        
+        // \Log::debug("Metadatos de paginación finales:", $legalCasesResponse['meta']);
+        
         return Inertia::render('LegalCases/Index', [
-            'legalCases' => $legalCases,
+            'legalCases' => $legalCasesResponse,
             'filters' => [
                 'search' => $search,
+                'per_page' => $perPage,
+            ],
+            'debug' => [
+                'total_records' => $totalRecords,
+                'total_pages' => ceil($totalRecords / $perPage),
+                'links_count' => count($paginationLinks),
             ],
         ]);
     }
