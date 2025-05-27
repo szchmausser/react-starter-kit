@@ -74,6 +74,17 @@ final class LegalCase extends Model implements Searchable
         return $this->hasMany(CaseImportantDate::class);
     }
 
+    /**
+     * Obtiene el estado actual del expediente legal.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphOne
+     */
+    public function currentStatus()
+    {
+        return $this->morphOne(\Spatie\ModelStatus\Status::class, 'model')
+            ->latest('created_at');
+    }
+
     public function setStatus(string $status, ?string $reason = null): void
     {
         $this->statuses()->create([

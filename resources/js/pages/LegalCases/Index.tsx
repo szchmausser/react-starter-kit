@@ -41,6 +41,51 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LaravelPagination from '@/components/LaravelPagination';
 
+// Función para obtener clases de colores según el estado
+const getStatusColor = (statusName: string): { bg: string, text: string, darkBg: string, darkText: string } => {
+    // Normalizar el nombre del estado (minúsculas, sin espacios ni acentos)
+    const normalizedStatus = statusName.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "");
+    
+    // Mapeo de estados a colores
+    const colorMap: Record<string, { bg: string, text: string, darkBg: string, darkText: string }> = {
+        // Estados de tramitación
+        'enproceso': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
+        'tramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
+        'entramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
+        
+        // Estados de conclusión
+        'finalizado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
+        'completado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
+        'cerrado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
+        
+        // Estados de espera
+        'enespera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
+        'pendiente': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
+        'espera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
+        
+        // Estados críticos
+        'urgente': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-900', darkText: 'dark:text-red-300' },
+        'critico': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-900', darkText: 'dark:text-red-300' },
+        
+        // Estados de pausa
+        'suspendido': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
+        'cancelado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
+        'archivado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
+    };
+    
+    // Buscar coincidencia en el mapa de colores
+    for (const [key, value] of Object.entries(colorMap)) {
+        if (normalizedStatus.includes(key)) {
+            return value;
+        }
+    }
+    
+    // Color por defecto
+    return { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-900', darkText: 'dark:text-purple-300' };
+};
+
 interface Props extends PageProps {
     legalCases: {
         data: LegalCase[];
@@ -274,8 +319,51 @@ export default function Index() {
             header: 'Fecha de Entrada',
             cell: (info) => formatDateSafe(info.getValue()),
             enableSorting: true,
-            enableColumnFilter: true,
+            enableColumnFilter: false,
         }),
+        columnHelper.accessor('sentence_date', {
+            header: 'Fecha de Sentencia',
+            cell: (info) => formatDateSafe(info.getValue()) || <span className="text-gray-400">Pendiente</span>,
+            enableSorting: true,
+            enableColumnFilter: false,
+        }),
+        columnHelper.accessor('closing_date', {
+            header: 'Fecha de Salida',
+            cell: (info) => formatDateSafe(info.getValue()) || <span className="text-gray-400">Pendiente</span>,
+            enableSorting: true,
+            enableColumnFilter: false,
+        }),
+        columnHelper.accessor(
+            row => row.currentStatus?.name,
+            {
+                id: 'status',
+                header: 'Estado',
+                cell: (info) => {
+                    const legalCase = info.row.original;
+                    
+                    // Primero intentamos con currentStatus (nuestra relación)
+                    let statusName = info.getValue();
+                    
+                    // Si no hay currentStatus pero hay statuses[], usamos el último
+                    if (!statusName && Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0) {
+                        statusName = legalCase.statuses[0].name;
+                    }
+                    
+                    if (!statusName) return <span className="text-gray-400">Sin estado</span>;
+                    
+                    // Obtener clases de colores según el estado
+                    const { bg, text, darkBg, darkText } = getStatusColor(statusName);
+                    
+                    return (
+                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text} dark:${darkBg} dark:${darkText}`}>
+                            {statusName}
+                        </div>
+                    );
+                },
+                enableSorting: true,
+                enableColumnFilter: true,
+            }
+        ),
         columnHelper.display({
             id: 'actions',
             header: () => <div className="text-right">Acciones</div>,
@@ -688,8 +776,38 @@ export default function Index() {
                                         </div>
                                     </div>
                                     <div className="text-xs text-gray-400">
-                                        Fecha: {formatDateSafe(legalCase.entry_date)}
+                                        Entrada: {formatDateSafe(legalCase.entry_date)}
                                     </div>
+                                    {legalCase.sentence_date && (
+                                        <div className="text-xs text-gray-400">
+                                            Sentencia: {formatDateSafe(legalCase.sentence_date)}
+                                        </div>
+                                    )}
+                                    {legalCase.closing_date && (
+                                        <div className="text-xs text-gray-400">
+                                            Salida: {formatDateSafe(legalCase.closing_date)}
+                                        </div>
+                                    )}
+                                    {/* Verificar si hay estado en currentStatus o en el array statuses */}
+                                    {(legalCase.currentStatus?.name || (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0)) && (
+                                        <div className="text-xs mt-1">
+                                            <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                (() => {
+                                                    // Determinar el nombre del estado a mostrar
+                                                    const statusName = legalCase.currentStatus?.name || 
+                                                                      (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ? 
+                                                                       legalCase.statuses[0].name : '');
+                                                    
+                                                    const colors = getStatusColor(statusName);
+                                                    return `${colors.bg} ${colors.text} ${colors.darkBg} ${colors.darkText}`;
+                                                })()
+                                            }`}>
+                                                {legalCase.currentStatus?.name || 
+                                                 (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ? 
+                                                  legalCase.statuses[0].name : 'Sin estado')}
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="flex gap-2 mt-2 justify-end">
                                         <Link href={route('legal-cases.show', legalCase.id)}>
                                             <Button variant="outline" size="icon" className="h-8 w-8">
@@ -877,42 +995,6 @@ export default function Index() {
                         )}
                     </div>
                 </div>
-
-                {/* Depuración de paginación (comentada para producción)
-                <div className="mt-4 p-4 bg-gray-100 dark:bg-zinc-800 rounded-md text-xs">
-                    <h3 className="font-bold mb-2">Información de depuración:</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div>
-                            <p>Total de registros: {totalItemsGlobal}</p>
-                            <p>Registros por página: {pageSize}</p>
-                            <p>Página actual: {legalCases?.meta?.current_page || 1}</p>
-                            <p>Total de páginas: {legalCases?.meta?.last_page || 1}</p>
-                        </div>
-                        <div>
-                            <p>Mostrando registros: {legalCases?.meta?.from || 0} - {legalCases?.meta?.to || 0}</p>
-                            <p>Links de paginación: {legalCases?.meta?.links ? legalCases.meta.links.length : 0}</p>
-                            <p>¿Tiene links de paginación?: {legalCases?.meta?.links && legalCases.meta.links.length > 0 ? 'Sí' : 'No'}</p>
-                            <p>¿Tiene link "Next"?: {legalCases?.meta?.links?.find(link => link.label === "Next &raquo;")?.url ? 'Sí' : 'No'}</p>
-                        </div>
-                    </div>
-                    
-                    <div className="mt-4 border-t pt-4 border-gray-200 dark:border-zinc-700">
-                        <h4 className="font-semibold mb-2">Prueba de paginación:</h4>
-                        <div className="flex justify-center">
-                            <LaravelPagination 
-                                links={[
-                                    { url: null, label: "&laquo; Previous", active: false },
-                                    { url: "#", label: "1", active: true },
-                                    { url: "#", label: "2", active: false },
-                                    { url: "#", label: "Next &raquo;", active: false }
-                                ]} 
-                                onPageChange={(url) => console.log("Navegación de prueba:", url)}
-                            />
-                        </div>
-                        <p className="text-center mt-2 text-gray-500">↑ Controles de paginación de prueba (estáticos) ↑</p>
-                    </div>
-                </div>
-                */}
 
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                     <AlertDialogContent>

@@ -84,6 +84,14 @@ export interface LegalCase {
     individuals: Individual[];
     legal_entities: LegalEntity[];
     statuses: Status[];
+    currentStatus?: { // Estado actual (opcional)
+        id: number;
+        name: string;
+        reason?: string | null;
+        created_at: string;
+        model_type: string;
+        model_id: number;
+    };
     events: any[]; // TODO: Definir tipo específico para eventos
     importantDates: any[]; // TODO: Definir tipo específico para fechas importantes
     created_at: string;

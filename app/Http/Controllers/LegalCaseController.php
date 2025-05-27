@@ -26,7 +26,16 @@ final class LegalCaseController extends Controller
         // Validamos que perPage tenga un valor razonable para evitar problemas de rendimiento
         $perPage = in_array($perPage, [5, 10, 20, 50, 100, 200, 500, 1000]) ? $perPage : 10;
         
-        $query = LegalCase::with(['caseType', 'individuals', 'legalEntities']);
+        // Modificamos la query para incluir los estados del expediente
+        $query = LegalCase::with([
+            'caseType', 
+            'individuals', 
+            'legalEntities',
+            'statuses' => function($query) {
+                // Ordenamos los estados por fecha de creación descendente
+                $query->orderBy('created_at', 'desc');
+            }
+        ]);
         
         if ($search) {
             $query->where('code', 'like', "%{$search}%");
@@ -88,6 +97,23 @@ final class LegalCaseController extends Controller
         
         // Asignar los links generados manualmente a la respuesta JSON que irá al frontend
         $legalCasesResponse = $legalCases->toArray();
+        
+        // Procesar los datos para incluir el estado actual
+        foreach ($legalCasesResponse['data'] as &$case) {
+            // Si tiene estados, tomamos el primero (ya están ordenados por fecha descendente)
+            if (!empty($case['statuses'])) {
+                $case['currentStatus'] = [
+                    'id' => $case['statuses'][0]['id'],
+                    'name' => $case['statuses'][0]['name'],
+                    'reason' => $case['statuses'][0]['reason'],
+                    'created_at' => $case['statuses'][0]['created_at'],
+                    'model_type' => $case['statuses'][0]['model_type'],
+                    'model_id' => $case['statuses'][0]['model_id'],
+                ];
+            } else {
+                $case['currentStatus'] = null;
+            }
+        }
         
         // Asegurarse de que la estructura meta exista
         if (!isset($legalCasesResponse['meta'])) {

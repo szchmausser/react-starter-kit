@@ -15,7 +15,7 @@ export function formatDate(date: string): string {
 }
 
 // Formatea fechas YYYY-MM-DD sin desfase de zona horaria
-export function formatDateSafe(dateString: string): string {
+export function formatDateSafe(dateString: string | null | undefined): string {
     if (!dateString) return '';
     const [year, month, day] = dateString.substring(0, 10).split('-');
     return `${day}/${month}/${year}`;
