@@ -43,8 +43,8 @@ interface Props {
 }
 
 export default function SearchResults({ results, query }: Props) {
-    console.log('results formateado:', JSON.stringify(results, null, 2)); // Muestra el objeto con indentación de 2 espacios
-    console.log('query: ' + query);
+    // console.log('results formateado:', JSON.stringify(results, null, 2)); // Muestra el objeto con indentación de 2 espacios
+    // console.log('query: ' + query);
 
     // Función para obtener la información secundaria según el tipo de resultado
     const getSecondaryInfo = (result: SearchResultItem, type: string): string => {

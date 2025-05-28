@@ -44,7 +44,16 @@ class TagController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Tags/Create');
+        // Obtener tipos únicos de etiquetas existentes
+        $existingTypes = Tag::whereNotNull('type')
+            ->distinct()
+            ->pluck('type')
+            ->filter()
+            ->values();
+        
+        return Inertia::render('Tags/Create', [
+            'existingTypes' => $existingTypes
+        ]);
     }
 
     public function store(Request $request)

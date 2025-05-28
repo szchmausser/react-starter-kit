@@ -5,14 +5,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface Props {}
+interface Props {
+    existingTypes: string[];
+}
 
-const Page = () => {
+const Page = ({ existingTypes }: Props) => {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         type: '',
     });
+    
+    // Estado para controlar si se está creando un nuevo tipo
+    const [creatingType, setCreatingType] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,12 +27,18 @@ const Page = () => {
             onSuccess: () => {
                 toast.success('Etiqueta creada exitosamente');
                 reset();
+                setCreatingType(false);
             },
             onError: () => {
                 toast.error('Error al crear la etiqueta');
             },
             preserveScroll: true,
         });
+    };
+
+    const handleTypeChange = (value: string) => {
+        // Si el valor es "none", establecer un string vacío en el campo type
+        setData('type', value === 'none' ? '' : value);
     };
 
     return (
@@ -65,12 +78,53 @@ const Page = () => {
 
                                     <div className="space-y-2">
                                         <Label htmlFor="type">Tipo (opcional)</Label>
-                                        <Input
-                                            id="type"
-                                            value={data.type}
-                                            onChange={e => setData('type', e.target.value)}
-                                            placeholder="Ej: prioridad, estado, categoría"
-                                        />
+                                        
+                                        {!creatingType ? (
+                                            <>
+                                                <Select
+                                                    value={data.type || 'none'}
+                                                    onValueChange={handleTypeChange}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Seleccione un tipo" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">Sin tipo</SelectItem>
+                                                        {existingTypes.map((type) => (
+                                                            <SelectItem key={type} value={type}>
+                                                                {type}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <Button 
+                                                    variant="link" 
+                                                    onClick={() => setCreatingType(true)} 
+                                                    className="p-0 h-auto text-xs"
+                                                    type="button"
+                                                >
+                                                    + Crear nuevo tipo
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <Input
+                                                    id="type"
+                                                    value={data.type}
+                                                    onChange={e => setData('type', e.target.value)}
+                                                    placeholder="Ej: prioridad, estado, categoría"
+                                                />
+                                                <Button 
+                                                    variant="link" 
+                                                    onClick={() => setCreatingType(false)} 
+                                                    className="p-0 h-auto text-xs"
+                                                    type="button"
+                                                >
+                                                    Seleccionar tipo existente
+                                                </Button>
+                                            </div>
+                                        )}
+                                        
                                         <p className="text-xs text-muted-foreground">
                                             El tipo ayuda a agrupar etiquetas similares
                                         </p>
