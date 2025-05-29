@@ -141,7 +141,6 @@ export default function Index() {
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        debugTable: true,
         meta: {
             getRowNumber: (index: number) => {
                 return pagination.pageIndex * pagination.pageSize + index + 1;

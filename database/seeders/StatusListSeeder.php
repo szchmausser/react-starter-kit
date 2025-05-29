@@ -12,21 +12,22 @@ final class StatusListSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
-            'EN TRAMITE',
-            'EN FASE DE SUSTANCIACIÓN',
-            'EN FASE DE SENTENCIA DENTRO DEL LAPSO',
-            'EN FASE DE SENTENCIA FUERA DEL LAPSO',
-            'EN FASE DE NOTIFICACIÓN, INTERPOSICIÓN DE RECURSO',
-            'EN FASE DE EJECUCIÓN DE SENTENCIA',
-            'DISTRIBUIDOS SIN ACEPTAR',
-            'DISTRIBUIDOS Y ACEPTADOS SIN AUTO DE ADMISIÓN',
-            'EXPEDIENTES PROVENIENTES DE ARCHIVO JUDICIAL',
-            'SUSPENDIDOS',
-            'PARALIZADOS',
-            'PARALIZADOS EN EJECUCIÓN DE SENTENCIA',
-            'TERMINADOS',
-            'TERMINADOS POR REMITIR AL ARCHIVO JUDICIAL',
+            'En Tramite',
+            'En Fase De Sustanciación',
+            'En Fase De Sentencia Dentro Del Lapso',
+            'En Fase De Sentencia Fuera Del Lapso',
+            'En Fase De Notificación, Interposición De Recurso',
+            'En Fase De Ejecución De Sentencia',
+            'Distribuidos Sin Aceptar',
+            'Distribuidos Y Aceptados Sin Auto De Admisión',
+            'Expedientes Provenientes De Archivo Judicial',
+            'Suspendidos',
+            'Paralizados',
+            'Paralizados En Ejecución De Sentencia',
+            'Terminados',
+            'Terminados Por Remitir Al Archivo Judicial',
         ];
+        
         foreach ($statuses as $status) {
             StatusList::firstOrCreate([
                 'name' => $status

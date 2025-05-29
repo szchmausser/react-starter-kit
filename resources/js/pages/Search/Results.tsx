@@ -43,9 +43,6 @@ interface Props {
 }
 
 export default function SearchResults({ results, query }: Props) {
-    // console.log('results formateado:', JSON.stringify(results, null, 2)); // Muestra el objeto con indentación de 2 espacios
-    // console.log('query: ' + query);
-
     // Función para obtener la información secundaria según el tipo de resultado
     const getSecondaryInfo = (result: SearchResultItem, type: string): string => {
         const { searchable } = result;
@@ -140,8 +137,8 @@ export default function SearchResults({ results, query }: Props) {
                                                             <p className="text-lg font-medium dark:text-white">{result.title}</p>
                                                             <p className="text-sm text-gray-600 dark:text-gray-400">{getSecondaryInfo(result, type)}</p>
                                                         </div>
-                                                        <Button 
-                                                            onClick={() => router.visit(result.url)} 
+                                                        <Button
+                                                            onClick={() => router.visit(result.url)}
                                                             className="w-full sm:w-auto bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                                                             size="sm"
                                                         >
