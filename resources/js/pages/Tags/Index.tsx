@@ -46,6 +46,7 @@ export default function Index({ tags: initialTags }: Props) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
+    const [uniqueTypes, setUniqueTypes] = useState<string[]>([]);
 
     // Definición de breadcrumbs para la navegación
     const breadcrumbs: BreadcrumbItem[] = [
@@ -81,6 +82,20 @@ export default function Index({ tags: initialTags }: Props) {
         return row.index + 1;
     };
 
+    // Extraer valores únicos de tipo al cargar el componente
+    useEffect(() => {
+        // Filtrar valores nulos y duplicados
+        const types = initialTags
+            .map(tag => tag.type)
+            .filter((type, index, self) =>
+                type !== null &&
+                type !== '' &&
+                self.indexOf(type) === index
+            ) as string[];
+
+        setUniqueTypes(types);
+    }, [initialTags]);
+
     // Definición de columnas para TanStack Table
     const columns = useMemo(() => [
         // Columna de numeración
@@ -112,6 +127,11 @@ export default function Index({ tags: initialTags }: Props) {
             },
             enableSorting: true,
             enableColumnFilter: true,
+            filterFn: (row, columnId, filterValue) => {
+                if (!filterValue || filterValue === 'all') return true;
+                const rowValue = row.getValue(columnId);
+                return rowValue === filterValue;
+            },
         }),
         columnHelper.display({
             id: 'actions',
@@ -158,7 +178,7 @@ export default function Index({ tags: initialTags }: Props) {
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        debugTable: true,
+        // debugTable: true,
         meta: {
             getRowNumber: (index: number) => {
                 return pagination.pageIndex * pagination.pageSize + index + 1;
@@ -274,13 +294,32 @@ export default function Index({ tags: initialTags }: Props) {
                                     <label htmlFor={`filter-${column.id}`} className="text-xs text-gray-500">
                                         {column.columnDef.header as string}
                                     </label>
-                                    <Input
-                                        id={`filter-${column.id}`}
-                                        value={(column.getFilterValue() as string) ?? ''}
-                                        onChange={e => column.setFilterValue(e.target.value)}
-                                        placeholder={`Filtrar ${column.columnDef.header as string}...`}
-                                        className="h-8 text-xs"
-                                    />
+                                    {column.id === 'type' ? (
+                                        <Select
+                                            value={(column.getFilterValue() as string) ?? ''}
+                                            onValueChange={value => column.setFilterValue(value)}
+                                        >
+                                            <SelectTrigger className="h-8 text-xs">
+                                                <SelectValue placeholder={`Filtrar ${column.columnDef.header as string}...`} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Todos</SelectItem>
+                                                {uniqueTypes.map(type => (
+                                                    <SelectItem key={type} value={type}>
+                                                        {type}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <Input
+                                            id={`filter-${column.id}`}
+                                            value={(column.getFilterValue() as string) ?? ''}
+                                            onChange={e => column.setFilterValue(e.target.value)}
+                                            placeholder={`Filtrar ${column.columnDef.header as string}...`}
+                                            className="h-8 text-xs"
+                                        />
+                                    )}
                                 </div>
                             ))}
 
@@ -403,12 +442,31 @@ export default function Index({ tags: initialTags }: Props) {
                                                         </div>
                                                         {header.column.getCanFilter() && (
                                                             <div className="mt-2">
-                                                                <Input
-                                                                    value={(header.column.getFilterValue() as string) ?? ''}
-                                                                    onChange={e => header.column.setFilterValue(e.target.value)}
-                                                                    placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
-                                                                    className="h-8 text-xs"
-                                                                />
+                                                                {header.column.id === 'type' ? (
+                                                                    <Select
+                                                                        value={(header.column.getFilterValue() as string) ?? ''}
+                                                                        onValueChange={value => header.column.setFilterValue(value)}
+                                                                    >
+                                                                        <SelectTrigger className="h-8 text-xs">
+                                                                            <SelectValue placeholder={`Filtrar ${header.column.columnDef.header as string}...`} />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            <SelectItem value="all">Todos</SelectItem>
+                                                                            {uniqueTypes.map(type => (
+                                                                                <SelectItem key={type} value={type}>
+                                                                                    {type}
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                ) : (
+                                                                    <Input
+                                                                        value={(header.column.getFilterValue() as string) ?? ''}
+                                                                        onChange={e => header.column.setFilterValue(e.target.value)}
+                                                                        placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
+                                                                        className="h-8 text-xs"
+                                                                    />
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
