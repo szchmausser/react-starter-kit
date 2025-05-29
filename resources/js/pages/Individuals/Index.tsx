@@ -755,79 +755,65 @@ export default function IndividualsIndex() {
               </div>
             </div>
 
-            {/* Paginación móvil usando botones más grandes */}
-            {individuals?.meta?.links && (
-              <div className="flex justify-center mt-3">
-                <div className="flex items-center gap-2">
-                  {/* Primera página */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const firstPageUrl = individuals.meta.links.find(link => link.label === "1")?.url;
-                      if (firstPageUrl) handlePageNavigation(firstPageUrl);
-                    }}
-                    disabled={individuals.meta.current_page === 1}
-                    className="h-10 w-10 flex items-center justify-center"
-                  >
-                    <ChevronsLeft className="h-5 w-5" />
-                  </Button>
+            {/* Paginación móvil usando botones más grandes (estilo cliente-side) */}
+            <div className="flex justify-between mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  const firstPageUrl = individuals.meta?.links?.find(link => link.label === "1")?.url;
+                  if (firstPageUrl) handlePageNavigation(firstPageUrl);
+                }}
+                disabled={!individuals.meta?.links?.find(link => link.label === "1")?.url || individuals.meta?.current_page === 1}
+              >
+                <ChevronsLeft className="h-4 w-4 mr-1" />
+                Inicio
+              </Button>
 
-                  {/* Página anterior */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const prevUrl = individuals.meta.links.find(link => link.label === "&laquo; Previous")?.url;
-                      if (prevUrl) handlePageNavigation(prevUrl);
-                    }}
-                    disabled={!individuals.meta.links.find(link => link.label === "&laquo; Previous")?.url}
-                    className="h-10 w-10 flex items-center justify-center"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  const prevUrl = individuals.meta?.links?.find(link => link.label === "&laquo; Previous")?.url;
+                  if (prevUrl) handlePageNavigation(prevUrl);
+                }}
+                disabled={!individuals.meta?.links?.find(link => link.label === "&laquo; Previous")?.url}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Anterior
+              </Button>
 
-                  {/* Página actual (como botón deshabilitado) */}
-                  <Button
-                    variant="default"
-                    size="sm"
-                    disabled
-                    className="h-10 w-10 flex items-center justify-center font-bold"
-                  >
-                    {individuals.meta.current_page}
-                  </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  const nextUrl = individuals.meta?.links?.find(link => link.label === "Next &raquo;")?.url;
+                  if (nextUrl) handlePageNavigation(nextUrl);
+                }}
+                disabled={!individuals.meta?.links?.find(link => link.label === "Next &raquo;")?.url}
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
 
-                  {/* Página siguiente */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const nextUrl = individuals.meta.links.find(link => link.label === "Next &raquo;")?.url;
-                      if (nextUrl) handlePageNavigation(nextUrl);
-                    }}
-                    disabled={!individuals.meta.links.find(link => link.label === "Next &raquo;")?.url}
-                    className="h-10 w-10 flex items-center justify-center"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </Button>
-
-                  {/* Última página */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const lastPageNumber = individuals.meta.last_page;
-                      const lastPageUrl = individuals.meta.links.find(link => link.label === String(lastPageNumber))?.url;
-                      if (lastPageUrl) handlePageNavigation(lastPageUrl);
-                    }}
-                    disabled={individuals.meta.current_page === individuals.meta.last_page}
-                    className="h-10 w-10 flex items-center justify-center"
-                  >
-                    <ChevronsRight className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  const lastPageNumber = individuals.meta?.last_page;
+                  const lastPageUrl = individuals.meta?.links?.find(link => link.label === String(lastPageNumber))?.url;
+                  if (lastPageUrl) handlePageNavigation(lastPageUrl);
+                }}
+                disabled={!individuals.meta?.last_page || individuals.meta?.current_page === individuals.meta?.last_page}
+              >
+                Final
+                <ChevronsRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           </div>
 
           {/* Espacio para compensar la paginación fija en móvil */}

@@ -78,8 +78,8 @@ export default function Index({ tags: initialTags }: Props) {
 
     // Función para obtener el índice global de una fila
     const getGlobalIndex = (row: Row<Tag>) => {
-        // Usar el índice original de la fila en los datos filtrados
-        return row.index + 1;
+        // Usar el índice original del modelo de paginación
+        return pagination.pageIndex * pagination.pageSize + row.index + 1;
     };
 
     // Extraer valores únicos de tipo al cargar el componente
@@ -103,7 +103,8 @@ export default function Index({ tags: initialTags }: Props) {
             id: 'numero',
             header: () => <div className="text-center font-medium">#</div>,
             cell: (info) => {
-                const globalIndex = getGlobalIndex(info.row);
+                // Calcular el índice global considerando la paginación
+                const globalIndex = pagination.pageIndex * pagination.pageSize + info.row.index + 1;
                 return <div className="text-center font-medium text-gray-500">{globalIndex}</div>;
             },
             enableSorting: false,
@@ -365,10 +366,11 @@ export default function Index({ tags: initialTags }: Props) {
                     </div>
 
                     {tableRows.length > 0 ? (
-                        tableRows.map((row) => {
+                        tableRows.map((row, index) => {
                             const tag = row.original;
                             const tagName = getTagName(tag);
-                            const rowNumber = (table.getState().pagination.pageIndex * table.getState().pagination.pageSize) + row.index + 1;
+                            // Calcular el número directamente basado en la página actual
+                            const rowNumber = pagination.pageIndex * pagination.pageSize + index + 1;
                             return (
                                 <div key={tag.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
                                     <div className="font-bold text-base flex items-start">

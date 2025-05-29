@@ -70,8 +70,8 @@ export default function Index() {
 
     // Función para obtener el índice global de una fila
     const getGlobalIndex = (row: Row<Status>) => {
-        // Usar el índice original de la fila en los datos filtrados
-        return row.index + 1;
+        // Calcular el índice considerando la paginación
+        return pagination.pageIndex * pagination.pageSize + row.index + 1;
     };
 
     // Definición de columnas para TanStack Table
@@ -248,9 +248,10 @@ export default function Index() {
                 {/* Vista tipo card para móvil */}
                 <div className="block sm:hidden space-y-2 mb-16">
                     {tableRows.length > 0 ? (
-                        tableRows.map((row) => {
+                        tableRows.map((row, index) => {
                             const status = row.original;
-                            const rowNumber = (table.getState().pagination.pageIndex * table.getState().pagination.pageSize) + row.index + 1;
+                            // Calcular el número directamente basado en la página actual
+                            const rowNumber = pagination.pageIndex * pagination.pageSize + index + 1;
                             return (
                                 <div key={status.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
                                     <div className="font-bold text-base flex items-start">

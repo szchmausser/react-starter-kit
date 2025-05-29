@@ -660,7 +660,7 @@ export default function LegalEntitiesIndex() {
 
           {/* Cards de entidades */}
           {tableRows.length > 0 ? (
-            tableRows.map((row) => {
+            tableRows.map((row, index) => {
               const entity = row.original;
               return (
                 <div key={entity.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
@@ -672,8 +672,12 @@ export default function LegalEntitiesIndex() {
                     <span className="mr-2 mt-0.5 flex-shrink-0 text-gray-500">
                       {/* Numeración global basada en from de Laravel */}
                       #{(() => {
-                        const baseIndex = legalEntities?.meta?.from || 1; // Índice base de esta página
-                        return baseIndex + row.index; // Índice global = base + índice local
+                        // Si tenemos metadatos de paginación de Laravel, usarlos
+                        if (legalEntities?.meta?.from) {
+                          return legalEntities.meta.from + index;
+                        }
+                        // Si no, calcular basado en el índice actual y el tamaño de página
+                        return pagination.pageIndex * pagination.pageSize + index + 1;
                       })()}
                     </span>
                     <span className="mr-2 mt-0.5 flex-shrink-0">
@@ -758,79 +762,65 @@ export default function LegalEntitiesIndex() {
               </div>
             </div>
 
-            {/* Paginación móvil usando botones más grandes */}
-            {legalEntities?.meta?.links && (
-              <div className="flex justify-center mt-3">
-                <div className="flex items-center gap-2">
-                  {/* Primera página */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const firstPageUrl = legalEntities.meta.links.find(link => link.label === "1")?.url;
-                      if (firstPageUrl) handlePageNavigation(firstPageUrl);
-                    }}
-                    disabled={legalEntities.meta.current_page === 1}
-                    className="h-10 w-10 flex items-center justify-center"
-                  >
-                    <ChevronsLeft className="h-5 w-5" />
-                  </Button>
+            {/* Paginación móvil usando botones más grandes (estilo cliente-side) */}
+            <div className="flex justify-between mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  const firstPageUrl = legalEntities.meta?.links?.find(link => link.label === "1")?.url;
+                  if (firstPageUrl) handlePageNavigation(firstPageUrl);
+                }}
+                disabled={!legalEntities.meta?.links?.find(link => link.label === "1")?.url || legalEntities.meta?.current_page === 1}
+              >
+                <ChevronsLeft className="h-4 w-4 mr-1" />
+                Inicio
+              </Button>
 
-                  {/* Página anterior */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const prevUrl = legalEntities.meta.links.find(link => link.label === "&laquo; Previous")?.url;
-                      if (prevUrl) handlePageNavigation(prevUrl);
-                    }}
-                    disabled={!legalEntities.meta.links.find(link => link.label === "&laquo; Previous")?.url}
-                    className="h-10 w-10 flex items-center justify-center"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  const prevUrl = legalEntities.meta?.links?.find(link => link.label === "&laquo; Previous")?.url;
+                  if (prevUrl) handlePageNavigation(prevUrl);
+                }}
+                disabled={!legalEntities.meta?.links?.find(link => link.label === "&laquo; Previous")?.url}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Anterior
+              </Button>
 
-                  {/* Página actual (como botón deshabilitado) */}
-                  <Button
-                    variant="default"
-                    size="sm"
-                    disabled
-                    className="h-10 w-10 flex items-center justify-center font-bold"
-                  >
-                    {legalEntities.meta.current_page}
-                  </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  const nextUrl = legalEntities.meta?.links?.find(link => link.label === "Next &raquo;")?.url;
+                  if (nextUrl) handlePageNavigation(nextUrl);
+                }}
+                disabled={!legalEntities.meta?.links?.find(link => link.label === "Next &raquo;")?.url}
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
 
-                  {/* Página siguiente */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const nextUrl = legalEntities.meta.links.find(link => link.label === "Next &raquo;")?.url;
-                      if (nextUrl) handlePageNavigation(nextUrl);
-                    }}
-                    disabled={!legalEntities.meta.links.find(link => link.label === "Next &raquo;")?.url}
-                    className="h-10 w-10 flex items-center justify-center"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </Button>
-
-                  {/* Última página */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const lastPageNumber = legalEntities.meta.last_page;
-                      const lastPageUrl = legalEntities.meta.links.find(link => link.label === String(lastPageNumber))?.url;
-                      if (lastPageUrl) handlePageNavigation(lastPageUrl);
-                    }}
-                    disabled={legalEntities.meta.current_page === legalEntities.meta.last_page}
-                    className="h-10 w-10 flex items-center justify-center"
-                  >
-                    <ChevronsRight className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  const lastPageNumber = legalEntities.meta?.last_page;
+                  const lastPageUrl = legalEntities.meta?.links?.find(link => link.label === String(lastPageNumber))?.url;
+                  if (lastPageUrl) handlePageNavigation(lastPageUrl);
+                }}
+                disabled={!legalEntities.meta?.last_page || legalEntities.meta?.current_page === legalEntities.meta?.last_page}
+              >
+                Final
+                <ChevronsRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           </div>
 
           {/* Espacio para compensar la paginación fija en móvil */}
