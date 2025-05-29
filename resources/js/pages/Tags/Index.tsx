@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 interface Tag {
     id: number;
@@ -27,6 +27,11 @@ interface Props {
 const ITEMS_PER_PAGE = 10;
 
 export default function Index({ tags: initialTags, filters }: Props) {
+    // Añadimos un log para depuración
+    useEffect(() => {
+        console.log('Tags recibidos:', initialTags);
+    }, [initialTags]);
+
     const [search, setSearch] = useState(filters.search || '');
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
@@ -45,8 +50,8 @@ export default function Index({ tags: initialTags, filters }: Props) {
         const s = search.toLowerCase();
         return initialTags.filter(tag => {
             const name = getTagName(tag).toLowerCase();
-            return name.includes(s) || 
-                   (tag.type && tag.type.toLowerCase().includes(s));
+            return name.includes(s) ||
+                (tag.type && tag.type.toLowerCase().includes(s));
         });
     }, [initialTags, search]);
 
@@ -127,7 +132,7 @@ export default function Index({ tags: initialTags, filters }: Props) {
                                 <div key={tag.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
                                     <div className="font-bold text-base">{tagName}</div>
                                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                                        {tag.type ? `Tipo: ${tag.type}` : 'Sin tipo'}
+                                        {tag.type !== null && tag.type !== '' ? `Tipo: ${tag.type}` : 'Sin tipo'}
                                     </div>
                                     <div className="text-xs text-gray-400">
                                         Creado: {new Date(tag.created_at).toLocaleDateString()}
@@ -138,10 +143,10 @@ export default function Index({ tags: initialTags, filters }: Props) {
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Button 
-                                            variant="destructive" 
-                                            size="icon" 
-                                            className="h-8 w-8" 
+                                        <Button
+                                            variant="destructive"
+                                            size="icon"
+                                            className="h-8 w-8"
                                             onClick={() => confirmDelete(tag)}
                                         >
                                             <Trash2 className="h-4 w-4" />
@@ -164,7 +169,6 @@ export default function Index({ tags: initialTags, filters }: Props) {
                                 <TableRow>
                                     <TableHead>Nombre</TableHead>
                                     <TableHead>Tipo</TableHead>
-                                    <TableHead>Fecha de creación</TableHead>
                                     <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -177,10 +181,7 @@ export default function Index({ tags: initialTags, filters }: Props) {
                                                 <TableCell className="font-medium">
                                                     {tagName}
                                                 </TableCell>
-                                                <TableCell>{tag.type || '-'}</TableCell>
-                                                <TableCell>
-                                                    {new Date(tag.created_at).toLocaleDateString()}
-                                                </TableCell>
+                                                <TableCell>{tag.type !== null && tag.type !== '' ? tag.type : '-'}</TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
                                                         <Link href={route('tags.edit', tag.id)}>
@@ -188,9 +189,9 @@ export default function Index({ tags: initialTags, filters }: Props) {
                                                                 <Pencil className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        <Button 
-                                                            variant="destructive" 
-                                                            size="icon" 
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="icon"
                                                             onClick={() => confirmDelete(tag)}
                                                         >
                                                             <Trash2 className="h-4 w-4" />

@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             IndividualSeeder::class,
             LegalEntitySeeder::class,
             StatusListSeeder::class,
+            TagSeeder::class,
             LegalCaseSeeder::class,
             CaseEventSeeder::class,
         ]);

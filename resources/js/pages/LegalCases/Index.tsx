@@ -8,21 +8,21 @@ import { type BreadcrumbItem } from '@/types';
 import { formatDateSafe } from '@/lib/utils';
 import { PageProps } from '@inertiajs/core';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { 
-    ArrowDown, 
-    ArrowUp, 
-    Briefcase, 
+import {
+    ArrowDown,
+    ArrowUp,
+    Briefcase,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
     ChevronsRight,
-    Eye, 
-    Pencil, 
-    Plus, 
-    RotateCcw, 
-    Search, 
-    Trash2, 
-    X 
+    Eye,
+    Pencil,
+    Plus,
+    RotateCcw,
+    Search,
+    Trash2,
+    X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { LegalCase } from '@/types/index';
@@ -47,41 +47,41 @@ const getStatusColor = (statusName: string): { bg: string, text: string, darkBg:
     const normalizedStatus = statusName.toLowerCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .replace(/\s+/g, "");
-    
+
     // Mapeo de estados a colores
     const colorMap: Record<string, { bg: string, text: string, darkBg: string, darkText: string }> = {
         // Estados de tramitación
         'enproceso': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
         'tramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
         'entramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
-        
+
         // Estados de conclusión
         'finalizado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
         'completado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
         'cerrado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
-        
+
         // Estados de espera
         'enespera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
         'pendiente': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
         'espera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
-        
+
         // Estados críticos
         'urgente': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-900', darkText: 'dark:text-red-300' },
         'critico': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-900', darkText: 'dark:text-red-300' },
-        
+
         // Estados de pausa
         'suspendido': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
         'cancelado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
         'archivado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
     };
-    
+
     // Buscar coincidencia en el mapa de colores
     for (const [key, value] of Object.entries(colorMap)) {
         if (normalizedStatus.includes(key)) {
             return value;
         }
     }
-    
+
     // Color por defecto
     return { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-900', darkText: 'dark:text-purple-300' };
 };
@@ -126,16 +126,16 @@ export default function Index() {
     const [caseToDelete, setCaseToDelete] = useState<LegalCase | null>(null);
     const [search, setSearch] = useState(filters?.search || '');
     const [expandedTitles, setExpandedTitles] = useState<Record<number, boolean>>({});
-    
+
     // Estados para TanStack Table
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
-    
+
     // Extraer valores de la URL para inicialización
     const urlParams = new URLSearchParams(window.location.search);
     const urlPage = parseInt(urlParams.get('page') || '1', 10);
-    
+
     // Inicialización segura de la paginación
     const initialPage = useMemo(() => {
         // Primero intentamos obtener la página de la URL
@@ -149,9 +149,9 @@ export default function Index() {
         // Por defecto, página 0
         return 0;
     }, [legalCases?.meta?.current_page, urlPage]);
-    
+
     const initialPageSize = filters?.per_page || parseInt(urlParams.get('per_page') || '10', 10);
-    
+
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: initialPage,
         pageSize: initialPageSize,
@@ -162,21 +162,21 @@ export default function Index() {
         // Solo actualizar si realmente cambió
         const newPageIndex = legalCases?.meta?.current_page ? legalCases.meta.current_page - 1 : 0;
         const newPageSize = filters?.per_page || 10;
-        
+
         // Batch updates para evitar múltiples renderizados
         let shouldUpdate = false;
-        let newPagination = {...pagination};
-        
+        let newPagination = { ...pagination };
+
         if (newPageIndex !== pagination.pageIndex) {
             newPagination.pageIndex = newPageIndex;
             shouldUpdate = true;
         }
-        
+
         if (newPageSize !== pagination.pageSize) {
             newPagination.pageSize = newPageSize;
             shouldUpdate = true;
         }
-        
+
         // Solo actualizar el estado si algo cambió
         if (shouldUpdate) {
             setPagination(newPagination);
@@ -186,12 +186,12 @@ export default function Index() {
     // Preferencias de paginación
     const handlePerPageChange = (value: string) => {
         const newPerPage = parseInt(value, 10);
-        
-        router.visit(route('legal-cases.index', { 
+
+        router.visit(route('legal-cases.index', {
             search: filters?.search || '',
             per_page: newPerPage,
             page: 1, // Volver a la primera página al cambiar la cantidad por página
-        }), { 
+        }), {
             preserveState: true,
             replace: true,
             only: ['legalCases', 'filters', 'debug'],
@@ -201,7 +201,7 @@ export default function Index() {
     // Manejador para navegación de página
     const handlePageNavigation = (url: string | null) => {
         if (!url) return; // Si la URL es null, simplemente retornamos sin hacer nada
-        
+
         // Usar Inertia.js para navegar a la URL proporcionada por Laravel
         router.visit(url, {
             preserveState: true,
@@ -223,13 +223,13 @@ export default function Index() {
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Siempre enviamos la búsqueda al servidor para filtrar datos desde la base de datos
-        router.visit(route('legal-cases.index', { 
+        router.visit(route('legal-cases.index', {
             search,
             per_page: filters?.per_page || 10,
             page: 1,
-        }), { 
+        }), {
             preserveState: true,
             replace: true,
             only: ['legalCases', 'filters', 'debug'],
@@ -274,7 +274,7 @@ export default function Index() {
         // (esto proporciona compatibilidad con versiones anteriores)
         return Array.isArray(legalCases) ? legalCases : [];
     }, [legalCases]);
-    
+
     // Definir el helper de columna para LegalCase
     const columnHelper = createColumnHelper<LegalCase>();
 
@@ -340,20 +340,20 @@ export default function Index() {
                 header: 'Estado',
                 cell: (info) => {
                     const legalCase = info.row.original;
-                    
+
                     // Primero intentamos con currentStatus (nuestra relación)
                     let statusName = info.getValue();
-                    
+
                     // Si no hay currentStatus pero hay statuses[], usamos el último
                     if (!statusName && Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0) {
                         statusName = legalCase.statuses[0].name;
                     }
-                    
+
                     if (!statusName) return <span className="text-gray-400">Sin estado</span>;
-                    
+
                     // Obtener clases de colores según el estado
                     const { bg, text, darkBg, darkText } = getStatusColor(statusName);
-                    
+
                     return (
                         <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text} dark:${darkBg} dark:${darkText}`}>
                             {statusName}
@@ -381,9 +381,9 @@ export default function Index() {
                                 <Pencil className="h-4 w-4" />
                             </Button>
                         </Link>
-                        <Button 
-                            variant="destructive" 
-                            size="icon" 
+                        <Button
+                            variant="destructive"
+                            size="icon"
                             onClick={() => confirmDelete(legalCase)}
                         >
                             <Trash2 className="h-4 w-4" />
@@ -419,10 +419,10 @@ export default function Index() {
         // Indicamos a TanStack Table el número total de filas para cálculos de paginación
         pageCount: legalCases?.meta?.last_page || 1,
     });
-    
+
     // Calculamos información de paginación para mostrar en la interfaz
     const { pageSize, pageIndex } = table.getState().pagination;
-    
+
     // Métricas globales - Total de registros en la base de datos
     const totalItemsGlobal = useMemo(() => {
         // Preferimos usar el dato explícito del debug si está disponible
@@ -436,7 +436,7 @@ export default function Index() {
         // Si no, usamos la longitud de nuestros datos
         return data.length;
     }, [legalCases, data, debug]);
-    
+
     // Número total de páginas - Calcular correctamente basado en el total de registros
     const lastPage = useMemo(() => {
         // Usar el valor explícito del debug si está disponible
@@ -447,34 +447,34 @@ export default function Index() {
         if (legalCases?.meta?.last_page) {
             return legalCases.meta.last_page;
         }
-        
+
         // Si no, calculamos basado en el total de registros y los registros por página
         return Math.max(1, Math.ceil(totalItemsGlobal / pageSize));
     }, [legalCases?.meta?.last_page, totalItemsGlobal, pageSize, debug]);
-    
+
     // Como estamos usando paginación manual, usamos directamente los datos que viene del servidor
     // sin necesidad de filtrado adicional en el cliente
     const tableRows = table.getRowModel().rows;
-    
+
     // Flag para indicar si hay filtros activos
     const hasActiveFilters = useMemo(() => {
-        return table.getState().columnFilters.length > 0 || 
-               sorting.length > 0 || 
-               globalFilter !== '';
+        return table.getState().columnFilters.length > 0 ||
+            sorting.length > 0 ||
+            globalFilter !== '';
     }, [table.getState().columnFilters, sorting, globalFilter]);
-    
+
     // Resetear filtros
     const handleResetFilters = () => {
         setSorting([]);
         setColumnFilters([]);
         setGlobalFilter('');
         setSearch('');
-        
+
         // Reiniciar la búsqueda y volver a la primera página
-        router.visit(route('legal-cases.index', { 
+        router.visit(route('legal-cases.index', {
             per_page: initialPageSize,
             page: 1
-        }), { 
+        }), {
             preserveState: true,
             replace: true,
             only: ['legalCases', 'filters', 'debug'],
@@ -485,7 +485,7 @@ export default function Index() {
     const filteredCount = useMemo(() => {
         return table.getFilteredRowModel().rows.length;
     }, [table.getFilteredRowModel().rows.length]);
-    
+
     // Renderizado condicional optimizado para la tabla
     const renderTable = useMemo(() => (
         <Table>
@@ -584,8 +584,8 @@ export default function Index() {
                             </Button>
                         </form>
                         {hasActiveFilters && (
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 size="icon"
                                 onClick={handleResetFilters}
                                 title="Limpiar filtros"
@@ -650,9 +650,9 @@ export default function Index() {
                     <div className="bg-white dark:bg-zinc-900 rounded shadow p-3 mb-2">
                         <div className="space-y-2">
                             <h3 className="text-sm font-semibold mb-2">Filtros</h3>
-                            
+
                             {/* Filtros de columnas */}
-                            {table.getAllColumns().filter(column => 
+                            {table.getAllColumns().filter(column =>
                                 column.getCanFilter()
                             ).map(column => (
                                 <div key={column.id} className="space-y-1">
@@ -704,9 +704,9 @@ export default function Index() {
                                                 </div>
                                             );
                                         })}
-                                        
-                                        <Button 
-                                            variant="outline" 
+
+                                        <Button
+                                            variant="outline"
                                             size="sm"
                                             onClick={handleResetFilters}
                                             className="text-xs h-7 mt-1"
@@ -717,14 +717,14 @@ export default function Index() {
                                     </div>
                                 </div>
                             )}
-                            
+
                             {/* Selector de registros por página para móvil */}
                             <div className="mt-4">
                                 <label htmlFor="mobile-per-page" className="text-xs text-gray-500 block mb-1">
                                     Registros por página
                                 </label>
-                                <Select 
-                                    value={pageSize.toString()} 
+                                <Select
+                                    value={pageSize.toString()}
                                     onValueChange={handlePerPageChange}
                                 >
                                     <SelectTrigger className="h-8 w-full">
@@ -748,8 +748,8 @@ export default function Index() {
                             const legalCase = row.original;
                             return (
                                 <div key={legalCase.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
-                                    <div 
-                                        className="font-bold text-base flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors" 
+                                    <div
+                                        className="font-bold text-base flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors"
                                         onClick={(e) => toggleTitleExpand(legalCase.id, e)}
                                         title="Clic para expandir/contraer el texto"
                                     >
@@ -767,8 +767,8 @@ export default function Index() {
                                             {legalCase.code}
                                         </span>
                                     </div>
-                                    <div 
-                                        className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors" 
+                                    <div
+                                        className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors"
                                         onClick={(e) => toggleTitleExpand(legalCase.id, e)}
                                     >
                                         <div className={expandedTitles[legalCase.id] ? '' : 'truncate'}>
@@ -791,20 +791,19 @@ export default function Index() {
                                     {/* Verificar si hay estado en currentStatus o en el array statuses */}
                                     {(legalCase.currentStatus?.name || (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0)) && (
                                         <div className="text-xs mt-1">
-                                            <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                                (() => {
+                                            <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${(() => {
                                                     // Determinar el nombre del estado a mostrar
-                                                    const statusName = legalCase.currentStatus?.name || 
-                                                                      (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ? 
-                                                                       legalCase.statuses[0].name : '');
-                                                    
+                                                    const statusName = legalCase.currentStatus?.name ||
+                                                        (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ?
+                                                            legalCase.statuses[0].name : '');
+
                                                     const colors = getStatusColor(statusName);
                                                     return `${colors.bg} ${colors.text} ${colors.darkBg} ${colors.darkText}`;
                                                 })()
-                                            }`}>
-                                                {legalCase.currentStatus?.name || 
-                                                 (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ? 
-                                                  legalCase.statuses[0].name : 'Sin estado')}
+                                                }`}>
+                                                {legalCase.currentStatus?.name ||
+                                                    (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ?
+                                                        legalCase.statuses[0].name : 'Sin estado')}
                                             </div>
                                         </div>
                                     )}
@@ -831,7 +830,7 @@ export default function Index() {
                             No se encontraron registros.
                         </div>
                     )}
-                    
+
                     {/* Paginación móvil */}
                     <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
                         <div className="flex items-center justify-between">
@@ -843,11 +842,11 @@ export default function Index() {
                                     <span>{totalItemsGlobal}</span>
                                 </span>
                             </div>
-                            
+
                             <div className="flex items-center gap-2">
                                 {/* Selector de registros por página */}
-                                <Select 
-                                    value={pageSize.toString()} 
+                                <Select
+                                    value={pageSize.toString()}
                                     onValueChange={handlePerPageChange}
                                 >
                                     <SelectTrigger className="h-7 w-16 text-xs">
@@ -861,14 +860,14 @@ export default function Index() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                
+
                                 {/* Indicador de página en móvil */}
                                 <div className="text-xs font-medium">
                                     Pág. {legalCases?.meta?.current_page || 1}/{legalCases?.meta?.last_page || 1}
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Paginación móvil usando botones más grandes */}
                         {legalCases?.meta?.links && (
                             <div className="flex justify-center mt-3">
@@ -886,7 +885,7 @@ export default function Index() {
                                     >
                                         <ChevronsLeft className="h-5 w-5" />
                                     </Button>
-                                    
+
                                     {/* Página anterior */}
                                     <Button
                                         variant="outline"
@@ -900,7 +899,7 @@ export default function Index() {
                                     >
                                         <ChevronLeft className="h-5 w-5" />
                                     </Button>
-                                    
+
                                     {/* Página actual (como botón deshabilitado) */}
                                     <Button
                                         variant="default"
@@ -910,7 +909,7 @@ export default function Index() {
                                     >
                                         {legalCases.meta.current_page}
                                     </Button>
-                                    
+
                                     {/* Página siguiente */}
                                     <Button
                                         variant="outline"
@@ -924,7 +923,7 @@ export default function Index() {
                                     >
                                         <ChevronRight className="h-5 w-5" />
                                     </Button>
-                                    
+
                                     {/* Última página */}
                                     <Button
                                         variant="outline"
@@ -943,7 +942,7 @@ export default function Index() {
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Espacio para compensar la paginación fija en móvil */}
                     <div className="sm:hidden h-20"></div>
                 </div>
@@ -959,8 +958,8 @@ export default function Index() {
                     <div className="flex items-center gap-4">
                         <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
                             <div>
-                                Mostrando {legalCases?.meta?.to && legalCases?.meta?.from 
-                                    ? legalCases.meta.to - legalCases.meta.from + 1 
+                                Mostrando {legalCases?.meta?.to && legalCases?.meta?.from
+                                    ? legalCases.meta.to - legalCases.meta.from + 1
                                     : Math.min(pageSize, tableRows.length)} de {totalItemsGlobal} registros
                             </div>
                             <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
@@ -977,7 +976,7 @@ export default function Index() {
                             </Select>
                         </div>
                     </div>
-                    
+
                     {/* Paginación mejorada */}
                     <div className="flex items-center gap-4">
                         {/* Indicador de página actual */}
@@ -985,11 +984,11 @@ export default function Index() {
                             Página <span className="font-semibold">{legalCases?.meta?.current_page || 1}</span> de{" "}
                             <span className="font-semibold">{legalCases?.meta?.last_page || 1}</span>
                         </div>
-                        
+
                         {/* Botones de navegación */}
                         {legalCases?.meta?.links && (
-                            <LaravelPagination 
-                                links={legalCases.meta.links} 
+                            <LaravelPagination
+                                links={legalCases.meta.links}
                                 onPageChange={handlePageNavigation}
                             />
                         )}
