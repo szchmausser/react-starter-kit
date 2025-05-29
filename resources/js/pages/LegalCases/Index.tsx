@@ -111,7 +111,6 @@ interface Props extends PageProps {
         };
     };
     filters: {
-        search: string;
         per_page: number;
     };
     debug?: {
@@ -124,7 +123,6 @@ export default function Index() {
     const { legalCases, filters, debug } = usePage<Props>().props;
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [caseToDelete, setCaseToDelete] = useState<LegalCase | null>(null);
-    const [search, setSearch] = useState(filters?.search || '');
     const [expandedTitles, setExpandedTitles] = useState<Record<number, boolean>>({});
 
     // Estados para TanStack Table
@@ -188,7 +186,6 @@ export default function Index() {
         const newPerPage = parseInt(value, 10);
 
         router.visit(route('legal-cases.index', {
-            search: filters?.search || '',
             per_page: newPerPage,
             page: 1, // Volver a la primera página al cambiar la cantidad por página
         }), {
@@ -220,21 +217,6 @@ export default function Index() {
             href: route('legal-cases.index'),
         },
     ];
-
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Siempre enviamos la búsqueda al servidor para filtrar datos desde la base de datos
-        router.visit(route('legal-cases.index', {
-            search,
-            per_page: filters?.per_page || 10,
-            page: 1,
-        }), {
-            preserveState: true,
-            replace: true,
-            only: ['legalCases', 'filters', 'debug'],
-        });
-    };
 
     const confirmDelete = (legalCase: LegalCase) => {
         setCaseToDelete(legalCase);
@@ -468,7 +450,6 @@ export default function Index() {
         setSorting([]);
         setColumnFilters([]);
         setGlobalFilter('');
-        setSearch('');
 
         // Reiniciar la búsqueda y volver a la primera página
         router.visit(route('legal-cases.index', {
@@ -572,17 +553,6 @@ export default function Index() {
                         )}
                     </h1>
                     <div className="flex flex-1 gap-2 items-center justify-end">
-                        <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-xs">
-                            <Input
-                                placeholder="Buscar por código..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full"
-                            />
-                            <Button type="submit" variant="outline" className="shrink-0">
-                                <Search className="h-4 w-4" />
-                            </Button>
-                        </form>
                         {hasActiveFilters && (
                             <Button
                                 variant="outline"

@@ -19,7 +19,6 @@ final class LegalCaseController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
         $perPage = (int) $request->input('per_page', 10);
         $page = (int) $request->input('page', 1);
         
@@ -36,10 +35,6 @@ final class LegalCaseController extends Controller
                 $query->orderBy('created_at', 'desc');
             }
         ]);
-        
-        if ($search) {
-            $query->where('code', 'like', "%{$search}%");
-        }
         
         // Contar el total de registros para depuración
         // Importante: Clonar la query para evitar que el count afecte a la paginación
@@ -139,7 +134,6 @@ final class LegalCaseController extends Controller
         return Inertia::render('LegalCases/Index', [
             'legalCases' => $legalCasesResponse,
             'filters' => [
-                'search' => $search,
                 'per_page' => $perPage,
             ],
             'debug' => [

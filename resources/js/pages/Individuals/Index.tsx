@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Individual } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -54,6 +53,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import LaravelPagination from '@/components/LaravelPagination';
 import { PageProps } from '@inertiajs/core';
 
+// Definir la interfaz BreadcrumbItem
+interface BreadcrumbItem {
+  title: string;
+  href: string;
+}
+
+// Definir la interfaz Individual
+interface Individual {
+  id: number;
+  national_id: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  second_last_name?: string;
+  email_1?: string;
+  phone_number_1?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface Props extends PageProps {
   individuals: {
     data: Individual[];
@@ -79,7 +98,6 @@ interface Props extends PageProps {
     };
   };
   filters: {
-    search: string;
     per_page?: number;
     national_id?: string;
     first_name?: string;
@@ -98,7 +116,6 @@ export default function IndividualsIndex() {
   const { individuals, filters, debug } = usePage<Props>().props;
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [individualToDelete, setIndividualToDelete] = useState<Individual | null>(null);
-  const [search, setSearch] = useState(filters?.search || '');
   const [expandedTitles, setExpandedTitles] = useState<Record<number, boolean>>({});
   
   // Estados para TanStack Table
@@ -162,7 +179,6 @@ export default function IndividualsIndex() {
     const newPerPage = parseInt(value, 10);
     
     router.visit(route('individuals.index', { 
-        search: filters?.search || '',
         per_page: newPerPage,
         page: 1, // Volver a la primera página al cambiar la cantidad por página
     }), { 
@@ -194,21 +210,6 @@ export default function IndividualsIndex() {
       href: route('individuals.index'),
     },
   ];
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Siempre enviamos la búsqueda al servidor para filtrar datos desde la base de datos
-    router.visit(route('individuals.index', { 
-        search,
-        per_page: filters?.per_page || 10,
-        page: 1,
-    }), { 
-        preserveState: true,
-        replace: true,
-        only: ['individuals', 'filters', 'debug'],
-    });
-  };
 
   const confirmDelete = (individual: Individual) => {
     setIndividualToDelete(individual);
@@ -243,7 +244,6 @@ export default function IndividualsIndex() {
     setSorting([]);
     setColumnFilters([]);
     setGlobalFilter('');
-    setSearch('');
     
     // Reiniciar la búsqueda y volver a la primera página
     router.visit(route('individuals.index', { 
@@ -510,28 +510,6 @@ export default function IndividualsIndex() {
             )}
           </h1>
           <div className="flex flex-1 gap-2 items-center justify-end">
-            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-xs">
-              <Input
-                placeholder="Buscar por nombre o cédula..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full"
-              />
-              <Button type="submit" variant="outline" className="shrink-0">
-                <Search className="h-4 w-4" />
-              </Button>
-            </form>
-            {hasActiveFilters && (
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={handleResetFilters}
-                title="Limpiar filtros"
-                className="shrink-0"
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-            )}
             <Link href={route('individuals.create')}>
               <Button className="hidden sm:inline-flex">
                 <Plus className="h-4 w-4 mr-2" />

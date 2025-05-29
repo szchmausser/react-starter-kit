@@ -80,7 +80,6 @@ interface Props extends PageProps {
     };
   };
   filters: {
-    search: string;
     per_page?: number;
     rif?: string;
     business_name?: string;
@@ -99,7 +98,6 @@ export default function LegalEntitiesIndex() {
   const { legalEntities, filters, debug } = usePage<Props>().props;
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [entityToDelete, setEntityToDelete] = useState<LegalEntity | null>(null);
-  const [search, setSearch] = useState(filters?.search || '');
   const [expandedTitles, setExpandedTitles] = useState<Record<number, boolean>>({});
   
   // Estados para TanStack Table
@@ -163,7 +161,6 @@ export default function LegalEntitiesIndex() {
     const newPerPage = parseInt(value, 10);
     
     router.visit(route('legal-entities.index', { 
-        search: filters?.search || '',
         per_page: newPerPage,
         page: 1, // Volver a la primera página al cambiar la cantidad por página
     }), { 
@@ -195,21 +192,6 @@ export default function LegalEntitiesIndex() {
       href: route('legal-entities.index'),
     },
   ];
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Siempre enviamos la búsqueda al servidor para filtrar datos desde la base de datos
-    router.visit(route('legal-entities.index', { 
-        search,
-        per_page: filters?.per_page || 10,
-        page: 1,
-    }), { 
-        preserveState: true,
-        replace: true,
-        only: ['legalEntities', 'filters', 'debug'],
-    });
-  };
 
   const confirmDelete = (entity: LegalEntity) => {
     setEntityToDelete(entity);
@@ -244,7 +226,6 @@ export default function LegalEntitiesIndex() {
     setSorting([]);
     setColumnFilters([]);
     setGlobalFilter('');
-    setSearch('');
     
     // Reiniciar la búsqueda y volver a la primera página
     router.visit(route('legal-entities.index', { 
@@ -518,17 +499,6 @@ export default function LegalEntitiesIndex() {
             )}
           </h1>
           <div className="flex flex-1 gap-2 items-center justify-end">
-            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-xs">
-              <Input
-                placeholder="Buscar por nombre o RIF..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full"
-              />
-              <Button type="submit" variant="outline" className="shrink-0">
-                <Search className="h-4 w-4" />
-              </Button>
-            </form>
             {hasActiveFilters && (
               <Button 
                 variant="outline" 

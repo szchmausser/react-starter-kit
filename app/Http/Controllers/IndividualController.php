@@ -18,18 +18,6 @@ class IndividualController extends Controller
     {
         $query = Individual::query();
         
-        // Filtrado global (búsqueda)
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('middle_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('second_last_name', 'like', "%{$search}%")
-                  ->orWhere('national_id', 'like', "%{$search}%");
-            });
-        }
-        
         // Filtros de columnas individuales
         if ($request->has('national_id') && !empty($request->national_id)) {
             $query->where('national_id', 'like', "%{$request->national_id}%");
@@ -99,7 +87,6 @@ class IndividualController extends Controller
                 ],
             ],
             'filters' => $request->only([
-                'search', 
                 'national_id', 
                 'first_name', 
                 'email', 

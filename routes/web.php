@@ -4,7 +4,6 @@ use App\Http\Controllers\IndividualController;
 use App\Http\Controllers\LegalCaseController;
 use App\Http\Controllers\LegalEntityController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\TagListController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CaseParticipantController;
 use App\Http\Controllers\CaseEventController;
@@ -91,5 +90,5 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('statuses', StatusController::class);
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

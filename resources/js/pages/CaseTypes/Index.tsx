@@ -34,16 +34,12 @@ import {
 
 interface Props extends PageProps {
     caseTypes: CaseType[];
-    filters: {
-        search: string;
-    };
 }
 
 export default function Index() {
-    const { caseTypes, filters } = usePage<Props>().props;
+    const { caseTypes } = usePage<Props>().props;
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [typeToDelete, setTypeToDelete] = useState<CaseType | null>(null);
-    const [search, setSearch] = useState(filters?.search || '');
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -126,19 +122,9 @@ export default function Index() {
         }),
     ], []);
 
-    // Filtrado local
-    const filteredTypes = useMemo(() => {
-        if (!search) return caseTypes;
-        const s = search.toLowerCase();
-        return caseTypes.filter(
-            type => type.name.toLowerCase().includes(s) ||
-                (type.description && type.description.toLowerCase().includes(s))
-        );
-    }, [caseTypes, search]);
-
     // Configuración de TanStack Table
     const table = useReactTable({
-        data: filteredTypes,
+        data: caseTypes,
         columns,
         state: {
             sorting,
@@ -171,9 +157,8 @@ export default function Index() {
     const hasActiveFilters = useMemo(() => {
         return table.getState().columnFilters.length > 0 || 
               sorting.length > 0 || 
-              globalFilter !== '' ||
-              search !== '';
-    }, [table.getState().columnFilters, sorting, globalFilter, search]);
+              globalFilter !== '';
+    }, [table.getState().columnFilters, sorting, globalFilter]);
 
     // Métricas globales - Total de registros
     const totalItemsGlobal = caseTypes.length;
@@ -187,17 +172,12 @@ export default function Index() {
     // Número total de páginas
     const pageCount = table.getPageCount();
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-    };
-
     const handlePerPageChange = (value: string) => {
         const newPageSize = parseInt(value);
         table.setPageSize(newPageSize);
     };
 
     const handleResetFilters = () => {
-        setSearch('');
         setSorting([]);
         setColumnFilters([]);
         setGlobalFilter('');
@@ -239,17 +219,6 @@ export default function Index() {
                         )}
                     </h1>
                     <div className="flex flex-1 gap-2 items-center justify-end">
-                        <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-xs">
-                            <Input
-                                placeholder="Buscar por nombre o descripción..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full"
-                            />
-                            <Button type="submit" variant="outline" className="shrink-0">
-                                <Search className="h-4 w-4" />
-                            </Button>
-                        </form>
                         {hasActiveFilters && (
                             <Button
                                 variant="outline"

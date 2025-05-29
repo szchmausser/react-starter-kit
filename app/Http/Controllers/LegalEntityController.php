@@ -19,16 +19,6 @@ class LegalEntityController extends Controller
     {
         $query = LegalEntity::query();
         
-        // Filtrado global (búsqueda)
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('business_name', 'like', "%{$search}%")
-                  ->orWhere('trade_name', 'like', "%{$search}%")
-                  ->orWhere('rif', 'like', "%{$search}%");
-            });
-        }
-        
         // Filtros de columnas individuales
         if ($request->has('rif') && !empty($request->rif)) {
             $query->where('rif', 'like', "%{$request->rif}%");
@@ -101,7 +91,6 @@ class LegalEntityController extends Controller
                 ],
             ],
             'filters' => $request->only([
-                'search', 
                 'rif', 
                 'business_name', 
                 'email', 
