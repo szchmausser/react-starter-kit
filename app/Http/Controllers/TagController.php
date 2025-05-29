@@ -11,13 +11,9 @@ class TagController extends Controller
 {
     public function index(Request $request): Response
     {
-        $search = $request->input('search');
         $type = $request->input('type');
 
         $query = Tag::query()
-            ->when($search, function($q) use ($search) {
-                $q->where('name->' . app()->getLocale(), 'like', "%{$search}%");
-            })
             ->when($type, function($q) use ($type) {
                 $q->where('type', $type);
             })
@@ -36,7 +32,6 @@ class TagController extends Controller
         return Inertia::render('Tags/Index', [
             'tags' => $tags,
             'filters' => [
-                'search' => $search,
                 'type' => $type,
             ],
         ]);

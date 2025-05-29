@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { PageProps } from '@inertiajs/core';
@@ -41,10 +41,9 @@ interface Props extends PageProps {
 }
 
 const Page = () => {
-    const { statuses, filters } = usePage<Props>().props;
+    const { statuses } = usePage<Props>().props;
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [statusToDelete, setStatusToDelete] = useState<Status | null>(null);
-    const [search, setSearch] = useState(filters?.search || '');
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -127,19 +126,9 @@ const Page = () => {
         }),
     ], []);
 
-    // Filtrado local
-    const filteredStatuses = useMemo(() => {
-        if (!search) return statuses;
-        const s = search.toLowerCase();
-        return statuses.filter(
-            status => status.name.toLowerCase().includes(s) ||
-                (status.description && status.description.toLowerCase().includes(s))
-        );
-    }, [statuses, search]);
-
     // Configuración de TanStack Table
     const table = useReactTable({
-        data: filteredStatuses,
+        data: statuses,
         columns,
         state: {
             sorting,
@@ -172,9 +161,8 @@ const Page = () => {
     const hasActiveFilters = useMemo(() => {
         return table.getState().columnFilters.length > 0 || 
               sorting.length > 0 || 
-              globalFilter !== '' ||
-              search !== '';
-    }, [table.getState().columnFilters, sorting, globalFilter, search]);
+              globalFilter !== '';
+    }, [table.getState().columnFilters, sorting, globalFilter]);
 
     // Métricas globales - Total de registros
     const totalItemsGlobal = statuses.length;
@@ -188,17 +176,12 @@ const Page = () => {
     // Número total de páginas
     const pageCount = table.getPageCount();
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-    };
-
     const handlePerPageChange = (value: string) => {
         const newPageSize = parseInt(value);
         table.setPageSize(newPageSize);
     };
 
     const handleResetFilters = () => {
-        setSearch('');
         setSorting([]);
         setColumnFilters([]);
         setGlobalFilter('');
@@ -239,17 +222,6 @@ const Page = () => {
                         )}
                     </h1>
                     <div className="flex flex-1 gap-2 items-center justify-end">
-                        <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-xs">
-                            <Input
-                                placeholder="Buscar por nombre o descripción..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full"
-                            />
-                            <Button type="submit" variant="outline" className="shrink-0">
-                                <Search className="h-4 w-4" />
-                            </Button>
-                        </form>
                         {hasActiveFilters && (
                             <Button
                                 variant="outline"
@@ -438,8 +410,8 @@ const Page = () => {
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
                         >
+                            <ChevronLeft className="h-4 w-4 mr-1" />
                             Anterior
-                            <ChevronLeft className="h-4 w-4 ml-1" />
                         </Button>
                         
                         <Button 

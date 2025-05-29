@@ -14,17 +14,10 @@ final class StatusListController extends Controller
     public function index(Request $request): Response
     {
         $query = StatusList::query();
-
-        $search = $request->input('search');
-        // No aplicar búsqueda aquí, será en el frontend
-
         $statuses = $query->orderBy('name')->get();
 
         return Inertia::render('StatusLists/Index', [
             'statuses' => $statuses,
-            'filters' => [
-                'search' => $search,
-            ],
         ]);
     }
 

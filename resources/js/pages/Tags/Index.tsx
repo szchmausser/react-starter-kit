@@ -3,7 +3,7 @@ import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useState, useMemo, useEffect } from 'react';
@@ -39,8 +39,7 @@ interface Props {
     };
 }
 
-export default function Index({ tags: initialTags, filters }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
+export default function Index({ tags: initialTags }: Props) {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -128,20 +127,9 @@ export default function Index({ tags: initialTags, filters }: Props) {
         }),
     ], []);
 
-    // Filtrado y paginación local
-    const filteredTags = useMemo(() => {
-        if (!search) return initialTags;
-        const s = search.toLowerCase();
-        return initialTags.filter(tag => {
-            const name = getTagName(tag).toLowerCase();
-            return name.includes(s) ||
-                (tag.type && tag.type.toLowerCase().includes(s));
-        });
-    }, [initialTags, search]);
-
     // Configuración de TanStack Table
     const table = useReactTable({
-        data: filteredTags,
+        data: initialTags,
         columns,
         state: {
             sorting,
@@ -174,9 +162,8 @@ export default function Index({ tags: initialTags, filters }: Props) {
     const hasActiveFilters = useMemo(() => {
         return table.getState().columnFilters.length > 0 || 
               sorting.length > 0 || 
-              globalFilter !== '' ||
-              search !== '';
-    }, [table.getState().columnFilters, sorting, globalFilter, search]);
+              globalFilter !== '';
+    }, [table.getState().columnFilters, sorting, globalFilter]);
 
     // Métricas globales - Total de registros
     const totalItemsGlobal = initialTags.length;
@@ -190,21 +177,12 @@ export default function Index({ tags: initialTags, filters }: Props) {
     // Número total de páginas
     const pageCount = table.getPageCount();
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(route('tags.index'), { search }, {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    };
-
     const handlePerPageChange = (value: string) => {
         const newPageSize = parseInt(value);
         table.setPageSize(newPageSize);
     };
 
     const handleResetFilters = () => {
-        setSearch('');
         setSorting([]);
         setColumnFilters([]);
         setGlobalFilter('');
@@ -246,18 +224,6 @@ export default function Index({ tags: initialTags, filters }: Props) {
                         )}
                     </h1>
                     <div className="flex flex-1 gap-2 items-center justify-end">
-                        <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-xs">
-                            <Input
-                                type="text"
-                                placeholder="Buscar por nombre o descripción..."
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                className="w-full"
-                            />
-                            <Button type="submit" variant="outline" className="shrink-0">
-                                <Search className="h-4 w-4" />
-                            </Button>
-                        </form>
                         {hasActiveFilters && (
                             <Button
                                 variant="outline"
