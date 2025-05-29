@@ -117,86 +117,86 @@ export default function IndividualsIndex() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [individualToDelete, setIndividualToDelete] = useState<Individual | null>(null);
   const [expandedTitles, setExpandedTitles] = useState<Record<number, boolean>>({});
-  
+
   // Estados para TanStack Table
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
-  
+
   // Extraer valores de la URL para inicialización
   const urlParams = new URLSearchParams(window.location.search);
   const urlPage = parseInt(urlParams.get('page') || '1', 10);
-  
+
   // Inicialización segura de la paginación
   const initialPage = useMemo(() => {
-      // Primero intentamos obtener la página de la URL
-      if (urlPage > 0) {
-          return urlPage - 1; // Ajustar a base-0 para TanStack Table
-      }
-      // Luego de los metadatos del servidor
-      if (individuals?.meta?.current_page) {
-          return individuals.meta.current_page - 1;
-      }
-      // Por defecto, página 0
-      return 0;
+    // Primero intentamos obtener la página de la URL
+    if (urlPage > 0) {
+      return urlPage - 1; // Ajustar a base-0 para TanStack Table
+    }
+    // Luego de los metadatos del servidor
+    if (individuals?.meta?.current_page) {
+      return individuals.meta.current_page - 1;
+    }
+    // Por defecto, página 0
+    return 0;
   }, [individuals?.meta?.current_page, urlPage]);
-  
+
   const initialPageSize = filters?.per_page || parseInt(urlParams.get('per_page') || '10', 10);
-  
+
   const [pagination, setPagination] = useState<PaginationState>({
-      pageIndex: initialPage,
-      pageSize: initialPageSize,
+    pageIndex: initialPage,
+    pageSize: initialPageSize,
   });
 
   // Actualizar el estado cuando cambian los props
   useEffect(() => {
-      // Solo actualizar si realmente cambió
-      const newPageIndex = individuals?.meta?.current_page ? individuals.meta.current_page - 1 : 0;
-      const newPageSize = filters?.per_page || 10;
-      
-      // Batch updates para evitar múltiples renderizados
-      let shouldUpdate = false;
-      let newPagination = {...pagination};
-      
-      if (newPageIndex !== pagination.pageIndex) {
-          newPagination.pageIndex = newPageIndex;
-          shouldUpdate = true;
-      }
-      
-      if (newPageSize !== pagination.pageSize) {
-          newPagination.pageSize = newPageSize;
-          shouldUpdate = true;
-      }
-      
-      // Solo actualizar el estado si algo cambió
-      if (shouldUpdate) {
-          setPagination(newPagination);
-      }
+    // Solo actualizar si realmente cambió
+    const newPageIndex = individuals?.meta?.current_page ? individuals.meta.current_page - 1 : 0;
+    const newPageSize = filters?.per_page || 10;
+
+    // Batch updates para evitar múltiples renderizados
+    let shouldUpdate = false;
+    let newPagination = { ...pagination };
+
+    if (newPageIndex !== pagination.pageIndex) {
+      newPagination.pageIndex = newPageIndex;
+      shouldUpdate = true;
+    }
+
+    if (newPageSize !== pagination.pageSize) {
+      newPagination.pageSize = newPageSize;
+      shouldUpdate = true;
+    }
+
+    // Solo actualizar el estado si algo cambió
+    if (shouldUpdate) {
+      setPagination(newPagination);
+    }
   }, [individuals?.meta?.current_page, filters?.per_page]);
 
   // Preferencias de paginación
   const handlePerPageChange = (value: string) => {
     const newPerPage = parseInt(value, 10);
-    
-    router.visit(route('individuals.index', { 
-        per_page: newPerPage,
-        page: 1, // Volver a la primera página al cambiar la cantidad por página
-    }), { 
-        preserveState: true,
-        replace: true,
-        only: ['individuals', 'filters', 'debug'],
+
+    router.visit(route('individuals.index', {
+      per_page: newPerPage,
+      page: 1, // Volver a la primera página al cambiar la cantidad por página
+    }), {
+      preserveState: true,
+      replace: true,
+      only: ['individuals', 'filters', 'debug'],
     });
   };
 
   // Manejador para navegación de página
   const handlePageNavigation = (url: string | null) => {
     if (!url) return; // Si la URL es null, simplemente retornamos sin hacer nada
-    
+
     // Usar Inertia.js para navegar a la URL proporcionada por Laravel
     router.visit(url, {
-        preserveState: true,
-        replace: true,
-        only: ['individuals', 'filters', 'debug'],
+      preserveState: true,
+      replace: true,
+      only: ['individuals', 'filters', 'debug'],
     });
   };
 
@@ -234,8 +234,8 @@ export default function IndividualsIndex() {
   const toggleTitleExpand = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     setExpandedTitles(prev => ({
-        ...prev,
-        [id]: !prev[id]
+      ...prev,
+      [id]: !prev[id]
     }));
   };
 
@@ -244,15 +244,15 @@ export default function IndividualsIndex() {
     setSorting([]);
     setColumnFilters([]);
     setGlobalFilter('');
-    
+
     // Reiniciar la búsqueda y volver a la primera página
-    router.visit(route('individuals.index', { 
-        per_page: initialPageSize,
-        page: 1
-    }), { 
-        preserveState: true,
-        replace: true,
-        only: ['individuals', 'filters', 'debug'],
+    router.visit(route('individuals.index', {
+      per_page: initialPageSize,
+      page: 1
+    }), {
+      preserveState: true,
+      replace: true,
+      only: ['individuals', 'filters', 'debug'],
     });
   };
 
@@ -264,12 +264,12 @@ export default function IndividualsIndex() {
   const data = useMemo(() => {
     // Si tenemos datos paginados del servidor, usamos esos
     if (individuals?.data) {
-        return individuals.data;
+      return individuals.data;
     }
     // Si por alguna razón no tenemos la estructura esperada, aceptamos un array directo
     return Array.isArray(individuals) ? individuals : [];
   }, [individuals]);
-  
+
   // Definir el helper de columna para Individual
   const columnHelper = createColumnHelper<Individual>();
 
@@ -278,7 +278,7 @@ export default function IndividualsIndex() {
     // Columna de numeración global (continua a través de las páginas)
     columnHelper.display({
       id: 'numero',
-      header: '#',
+      header: () => <div className="text-center font-medium">#</div>,
       cell: (info) => {
         // Usar el from de Laravel para calcular el índice global
         const baseIndex = individuals?.meta?.from || 1; // Índice base de esta página
@@ -338,9 +338,9 @@ export default function IndividualsIndex() {
                 <Pencil className="h-4 w-4" />
               </Button>
             </Link>
-            <Button 
-              variant="destructive" 
-              size="icon" 
+            <Button
+              variant="destructive"
+              size="icon"
               onClick={() => confirmDelete(individual)}
             >
               <Trash2 className="h-4 w-4" />
@@ -376,10 +376,10 @@ export default function IndividualsIndex() {
     // Indicamos a TanStack Table el número total de filas para cálculos de paginación
     pageCount: individuals?.meta?.last_page || 1,
   });
-  
+
   // Calculamos información de paginación para mostrar en la interfaz
   const { pageSize, pageIndex } = table.getState().pagination;
-  
+
   // Métricas globales - Total de registros en la base de datos
   const totalItemsGlobal = useMemo(() => {
     // Preferimos usar el dato explícito del debug si está disponible
@@ -393,7 +393,7 @@ export default function IndividualsIndex() {
     // Si no, usamos la longitud de nuestros datos
     return data.length;
   }, [individuals, data, debug]);
-  
+
   // Número total de páginas - Calcular correctamente basado en el total de registros
   const lastPage = useMemo(() => {
     // Usar el valor explícito del debug si está disponible
@@ -404,21 +404,21 @@ export default function IndividualsIndex() {
     if (individuals?.meta?.last_page) {
       return individuals.meta.last_page;
     }
-    
+
     // Si no, calculamos basado en el total de registros y los registros por página
     return Math.max(1, Math.ceil(totalItemsGlobal / pageSize));
   }, [individuals?.meta?.last_page, totalItemsGlobal, pageSize, debug]);
-  
+
   // Como estamos usando paginación manual, usamos directamente los datos que viene del servidor
   const tableRows = table.getRowModel().rows;
-  
+
   // Flag para indicar si hay filtros activos
   const hasActiveFilters = useMemo(() => {
-    return table.getState().columnFilters.length > 0 || 
-          sorting.length > 0 || 
-          globalFilter !== '';
+    return table.getState().columnFilters.length > 0 ||
+      sorting.length > 0 ||
+      globalFilter !== '';
   }, [table.getState().columnFilters, sorting, globalFilter]);
-  
+
   // Calcular elementos filtrados solo cuando cambie el estado de la tabla
   const filteredCount = useMemo(() => {
     return table.getFilteredRowModel().rows.length;
@@ -566,9 +566,9 @@ export default function IndividualsIndex() {
           <div className="bg-white dark:bg-zinc-900 rounded shadow p-3 mb-2">
             <div className="space-y-2">
               <h3 className="text-sm font-semibold mb-2">Filtros</h3>
-              
+
               {/* Filtros de columnas */}
-              {table.getAllColumns().filter(column => 
+              {table.getAllColumns().filter(column =>
                 column.getCanFilter()
               ).map(column => (
                 <div key={column.id} className="space-y-1">
@@ -620,9 +620,9 @@ export default function IndividualsIndex() {
                         </div>
                       );
                     })}
-                    
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={handleResetFilters}
                       className="text-xs h-7 mt-1"
@@ -633,14 +633,14 @@ export default function IndividualsIndex() {
                   </div>
                 </div>
               )}
-              
+
               {/* Selector de registros por página para móvil */}
               <div className="mt-4">
                 <label htmlFor="mobile-per-page" className="text-xs text-gray-500 block mb-1">
                   Registros por página
                 </label>
-                <Select 
-                  value={pageSize.toString()} 
+                <Select
+                  value={pageSize.toString()}
                   onValueChange={handlePerPageChange}
                 >
                   <SelectTrigger className="h-8 w-full">
@@ -664,8 +664,8 @@ export default function IndividualsIndex() {
               const individual = row.original;
               return (
                 <div key={individual.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
-                  <div 
-                    className="font-bold text-base flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors" 
+                  <div
+                    className="font-bold text-base flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors"
                     onClick={(e) => toggleTitleExpand(individual.id, e)}
                     title="Clic para expandir/contraer el texto"
                   >
@@ -680,8 +680,8 @@ export default function IndividualsIndex() {
                       {individual.national_id}
                     </span>
                   </div>
-                  <div 
-                    className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors" 
+                  <div
+                    className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors"
                     onClick={(e) => toggleTitleExpand(individual.id, e)}
                   >
                     <div className={expandedTitles[individual.id] ? '' : 'truncate'}>
@@ -717,7 +717,7 @@ export default function IndividualsIndex() {
               No se encontraron registros.
             </div>
           )}
-          
+
           {/* Paginación móvil */}
           <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
             <div className="flex items-center justify-between">
@@ -729,11 +729,11 @@ export default function IndividualsIndex() {
                   <span>{totalItemsGlobal}</span>
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 {/* Selector de registros por página */}
-                <Select 
-                  value={pageSize.toString()} 
+                <Select
+                  value={pageSize.toString()}
                   onValueChange={handlePerPageChange}
                 >
                   <SelectTrigger className="h-7 w-16 text-xs">
@@ -747,14 +747,14 @@ export default function IndividualsIndex() {
                     ))}
                   </SelectContent>
                 </Select>
-                
+
                 {/* Indicador de página en móvil */}
                 <div className="text-xs font-medium">
                   Pág. {individuals?.meta?.current_page || 1}/{individuals?.meta?.last_page || 1}
                 </div>
               </div>
             </div>
-            
+
             {/* Paginación móvil usando botones más grandes */}
             {individuals?.meta?.links && (
               <div className="flex justify-center mt-3">
@@ -772,7 +772,7 @@ export default function IndividualsIndex() {
                   >
                     <ChevronsLeft className="h-5 w-5" />
                   </Button>
-                  
+
                   {/* Página anterior */}
                   <Button
                     variant="outline"
@@ -786,7 +786,7 @@ export default function IndividualsIndex() {
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
-                  
+
                   {/* Página actual (como botón deshabilitado) */}
                   <Button
                     variant="default"
@@ -796,7 +796,7 @@ export default function IndividualsIndex() {
                   >
                     {individuals.meta.current_page}
                   </Button>
-                  
+
                   {/* Página siguiente */}
                   <Button
                     variant="outline"
@@ -810,7 +810,7 @@ export default function IndividualsIndex() {
                   >
                     <ChevronRight className="h-5 w-5" />
                   </Button>
-                  
+
                   {/* Última página */}
                   <Button
                     variant="outline"
@@ -829,7 +829,7 @@ export default function IndividualsIndex() {
               </div>
             )}
           </div>
-          
+
           {/* Espacio para compensar la paginación fija en móvil */}
           <div className="sm:hidden h-20"></div>
         </div>
@@ -845,8 +845,8 @@ export default function IndividualsIndex() {
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
               <div>
-                Mostrando {individuals?.meta?.to && individuals?.meta?.from 
-                  ? individuals.meta.to - individuals.meta.from + 1 
+                Mostrando {individuals?.meta?.to && individuals?.meta?.from
+                  ? individuals.meta.to - individuals.meta.from + 1
                   : Math.min(pageSize, tableRows.length)} de {totalItemsGlobal} registros
               </div>
               <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
@@ -863,7 +863,7 @@ export default function IndividualsIndex() {
               </Select>
             </div>
           </div>
-          
+
           {/* Paginación mejorada */}
           <div className="flex items-center gap-4">
             {/* Indicador de página actual */}
@@ -871,11 +871,11 @@ export default function IndividualsIndex() {
               Página <span className="font-semibold">{individuals?.meta?.current_page || 1}</span> de{" "}
               <span className="font-semibold">{individuals?.meta?.last_page || 1}</span>
             </div>
-            
+
             {/* Botones de navegación */}
             {individuals?.meta?.links && (
-              <LaravelPagination 
-                links={individuals.meta.links} 
+              <LaravelPagination
+                links={individuals.meta.links}
                 onPageChange={handlePageNavigation}
               />
             )}

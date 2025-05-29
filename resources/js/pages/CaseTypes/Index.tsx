@@ -31,6 +31,7 @@ import {
     PaginationState,
     Row,
 } from '@tanstack/react-table';
+import { cn } from '@/lib/utils';
 
 interface Props extends PageProps {
     caseTypes: CaseType[];
@@ -43,7 +44,7 @@ export default function Index() {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
-    
+
     // Manejar el estado de paginación directamente con useState
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
@@ -75,7 +76,7 @@ export default function Index() {
         // Columna de numeración
         columnHelper.display({
             id: 'numero',
-            header: '#',
+            header: () => <div className="text-center font-medium">#</div>,
             cell: (info) => {
                 const globalIndex = getGlobalIndex(info.row);
                 return <div className="text-center font-medium text-gray-500">{globalIndex}</div>;
@@ -155,9 +156,9 @@ export default function Index() {
 
     // Flag para indicar si hay filtros activos
     const hasActiveFilters = useMemo(() => {
-        return table.getState().columnFilters.length > 0 || 
-              sorting.length > 0 || 
-              globalFilter !== '';
+        return table.getState().columnFilters.length > 0 ||
+            sorting.length > 0 ||
+            globalFilter !== '';
     }, [table.getState().columnFilters, sorting, globalFilter]);
 
     // Métricas globales - Total de registros
@@ -168,7 +169,7 @@ export default function Index() {
 
     // Página actual (1-indexed para mostrar al usuario)
     const currentPage = pagination.pageIndex + 1;
-    
+
     // Número total de páginas
     const pageCount = table.getPageCount();
 
@@ -249,25 +250,25 @@ export default function Index() {
                             const caseType = row.original;
                             const rowNumber = (table.getState().pagination.pageIndex * table.getState().pagination.pageSize) + row.index + 1;
                             return (
-                            <div key={caseType.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
+                                <div key={caseType.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
                                     <div className="font-bold text-base flex items-start">
                                         <span className="mr-2 mt-0.5 flex-shrink-0 text-gray-500">
                                             #{rowNumber}
                                         </span>
                                         <span>{caseType.name}</span>
                                     </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">{caseType.description || '-'}</div>
-                                <div className="flex gap-2 mt-2 justify-end">
-                                    <Link href={route('case-types.edit', caseType.id)}>
-                                        <Button variant="outline" size="icon" className="h-8 w-8">
-                                            <Pencil className="h-4 w-4" />
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">{caseType.description || '-'}</div>
+                                    <div className="flex gap-2 mt-2 justify-end">
+                                        <Link href={route('case-types.edit', caseType.id)}>
+                                            <Button variant="outline" size="icon" className="h-8 w-8">
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
+                                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(caseType)}>
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
-                                    </Link>
-                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(caseType)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    </div>
                                 </div>
-                            </div>
                             );
                         })
                     ) : (
@@ -285,56 +286,87 @@ export default function Index() {
                                 {table.getHeaderGroups().map(headerGroup => (
                                     <TableRow key={headerGroup.id}>
                                         {headerGroup.headers.map(header => (
-                                            <TableHead key={header.id} className={header.id === 'actions' ? 'text-right' : ''}>
+                                            <TableHead
+                                                key={header.id}
+                                                className={cn(
+                                                    header.id === 'numero' && "w-12 text-center",
+                                                    header.id === 'name' && "w-[30%]",
+                                                    header.id === 'description' && "w-[50%]",
+                                                    header.id === 'actions' && "text-right w-[120px]",
+                                                    "align-top"
+                                                )}
+                                            >
                                                 {header.isPlaceholder ? null : (
-                                                    <div>
-                                                        <div
-                                                            {...{
-                                                                className: header.column.getCanSort()
-                                                                    ? 'cursor-pointer select-none flex items-center gap-1 hover:text-primary transition-colors'
-                                                                    : '',
-                                                                onClick: header.column.getToggleSortingHandler(),
-                                                            }}
-                                                        >
-                                                            {flexRender(
-                                                                header.column.columnDef.header,
-                                                                header.getContext()
-                                                            )}
-                                                            {header.column.getIsSorted() && (
-                                                                <span className="ml-1">
-                                                                    {header.column.getIsSorted() === 'asc' ? (
-                                                                        <ArrowUp className="h-4 w-4" />
-                                                                    ) : (
-                                                                        <ArrowDown className="h-4 w-4" />
-                                                                    )}
-                                                                </span>
+                                                    <div className="space-y-2">
+                                                        {/* Cabecera con título y controles de ordenación */}
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div
+                                                                {...{
+                                                                    className: cn(
+                                                                        "flex items-center gap-1 whitespace-nowrap",
+                                                                        header.column.getCanSort()
+                                                                            ? "cursor-pointer select-none hover:text-primary transition-colors group"
+                                                                            : "",
+                                                                        header.id === 'numero' && "justify-center w-full",
+                                                                        header.id === 'actions' && "justify-end ml-auto"
+                                                                    ),
+                                                                    onClick: header.column.getToggleSortingHandler(),
+                                                                }}
+                                                            >
+                                                                <span className="font-medium">{flexRender(
+                                                                    header.column.columnDef.header,
+                                                                    header.getContext()
+                                                                )}</span>
+
+                                                                {header.column.getCanSort() && (
+                                                                    <span className="inline-flex ml-1 text-muted-foreground">
+                                                                        {header.column.getIsSorted() === 'asc' ? (
+                                                                            <ArrowUp className="h-4 w-4 text-primary" />
+                                                                        ) : header.column.getIsSorted() === 'desc' ? (
+                                                                            <ArrowDown className="h-4 w-4 text-primary" />
+                                                                        ) : (
+                                                                            <div className="h-4 w-4 flex flex-col opacity-50 group-hover:opacity-100">
+                                                                                <ArrowUp className="h-2 w-4" />
+                                                                                <ArrowDown className="h-2 w-4" />
+                                                                            </div>
+                                                                        )}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Filtro de columna (en línea para optimizar espacio) */}
+                                                            {header.column.getCanFilter() && (
+                                                                <div className="flex-1 min-w-[120px]">
+                                                                    <Input
+                                                                        value={(header.column.getFilterValue() as string) ?? ''}
+                                                                        onChange={e => header.column.setFilterValue(e.target.value)}
+                                                                        placeholder={`Filtrar...`}
+                                                                        className="h-7 text-xs w-full"
+                                                                    />
+                                                                </div>
                                                             )}
                                                         </div>
-                                                        {header.column.getCanFilter() && (
-                                                            <div className="mt-2">
-                                                                <Input
-                                                                    value={(header.column.getFilterValue() as string) ?? ''}
-                                                                    onChange={e => header.column.setFilterValue(e.target.value)}
-                                                                    placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
-                                                                    className="h-8 text-xs"
-                                                                />
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 )}
                                             </TableHead>
                                         ))}
-                                </TableRow>
+                                    </TableRow>
                                 ))}
                             </TableHeader>
                             <TableBody>
                                 {tableRows.length > 0 ? (
                                     tableRows.map((row) => (
-                                        <TableRow key={row.id}>
+                                        <TableRow key={row.id} className="hover:bg-muted/30">
                                             {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>
+                                                <TableCell
+                                                    key={cell.id}
+                                                    className={cn(
+                                                        cell.column.id === 'numero' && "text-center font-medium text-muted-foreground",
+                                                        cell.column.id === 'actions' && "text-right"
+                                                    )}
+                                                >
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>
+                                                </TableCell>
                                             ))}
                                         </TableRow>
                                     ))
@@ -361,11 +393,11 @@ export default function Index() {
                                 <span>{filteredCount}</span>
                             </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                             {/* Selector de registros por página */}
-                            <Select 
-                                value={pagination.pageSize.toString()} 
+                            <Select
+                                value={pagination.pageSize.toString()}
                                 onValueChange={handlePerPageChange}
                             >
                                 <SelectTrigger className="h-7 w-16 text-xs">
@@ -379,19 +411,19 @@ export default function Index() {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            
+
                             {/* Indicador de página en móvil */}
                             <div className="text-xs font-medium">
                                 Pág. {currentPage}/{pageCount || 1}
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Paginación móvil usando botones más grandes */}
                     <div className="flex justify-between mt-2">
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.setPageIndex(0)}
                             disabled={!table.getCanPreviousPage()}
@@ -399,10 +431,10 @@ export default function Index() {
                             <ChevronsLeft className="h-4 w-4 mr-1" />
                             Inicio
                         </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
@@ -410,10 +442,10 @@ export default function Index() {
                             <ChevronLeft className="h-4 w-4 mr-1" />
                             Anterior
                         </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.nextPage()}
                             disabled={!table.getCanNextPage()}
@@ -421,10 +453,10 @@ export default function Index() {
                             Siguiente
                             <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                             disabled={!table.getCanNextPage()}
@@ -442,8 +474,8 @@ export default function Index() {
                             <div>
                                 Mostrando {Math.min(pagination.pageSize, tableRows.length)} de {filteredCount} registros
                             </div>
-                            <Select 
-                                value={pagination.pageSize.toString()} 
+                            <Select
+                                value={pagination.pageSize.toString()}
                                 onValueChange={handlePerPageChange}
                             >
                                 <SelectTrigger className="h-8 w-24">
@@ -493,9 +525,9 @@ export default function Index() {
                             {/* Números de página */}
                             {Array.from({ length: pageCount || 1 }, (_, i) => {
                                 // Solo mostrar 5 páginas como máximo
-                                if (pageCount <= 5 || 
-                                    i === 0 || 
-                                    i === pageCount - 1 || 
+                                if (pageCount <= 5 ||
+                                    i === 0 ||
+                                    i === pageCount - 1 ||
                                     Math.abs(i - pagination.pageIndex) <= 1) {
                                     return (
                                         <Button
@@ -511,7 +543,7 @@ export default function Index() {
                                     );
                                 }
                                 // Agregar puntos suspensivos en el medio
-                                if ((i === 1 && pagination.pageIndex > 2) || 
+                                if ((i === 1 && pagination.pageIndex > 2) ||
                                     (i === pageCount - 2 && pagination.pageIndex < pageCount - 3)) {
                                     return <span key={i} className="px-2 text-gray-500">...</span>;
                                 }

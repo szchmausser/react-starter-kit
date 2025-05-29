@@ -265,7 +265,7 @@ export default function Index() {
         // Columna de numeración global (continua a través de las páginas)
         columnHelper.display({
             id: 'numero',
-            header: '#',
+            header: () => <div className="text-center font-medium">#</div>,
             cell: (info) => {
                 // Usar el from de Laravel para calcular el índice global
                 const baseIndex = legalCases?.meta?.from || 1; // Índice base de esta página
@@ -762,14 +762,14 @@ export default function Index() {
                                     {(legalCase.currentStatus?.name || (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0)) && (
                                         <div className="text-xs mt-1">
                                             <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${(() => {
-                                                    // Determinar el nombre del estado a mostrar
-                                                    const statusName = legalCase.currentStatus?.name ||
-                                                        (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ?
-                                                            legalCase.statuses[0].name : '');
+                                                // Determinar el nombre del estado a mostrar
+                                                const statusName = legalCase.currentStatus?.name ||
+                                                    (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ?
+                                                        legalCase.statuses[0].name : '');
 
-                                                    const colors = getStatusColor(statusName);
-                                                    return `${colors.bg} ${colors.text} ${colors.darkBg} ${colors.darkText}`;
-                                                })()
+                                                const colors = getStatusColor(statusName);
+                                                return `${colors.bg} ${colors.text} ${colors.darkBg} ${colors.darkText}`;
+                                            })()
                                                 }`}>
                                                 {legalCase.currentStatus?.name ||
                                                     (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ?

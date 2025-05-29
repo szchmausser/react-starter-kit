@@ -40,14 +40,14 @@ interface Props extends PageProps {
     };
 }
 
-const Page = () => {
+export default function Index() {
     const { statuses } = usePage<Props>().props;
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [statusToDelete, setStatusToDelete] = useState<Status | null>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
-    
+
     // Manejar el estado de paginación directamente con useState
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
@@ -79,7 +79,7 @@ const Page = () => {
         // Columna de numeración
         columnHelper.display({
             id: 'numero',
-            header: '#',
+            header: () => <div className="text-center font-medium">#</div>,
             cell: (info) => {
                 const globalIndex = getGlobalIndex(info.row);
                 return <div className="text-center font-medium text-gray-500">{globalIndex}</div>;
@@ -159,9 +159,9 @@ const Page = () => {
 
     // Flag para indicar si hay filtros activos
     const hasActiveFilters = useMemo(() => {
-        return table.getState().columnFilters.length > 0 || 
-              sorting.length > 0 || 
-              globalFilter !== '';
+        return table.getState().columnFilters.length > 0 ||
+            sorting.length > 0 ||
+            globalFilter !== '';
     }, [table.getState().columnFilters, sorting, globalFilter]);
 
     // Métricas globales - Total de registros
@@ -172,7 +172,7 @@ const Page = () => {
 
     // Página actual (1-indexed para mostrar al usuario)
     const currentPage = pagination.pageIndex + 1;
-    
+
     // Número total de páginas
     const pageCount = table.getPageCount();
 
@@ -209,7 +209,7 @@ const Page = () => {
     };
 
     return (
-        <>
+        <AppSidebarLayout breadcrumbs={breadcrumbs}>
             <Head title="Estatus" />
             <div className="p-4 sm:p-6 relative">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
@@ -252,25 +252,25 @@ const Page = () => {
                             const status = row.original;
                             const rowNumber = (table.getState().pagination.pageIndex * table.getState().pagination.pageSize) + row.index + 1;
                             return (
-                            <div key={status.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
+                                <div key={status.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
                                     <div className="font-bold text-base flex items-start">
                                         <span className="mr-2 mt-0.5 flex-shrink-0 text-gray-500">
                                             #{rowNumber}
                                         </span>
                                         <span>{status.name}</span>
                                     </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">{status.description || '-'}</div>
-                                <div className="flex gap-2 mt-2 justify-end">
-                                    <Link href={route('status-lists.edit', status.id)}>
-                                        <Button variant="outline" size="icon" className="h-8 w-8">
-                                            <Pencil className="h-4 w-4" />
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">{status.description || '-'}</div>
+                                    <div className="flex gap-2 mt-2 justify-end">
+                                        <Link href={route('status-lists.edit', status.id)}>
+                                            <Button variant="outline" size="icon" className="h-8 w-8">
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
+                                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(status)}>
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
-                                    </Link>
-                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(status)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    </div>
                                 </div>
-                            </div>
                             );
                         })
                     ) : (
@@ -327,7 +327,7 @@ const Page = () => {
                                                 )}
                                             </TableHead>
                                         ))}
-                                </TableRow>
+                                    </TableRow>
                                 ))}
                             </TableHeader>
                             <TableBody>
@@ -337,7 +337,7 @@ const Page = () => {
                                             {row.getVisibleCells().map((cell) => (
                                                 <TableCell key={cell.id}>
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>
+                                                </TableCell>
                                             ))}
                                         </TableRow>
                                     ))
@@ -364,11 +364,11 @@ const Page = () => {
                                 <span>{filteredCount}</span>
                             </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                             {/* Selector de registros por página */}
-                            <Select 
-                                value={pagination.pageSize.toString()} 
+                            <Select
+                                value={pagination.pageSize.toString()}
                                 onValueChange={handlePerPageChange}
                             >
                                 <SelectTrigger className="h-7 w-16 text-xs">
@@ -382,19 +382,19 @@ const Page = () => {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            
+
                             {/* Indicador de página en móvil */}
                             <div className="text-xs font-medium">
                                 Pág. {currentPage}/{pageCount || 1}
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Paginación móvil usando botones más grandes */}
                     <div className="flex justify-between mt-2">
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.setPageIndex(0)}
                             disabled={!table.getCanPreviousPage()}
@@ -402,10 +402,10 @@ const Page = () => {
                             <ChevronsLeft className="h-4 w-4 mr-1" />
                             Inicio
                         </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
@@ -413,10 +413,10 @@ const Page = () => {
                             <ChevronLeft className="h-4 w-4 mr-1" />
                             Anterior
                         </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.nextPage()}
                             disabled={!table.getCanNextPage()}
@@ -424,10 +424,10 @@ const Page = () => {
                             Siguiente
                             <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                             disabled={!table.getCanNextPage()}
@@ -445,8 +445,8 @@ const Page = () => {
                             <div>
                                 Mostrando {Math.min(pagination.pageSize, tableRows.length)} de {filteredCount} registros
                             </div>
-                            <Select 
-                                value={pagination.pageSize.toString()} 
+                            <Select
+                                value={pagination.pageSize.toString()}
                                 onValueChange={handlePerPageChange}
                             >
                                 <SelectTrigger className="h-8 w-24">
@@ -496,9 +496,9 @@ const Page = () => {
                             {/* Números de página */}
                             {Array.from({ length: pageCount || 1 }, (_, i) => {
                                 // Solo mostrar 5 páginas como máximo
-                                if (pageCount <= 5 || 
-                                    i === 0 || 
-                                    i === pageCount - 1 || 
+                                if (pageCount <= 5 ||
+                                    i === 0 ||
+                                    i === pageCount - 1 ||
                                     Math.abs(i - pagination.pageIndex) <= 1) {
                                     return (
                                         <Button
@@ -514,7 +514,7 @@ const Page = () => {
                                     );
                                 }
                                 // Agregar puntos suspensivos en el medio
-                                if ((i === 1 && pagination.pageIndex > 2) || 
+                                if ((i === 1 && pagination.pageIndex > 2) ||
                                     (i === pageCount - 2 && pagination.pageIndex < pageCount - 3)) {
                                     return <span key={i} className="px-2 text-gray-500">...</span>;
                                 }
@@ -561,10 +561,6 @@ const Page = () => {
                     </AlertDialogContent>
                 </AlertDialog>
             </div>
-        </>
+        </AppSidebarLayout>
     );
-};
-
-Page.layout = (page: React.ReactNode) => <AppSidebarLayout>{page}</AppSidebarLayout>;
-
-export default Page;
+}

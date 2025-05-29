@@ -22,6 +22,7 @@ import {
     PaginationState,
     Row,
 } from '@tanstack/react-table';
+import { type BreadcrumbItem } from '@/types';
 
 interface Tag {
     id: number;
@@ -45,7 +46,19 @@ export default function Index({ tags: initialTags }: Props) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
-    
+
+    // Definición de breadcrumbs para la navegación
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Inicio',
+            href: route('search.index'),
+        },
+        {
+            title: 'Etiquetas',
+            href: route('tags.index'),
+        },
+    ];
+
     // Manejar el estado de paginación directamente con useState
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
@@ -73,7 +86,7 @@ export default function Index({ tags: initialTags }: Props) {
         // Columna de numeración
         columnHelper.display({
             id: 'numero',
-            header: '#',
+            header: () => <div className="text-center font-medium">#</div>,
             cell: (info) => {
                 const globalIndex = getGlobalIndex(info.row);
                 return <div className="text-center font-medium text-gray-500">{globalIndex}</div>;
@@ -160,9 +173,9 @@ export default function Index({ tags: initialTags }: Props) {
 
     // Flag para indicar si hay filtros activos
     const hasActiveFilters = useMemo(() => {
-        return table.getState().columnFilters.length > 0 || 
-              sorting.length > 0 || 
-              globalFilter !== '';
+        return table.getState().columnFilters.length > 0 ||
+            sorting.length > 0 ||
+            globalFilter !== '';
     }, [table.getState().columnFilters, sorting, globalFilter]);
 
     // Métricas globales - Total de registros
@@ -173,7 +186,7 @@ export default function Index({ tags: initialTags }: Props) {
 
     // Página actual (1-indexed para mostrar al usuario)
     const currentPage = pagination.pageIndex + 1;
-    
+
     // Número total de páginas
     const pageCount = table.getPageCount();
 
@@ -211,7 +224,7 @@ export default function Index({ tags: initialTags }: Props) {
     };
 
     return (
-        <AppSidebarLayout>
+        <AppSidebarLayout breadcrumbs={breadcrumbs}>
             <Head title="Tags" />
             <div className="p-4 sm:p-6 relative">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
@@ -252,9 +265,9 @@ export default function Index({ tags: initialTags }: Props) {
                     <div className="bg-white dark:bg-zinc-900 rounded shadow p-3 mb-2">
                         <div className="space-y-2">
                             <h3 className="text-sm font-semibold mb-2">Filtros</h3>
-                            
+
                             {/* Filtros de columnas */}
-                            {table.getAllColumns().filter(column => 
+                            {table.getAllColumns().filter(column =>
                                 column.getCanFilter()
                             ).map(column => (
                                 <div key={column.id} className="space-y-1">
@@ -402,7 +415,7 @@ export default function Index({ tags: initialTags }: Props) {
                                                 )}
                                             </TableHead>
                                         ))}
-                                </TableRow>
+                                    </TableRow>
                                 ))}
                             </TableHeader>
                             <TableBody>
@@ -414,7 +427,7 @@ export default function Index({ tags: initialTags }: Props) {
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                 </TableCell>
                                             ))}
-                                            </TableRow>
+                                        </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
@@ -439,11 +452,11 @@ export default function Index({ tags: initialTags }: Props) {
                                 <span>{filteredCount}</span>
                             </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                             {/* Selector de registros por página */}
-                            <Select 
-                                value={pagination.pageSize.toString()} 
+                            <Select
+                                value={pagination.pageSize.toString()}
                                 onValueChange={handlePerPageChange}
                             >
                                 <SelectTrigger className="h-7 w-16 text-xs">
@@ -457,19 +470,19 @@ export default function Index({ tags: initialTags }: Props) {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            
+
                             {/* Indicador de página en móvil */}
                             <div className="text-xs font-medium">
                                 Pág. {currentPage}/{pageCount || 1}
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Paginación móvil usando botones más grandes */}
                     <div className="flex justify-between mt-2">
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.setPageIndex(0)}
                             disabled={!table.getCanPreviousPage()}
@@ -477,10 +490,10 @@ export default function Index({ tags: initialTags }: Props) {
                             <ChevronsLeft className="h-4 w-4 mr-1" />
                             Inicio
                         </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
@@ -488,10 +501,10 @@ export default function Index({ tags: initialTags }: Props) {
                             <ChevronLeft className="h-4 w-4 mr-1" />
                             Anterior
                         </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.nextPage()}
                             disabled={!table.getCanNextPage()}
@@ -499,17 +512,17 @@ export default function Index({ tags: initialTags }: Props) {
                             Siguiente
                             <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
-                        
-                                <Button
-                            variant="outline" 
-                            size="sm" 
+
+                        <Button
+                            variant="outline"
+                            size="sm"
                             className="h-8 px-2 text-xs"
                             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                             disabled={!table.getCanNextPage()}
                         >
                             Final
                             <ChevronsRight className="h-4 w-4 ml-1" />
-                                </Button>
+                        </Button>
                     </div>
                 </div>
 
@@ -520,8 +533,8 @@ export default function Index({ tags: initialTags }: Props) {
                             <div>
                                 Mostrando {Math.min(pagination.pageSize, tableRows.length)} de {filteredCount} registros
                             </div>
-                            <Select 
-                                value={pagination.pageSize.toString()} 
+                            <Select
+                                value={pagination.pageSize.toString()}
                                 onValueChange={handlePerPageChange}
                             >
                                 <SelectTrigger className="h-8 w-24">
@@ -571,9 +584,9 @@ export default function Index({ tags: initialTags }: Props) {
                             {/* Números de página */}
                             {Array.from({ length: pageCount || 1 }, (_, i) => {
                                 // Solo mostrar 5 páginas como máximo
-                                if (pageCount <= 5 || 
-                                    i === 0 || 
-                                    i === pageCount - 1 || 
+                                if (pageCount <= 5 ||
+                                    i === 0 ||
+                                    i === pageCount - 1 ||
                                     Math.abs(i - pagination.pageIndex) <= 1) {
                                     return (
                                         <Button
@@ -589,7 +602,7 @@ export default function Index({ tags: initialTags }: Props) {
                                     );
                                 }
                                 // Agregar puntos suspensivos en el medio
-                                if ((i === 1 && pagination.pageIndex > 2) || 
+                                if ((i === 1 && pagination.pageIndex > 2) ||
                                     (i === pageCount - 2 && pagination.pageIndex < pageCount - 3)) {
                                     return <span key={i} className="px-2 text-gray-500">...</span>;
                                 }
