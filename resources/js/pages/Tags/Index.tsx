@@ -436,7 +436,7 @@ export default function Index({ tags: initialTags, filters }: Props) {
                                                 )}
                                             </TableHead>
                                         ))}
-                                    </TableRow>
+                                </TableRow>
                                 ))}
                             </TableHeader>
                             <TableBody>
@@ -448,7 +448,7 @@ export default function Index({ tags: initialTags, filters }: Props) {
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                 </TableCell>
                                             ))}
-                                        </TableRow>
+                                            </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
@@ -534,7 +534,7 @@ export default function Index({ tags: initialTags, filters }: Props) {
                             <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                         
-                        <Button 
+                                <Button
                             variant="outline" 
                             size="sm" 
                             className="h-8 px-2 text-xs"
@@ -543,7 +543,7 @@ export default function Index({ tags: initialTags, filters }: Props) {
                         >
                             Final
                             <ChevronsRight className="h-4 w-4 ml-1" />
-                        </Button>
+                                </Button>
                     </div>
                 </div>
 

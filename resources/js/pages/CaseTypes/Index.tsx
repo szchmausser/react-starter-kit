@@ -12,11 +12,25 @@ import {
     TableHeader,
     TableRow
 } from '@/components/ui/table';
-import PaginationComponent from '@/components/PaginationComponent'; // Importar el nuevo componente de paginación
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Search, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageProps } from '@inertiajs/core';
+import {
+    ColumnDef,
+    ColumnFiltersState,
+    SortingState,
+    flexRender,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    useReactTable,
+    createColumnHelper,
+    PaginationState,
+    Row,
+} from '@tanstack/react-table';
 
 interface Props extends PageProps {
     caseTypes: CaseType[];
@@ -25,14 +39,20 @@ interface Props extends PageProps {
     };
 }
 
-const ITEMS_PER_PAGE = 10;
-
 export default function Index() {
     const { caseTypes, filters } = usePage<Props>().props;
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [typeToDelete, setTypeToDelete] = useState<CaseType | null>(null);
     const [search, setSearch] = useState(filters?.search || '');
-    const [currentPage, setCurrentPage] = useState(1);
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [globalFilter, setGlobalFilter] = useState('');
+    
+    // Manejar el estado de paginación directamente con useState
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -45,6 +65,67 @@ export default function Index() {
         },
     ];
 
+    // Definir el helper de columna para CaseType
+    const columnHelper = createColumnHelper<CaseType>();
+
+    // Función para obtener el índice global de una fila
+    const getGlobalIndex = (row: Row<CaseType>) => {
+        // Usar el índice original de la fila en los datos filtrados
+        return row.index + 1;
+    };
+
+    // Definición de columnas para TanStack Table
+    const columns = useMemo(() => [
+        // Columna de numeración
+        columnHelper.display({
+            id: 'numero',
+            header: '#',
+            cell: (info) => {
+                const globalIndex = getGlobalIndex(info.row);
+                return <div className="text-center font-medium text-gray-500">{globalIndex}</div>;
+            },
+            enableSorting: false,
+            enableColumnFilter: false,
+        }),
+        columnHelper.accessor('name', {
+            header: 'Nombre',
+            cell: ({ getValue }) => <div className="font-medium">{getValue()}</div>,
+            enableSorting: true,
+            enableColumnFilter: true,
+        }),
+        columnHelper.accessor('description', {
+            header: 'Descripción',
+            cell: ({ getValue }) => getValue() || '-',
+            enableSorting: true,
+            enableColumnFilter: true,
+        }),
+        columnHelper.display({
+            id: 'actions',
+            header: 'Acciones',
+            cell: ({ row }) => {
+                const caseType = row.original;
+                return (
+                    <div className="flex justify-end gap-2">
+                        <Link href={route('case-types.edit', caseType.id)}>
+                            <Button variant="outline" size="icon">
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => confirmDelete(caseType)}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                );
+            },
+            enableSorting: false,
+            enableColumnFilter: false,
+        }),
+    ], []);
+
     // Filtrado local
     const filteredTypes = useMemo(() => {
         if (!search) return caseTypes;
@@ -55,16 +136,73 @@ export default function Index() {
         );
     }, [caseTypes, search]);
 
-    // Paginación local
-    const totalPages = Math.ceil(filteredTypes.length / ITEMS_PER_PAGE);
-    const paginatedTypes = useMemo(() => {
-        const start = (currentPage - 1) * ITEMS_PER_PAGE;
-        return filteredTypes.slice(start, start + ITEMS_PER_PAGE);
-    }, [filteredTypes, currentPage]);
+    // Configuración de TanStack Table
+    const table = useReactTable({
+        data: filteredTypes,
+        columns,
+        state: {
+            sorting,
+            columnFilters,
+            globalFilter,
+            pagination,
+        },
+        onSortingChange: setSorting,
+        onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
+        onPaginationChange: setPagination,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        debugTable: true,
+        meta: {
+            getRowNumber: (index: number) => {
+                return pagination.pageIndex * pagination.pageSize + index + 1;
+            },
+        },
+    });
+
+    // Calcular elementos filtrados solo cuando cambie el estado de la tabla
+    const filteredCount = useMemo(() => {
+        return table.getFilteredRowModel().rows.length;
+    }, [table.getFilteredRowModel().rows.length]);
+
+    // Flag para indicar si hay filtros activos
+    const hasActiveFilters = useMemo(() => {
+        return table.getState().columnFilters.length > 0 || 
+              sorting.length > 0 || 
+              globalFilter !== '' ||
+              search !== '';
+    }, [table.getState().columnFilters, sorting, globalFilter, search]);
+
+    // Métricas globales - Total de registros
+    const totalItemsGlobal = caseTypes.length;
+
+    // Obtener filas para mostrar
+    const tableRows = table.getRowModel().rows;
+
+    // Página actual (1-indexed para mostrar al usuario)
+    const currentPage = pagination.pageIndex + 1;
+    
+    // Número total de páginas
+    const pageCount = table.getPageCount();
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setCurrentPage(1); // Resetear a la primera página cuando se busca
+    };
+
+    const handlePerPageChange = (value: string) => {
+        const newPageSize = parseInt(value);
+        table.setPageSize(newPageSize);
+    };
+
+    const handleResetFilters = () => {
+        setSearch('');
+        setSorting([]);
+        setColumnFilters([]);
+        setGlobalFilter('');
+        table.resetColumnFilters();
+        table.resetSorting();
     };
 
     const confirmDelete = (caseType: CaseType) => {
@@ -92,7 +230,14 @@ export default function Index() {
 
             <div className="p-4 sm:p-6 relative">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-                    <h1 className="text-2xl font-bold">Gestión de Tipos de Casos</h1>
+                    <h1 className="text-2xl font-bold">
+                        Gestión de Tipos de Casos
+                        {hasActiveFilters && (
+                            <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                ({filteredCount} de {totalItemsGlobal} resultados)
+                            </span>
+                        )}
+                    </h1>
                     <div className="flex flex-1 gap-2 items-center justify-end">
                         <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-xs">
                             <Input
@@ -105,6 +250,17 @@ export default function Index() {
                                 <Search className="h-4 w-4" />
                             </Button>
                         </form>
+                        {hasActiveFilters && (
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleResetFilters}
+                                title="Limpiar filtros"
+                                className="shrink-0"
+                            >
+                                <RotateCcw className="h-4 w-4" />
+                            </Button>
+                        )}
                         <Link href={route('case-types.create')}>
                             <Button className="hidden sm:inline-flex">
                                 <Plus className="h-4 w-4 mr-2" />
@@ -119,10 +275,18 @@ export default function Index() {
 
                 {/* Vista tipo card para móvil */}
                 <div className="block sm:hidden space-y-2 mb-16">
-                    {paginatedTypes.length > 0 ? (
-                        paginatedTypes.map((caseType) => (
+                    {tableRows.length > 0 ? (
+                        tableRows.map((row) => {
+                            const caseType = row.original;
+                            const rowNumber = (table.getState().pagination.pageIndex * table.getState().pagination.pageSize) + row.index + 1;
+                            return (
                             <div key={caseType.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
-                                <div className="font-bold text-base">{caseType.name}</div>
+                                    <div className="font-bold text-base flex items-start">
+                                        <span className="mr-2 mt-0.5 flex-shrink-0 text-gray-500">
+                                            #{rowNumber}
+                                        </span>
+                                        <span>{caseType.name}</span>
+                                    </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">{caseType.description || '-'}</div>
                                 <div className="flex gap-2 mt-2 justify-end">
                                     <Link href={route('case-types.edit', caseType.id)}>
@@ -135,7 +299,8 @@ export default function Index() {
                                     </Button>
                                 </div>
                             </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                             No se encontraron registros.
@@ -148,35 +313,65 @@ export default function Index() {
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>Nombre</TableHead>
-                                    <TableHead>Descripción</TableHead>
-                                    <TableHead className="text-right">Acciones</TableHead>
+                                {table.getHeaderGroups().map(headerGroup => (
+                                    <TableRow key={headerGroup.id}>
+                                        {headerGroup.headers.map(header => (
+                                            <TableHead key={header.id} className={header.id === 'actions' ? 'text-right' : ''}>
+                                                {header.isPlaceholder ? null : (
+                                                    <div>
+                                                        <div
+                                                            {...{
+                                                                className: header.column.getCanSort()
+                                                                    ? 'cursor-pointer select-none flex items-center gap-1 hover:text-primary transition-colors'
+                                                                    : '',
+                                                                onClick: header.column.getToggleSortingHandler(),
+                                                            }}
+                                                        >
+                                                            {flexRender(
+                                                                header.column.columnDef.header,
+                                                                header.getContext()
+                                                            )}
+                                                            {header.column.getIsSorted() && (
+                                                                <span className="ml-1">
+                                                                    {header.column.getIsSorted() === 'asc' ? (
+                                                                        <ArrowUp className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <ArrowDown className="h-4 w-4" />
+                                                                    )}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {header.column.getCanFilter() && (
+                                                            <div className="mt-2">
+                                                                <Input
+                                                                    value={(header.column.getFilterValue() as string) ?? ''}
+                                                                    onChange={e => header.column.setFilterValue(e.target.value)}
+                                                                    placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
+                                                                    className="h-8 text-xs"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </TableHead>
+                                        ))}
                                 </TableRow>
+                                ))}
                             </TableHeader>
                             <TableBody>
-                                {paginatedTypes.length > 0 ? (
-                                    paginatedTypes.map((caseType) => (
-                                        <TableRow key={caseType.id}>
-                                            <TableCell className="font-medium">{caseType.name}</TableCell>
-                                            <TableCell>{caseType.description || '-'}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Link href={route('case-types.edit', caseType.id)}>
-                                                        <Button variant="outline" size="icon">
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Button>
-                                                    </Link>
-                                                    <Button variant="destructive" size="icon" onClick={() => confirmDelete(caseType)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
+                                {tableRows.length > 0 ? (
+                                    tableRows.map((row) => (
+                                        <TableRow key={row.id}>
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id}>
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
+                                            ))}
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={3} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                        <TableCell colSpan={columns.length} className="text-center py-8 text-gray-500 dark:text-gray-400">
                                             No se encontraron registros.
                                         </TableCell>
                                     </TableRow>
@@ -186,14 +381,196 @@ export default function Index() {
                     </div>
                 </div>
 
-                {/* Paginación sticky en móvil, normal en escritorio */}
-                {totalPages > 1 && (
-                    <PaginationComponent
-                        data={filteredTypes}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                        onPageChange={(page) => setCurrentPage(page)}
-                    />
-                )}
+                {/* Paginación para móvil */}
+                <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
+                    <div className="flex items-center justify-between">
+                        <div className="text-xs text-gray-500 whitespace-nowrap">
+                            <span className="inline-flex items-center">
+                                <span className="hidden xs:inline">{pagination.pageIndex * pagination.pageSize + 1}-{Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount)}</span>
+                                <span className="xs:hidden">{Math.min(pagination.pageSize, tableRows.length)}</span>
+                                <span className="mx-1">/</span>
+                                <span>{filteredCount}</span>
+                            </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                            {/* Selector de registros por página */}
+                            <Select 
+                                value={pagination.pageSize.toString()} 
+                                onValueChange={handlePerPageChange}
+                            >
+                                <SelectTrigger className="h-7 w-16 text-xs">
+                                    <SelectValue placeholder={pagination.pageSize.toString()} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {[5, 10, 20, 50, 100].map(size => (
+                                        <SelectItem key={size} value={size.toString()}>
+                                            {size}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            
+                            {/* Indicador de página en móvil */}
+                            <div className="text-xs font-medium">
+                                Pág. {currentPage}/{pageCount || 1}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Paginación móvil usando botones más grandes */}
+                    <div className="flex justify-between mt-2">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 px-2 text-xs"
+                            onClick={() => table.setPageIndex(0)}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            <ChevronsLeft className="h-4 w-4 mr-1" />
+                            Inicio
+                        </Button>
+                        
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 px-2 text-xs"
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            Anterior
+                        </Button>
+                        
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 px-2 text-xs"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage()}
+                        >
+                            Siguiente
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                        
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 px-2 text-xs"
+                            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                            disabled={!table.getCanNextPage()}
+                        >
+                            Final
+                            <ChevronsRight className="h-4 w-4 ml-1" />
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Paginación para escritorio */}
+                <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-4 gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
+                            <div>
+                                Mostrando {Math.min(pagination.pageSize, tableRows.length)} de {filteredCount} registros
+                            </div>
+                            <Select 
+                                value={pagination.pageSize.toString()} 
+                                onValueChange={handlePerPageChange}
+                            >
+                                <SelectTrigger className="h-8 w-24">
+                                    <SelectValue placeholder={pagination.pageSize.toString()} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {[5, 10, 20, 50, 100].map(size => (
+                                        <SelectItem key={size} value={size.toString()}>
+                                            {size}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    {/* Paginación mejorada */}
+                    <div className="flex items-center gap-4">
+                        {/* Indicador de página actual */}
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                            Página <span className="font-semibold">{currentPage}</span> de{" "}
+                            <span className="font-semibold">{pageCount || 1}</span>
+                        </div>
+
+                        {/* Botones de navegación */}
+                        <div className="flex items-center space-x-1">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => table.setPageIndex(0)}
+                                disabled={!table.getCanPreviousPage()}
+                                className="h-8 w-8"
+                            >
+                                <ChevronsLeft className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => table.previousPage()}
+                                disabled={!table.getCanPreviousPage()}
+                                className="h-8 w-8"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+
+                            {/* Números de página */}
+                            {Array.from({ length: pageCount || 1 }, (_, i) => {
+                                // Solo mostrar 5 páginas como máximo
+                                if (pageCount <= 5 || 
+                                    i === 0 || 
+                                    i === pageCount - 1 || 
+                                    Math.abs(i - pagination.pageIndex) <= 1) {
+                                    return (
+                                        <Button
+                                            key={i}
+                                            variant={i === pagination.pageIndex ? "default" : "outline"}
+                                            size="icon"
+                                            onClick={() => table.setPageIndex(i)}
+                                            disabled={i === pagination.pageIndex}
+                                            className={`h-8 w-8 ${i === pagination.pageIndex ? 'font-bold' : ''}`}
+                                        >
+                                            {i + 1}
+                                        </Button>
+                                    );
+                                }
+                                // Agregar puntos suspensivos en el medio
+                                if ((i === 1 && pagination.pageIndex > 2) || 
+                                    (i === pageCount - 2 && pagination.pageIndex < pageCount - 3)) {
+                                    return <span key={i} className="px-2 text-gray-500">...</span>;
+                                }
+                                return null;
+                            })}
+
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => table.nextPage()}
+                                disabled={!table.getCanNextPage()}
+                                className="h-8 w-8"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => table.setPageIndex(pageCount - 1)}
+                                disabled={!table.getCanNextPage()}
+                                className="h-8 w-8"
+                            >
+                                <ChevronsRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
 
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                     <AlertDialogContent>
