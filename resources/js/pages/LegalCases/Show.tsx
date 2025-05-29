@@ -16,27 +16,34 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDateSafe } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { 
-    ArrowDown, 
-    ArrowUp, 
+import {
+    ArrowDown,
+    ArrowUp,
     BookOpen,
-    Building, 
-    Calendar, 
+    Building,
+    Calendar,
     ChevronsUpDown,
-    Edit, 
-    Eye, 
-    Gavel, 
-    Info, 
-    Plus, 
-    Tag, 
-    UserCheck, 
-    UserCog, 
-    UserPlus, 
-    Users, 
-    X 
+    Edit,
+    Eye,
+    Gavel,
+    Info,
+    Plus,
+    Tag,
+    UserCheck,
+    UserCog,
+    UserPlus,
+    Users,
+    X
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 interface CaseType {
     id: number;
@@ -104,7 +111,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
     const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
     const [statusHistory, setStatusHistory] = useState<any[]>([]);
-    const [selectedStatus, setSelectedStatus] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('placeholder');
     const [statusReason, setStatusReason] = useState('');
     const [creatingStatus, setCreatingStatus] = useState(false);
     const [newStatus, setNewStatus] = useState('');
@@ -370,10 +377,10 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     // Agregar una etiqueta (existente o nueva)
     const handleAddTag = () => {
         if (!selectedTag.trim()) return;
-        
-        const tagExists = allTags.some(tag => 
-            (typeof tag.name === 'string' && tag.name.toLowerCase() === selectedTag.toLowerCase()) || 
-            (typeof tag.name === 'object' && Object.values(tag.name).some(name => 
+
+        const tagExists = allTags.some(tag =>
+            (typeof tag.name === 'string' && tag.name.toLowerCase() === selectedTag.toLowerCase()) ||
+            (typeof tag.name === 'object' && Object.values(tag.name).some(name =>
                 typeof name === 'string' && name.toLowerCase() === selectedTag.toLowerCase()
             ))
         );
@@ -395,7 +402,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 'X-CSRF-TOKEN': csrfToken || '',
             },
             credentials: 'same-origin',
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 tags: [selectedTag],
                 create_if_not_exists: true // Parámetro para indicar que se debe crear si no existe
             }),
@@ -411,7 +418,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 loadAllTags(); // Recargar todas las etiquetas para actualizar la lista
                 setSelectedTag('');
                 setTagDialogOpen(false);
-                
+
                 if (data.created) {
                     toast.success('Etiqueta creada y agregada correctamente');
                 } else {
@@ -459,7 +466,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     // Actualizar el estatus del expediente
     const handleStatusChange = () => {
         const statusToSet = creatingStatus ? newStatus : selectedStatus;
-        if (!statusToSet) {
+        if (!statusToSet || statusToSet === 'placeholder') {
             toast.error('Debes seleccionar o crear un estatus.');
             return;
         }
@@ -479,6 +486,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 setStatusReason('');
                 setNewStatus('');
                 setCreatingStatus(false);
+                setSelectedStatus('placeholder');
                 // Refrescar historial y estatus actual
                 fetch(route('legal-cases.statuses', legalCase.id))
                     .then((res) => res.json())
@@ -613,16 +621,16 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                                 <span className="hidden text-xs sm:inline">{tag.type}</span>
                                                             </div>
                                                         )}
-                                                                                                                    <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    confirmRemoveTag(tagName);
-                                                                }}
-                                                                className="ml-1 opacity-70 transition-opacity hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-70"
-                                                                title="Eliminar etiqueta"
-                                                            >
-                                                                <X className="h-4 w-4" />
-                                                            </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                confirmRemoveTag(tagName);
+                                                            }}
+                                                            className="ml-1 opacity-70 transition-opacity hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-70"
+                                                            title="Eliminar etiqueta"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
                                                     </div>
                                                 );
                                             })}
@@ -1018,18 +1026,22 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                     <div className="space-y-4">
                         {!creatingStatus ? (
                             <>
-                                <select
-                                    className="w-full rounded-md border px-3 py-2 text-sm"
+                                <Select
                                     value={selectedStatus}
-                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                    onValueChange={(value) => setSelectedStatus(value)}
                                 >
-                                    <option value="">Seleccione un estatus</option>
-                                    {availableStatuses.map((status) => (
-                                        <option key={status} value={status}>
-                                            {status}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccione un estatus" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="placeholder">Seleccione un estatus</SelectItem>
+                                        {availableStatuses.map((status) => (
+                                            <SelectItem key={status} value={status}>
+                                                {status}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 <Button variant="link" onClick={() => setCreatingStatus(true)} className="p-0 text-xs">
                                     + Crear nuevo estatus
                                 </Button>
@@ -1076,7 +1088,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button onClick={handleStatusChange} disabled={!selectedStatus && !newStatus}>
+                        <Button onClick={handleStatusChange} disabled={(!selectedStatus && !newStatus) || (selectedStatus === 'placeholder' && !newStatus)}>
                             Guardar
                         </Button>
                     </DialogFooter>
@@ -1119,13 +1131,13 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                 )}
                             </select>
                         </div>
-                        
+
                         <div className="my-2 flex items-center">
                             <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
                             <span className="mx-2 text-xs text-gray-500 dark:text-gray-400">O</span>
                             <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
                         </div>
-                        
+
                         <div className="flex flex-col gap-2">
                             <label htmlFor="new-tag" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Crear nueva etiqueta
@@ -1139,12 +1151,12 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                 className="border-gray-300 text-gray-900 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100"
                             />
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {allTags.some(tag => 
-                                    (typeof tag.name === 'string' && tag.name.toLowerCase() === selectedTag.toLowerCase()) || 
-                                    (typeof tag.name === 'object' && Object.values(tag.name).some(name => 
+                                {allTags.some(tag =>
+                                    (typeof tag.name === 'string' && tag.name.toLowerCase() === selectedTag.toLowerCase()) ||
+                                    (typeof tag.name === 'object' && Object.values(tag.name).some(name =>
                                         typeof name === 'string' && name.toLowerCase() === selectedTag.toLowerCase()))
-                                ) && selectedTag !== '' ? 
-                                    '⚠️ Ya existe una etiqueta con este nombre' : 
+                                ) && selectedTag !== '' ?
+                                    '⚠️ Ya existe una etiqueta con este nombre' :
                                     'La etiqueta se creará y asignará al expediente'}
                             </p>
                         </div>
@@ -1153,8 +1165,8 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                         <Button variant="outline" onClick={() => setTagDialogOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button 
-                            onClick={handleAddTag} 
+                        <Button
+                            onClick={handleAddTag}
                             disabled={!selectedTag.trim()}
                         >
                             Agregar
