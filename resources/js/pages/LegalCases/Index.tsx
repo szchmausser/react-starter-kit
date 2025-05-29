@@ -43,36 +43,54 @@ import LaravelPagination from '@/components/LaravelPagination';
 
 // Función para obtener clases de colores según el estado
 const getStatusColor = (statusName: string): { bg: string, text: string, darkBg: string, darkText: string } => {
+    // Si no hay nombre de estado, devolver color por defecto
+    if (!statusName) {
+        return { bg: 'bg-slate-100', text: 'text-slate-800', darkBg: 'dark:bg-slate-800/30', darkText: 'dark:text-slate-300' };
+    }
+
     // Normalizar el nombre del estado (minúsculas, sin espacios ni acentos)
     const normalizedStatus = statusName.toLowerCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .replace(/\s+/g, "");
 
-    // Mapeo de estados a colores
+    // Mapeo de estados a colores - Mejorados para modo oscuro
     const colorMap: Record<string, { bg: string, text: string, darkBg: string, darkText: string }> = {
         // Estados de tramitación
-        'enproceso': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
-        'tramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
-        'entramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-900', darkText: 'dark:text-blue-300' },
+        'enproceso': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-800/30', darkText: 'dark:text-blue-300' },
+        'tramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-800/30', darkText: 'dark:text-blue-300' },
+        'entramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-800/30', darkText: 'dark:text-blue-300' },
 
         // Estados de conclusión
-        'finalizado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
-        'completado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
-        'cerrado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-900', darkText: 'dark:text-green-300' },
+        'finalizado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-800/30', darkText: 'dark:text-green-300' },
+        'completado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-800/30', darkText: 'dark:text-green-300' },
+        'cerrado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-800/30', darkText: 'dark:text-green-300' },
 
         // Estados de espera
-        'enespera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
-        'pendiente': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
-        'espera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-900', darkText: 'dark:text-yellow-300' },
+        'enespera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-800/30', darkText: 'dark:text-yellow-300' },
+        'pendiente': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-800/30', darkText: 'dark:text-yellow-300' },
+        'espera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-800/30', darkText: 'dark:text-yellow-300' },
 
         // Estados críticos
-        'urgente': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-900', darkText: 'dark:text-red-300' },
-        'critico': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-900', darkText: 'dark:text-red-300' },
+        'urgente': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-800/30', darkText: 'dark:text-red-300' },
+        'critico': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-800/30', darkText: 'dark:text-red-300' },
 
         // Estados de pausa
-        'suspendido': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
-        'cancelado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
-        'archivado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-800', darkText: 'dark:text-gray-300' },
+        'suspendido': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-700/50', darkText: 'dark:text-gray-300' },
+        'cancelado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-700/50', darkText: 'dark:text-gray-300' },
+        'archivado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-700/50', darkText: 'dark:text-gray-300' },
+
+        // Estados adicionales
+        'distribuidos': { bg: 'bg-indigo-100', text: 'text-indigo-800', darkBg: 'dark:bg-indigo-800/30', darkText: 'dark:text-indigo-300' },
+        'aceptar': { bg: 'bg-indigo-100', text: 'text-indigo-800', darkBg: 'dark:bg-indigo-800/30', darkText: 'dark:text-indigo-300' },
+        'expedientes': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-800/30', darkText: 'dark:text-purple-300' },
+        'provenientes': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-800/30', darkText: 'dark:text-purple-300' },
+        'archivo': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-800/30', darkText: 'dark:text-purple-300' },
+        'judicial': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-800/30', darkText: 'dark:text-purple-300' },
+        'paralizados': { bg: 'bg-orange-100', text: 'text-orange-800', darkBg: 'dark:bg-orange-800/30', darkText: 'dark:text-orange-300' },
+        'ejecucion': { bg: 'bg-orange-100', text: 'text-orange-800', darkBg: 'dark:bg-orange-800/30', darkText: 'dark:text-orange-300' },
+        'sentencia': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-800/30', darkText: 'dark:text-teal-300' },
+        'fuera': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-800/30', darkText: 'dark:text-teal-300' },
+        'lapso': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-800/30', darkText: 'dark:text-teal-300' },
     };
 
     // Buscar coincidencia en el mapa de colores
@@ -82,8 +100,33 @@ const getStatusColor = (statusName: string): { bg: string, text: string, darkBg:
         }
     }
 
-    // Color por defecto
-    return { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-900', darkText: 'dark:text-purple-300' };
+    // Para estados desconocidos, generamos un color basado en el hash del nombre
+    // Esto garantiza que el mismo estado siempre obtenga el mismo color
+    const getHashCode = (str: string): number => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return hash;
+    };
+
+    // Paleta de colores para estados desconocidos
+    const colorPalettes = [
+        { bg: 'bg-sky-100', text: 'text-sky-800', darkBg: 'dark:bg-sky-800/30', darkText: 'dark:text-sky-300' },
+        { bg: 'bg-emerald-100', text: 'text-emerald-800', darkBg: 'dark:bg-emerald-800/30', darkText: 'dark:text-emerald-300' },
+        { bg: 'bg-amber-100', text: 'text-amber-800', darkBg: 'dark:bg-amber-800/30', darkText: 'dark:text-amber-300' },
+        { bg: 'bg-rose-100', text: 'text-rose-800', darkBg: 'dark:bg-rose-800/30', darkText: 'dark:text-rose-300' },
+        { bg: 'bg-fuchsia-100', text: 'text-fuchsia-800', darkBg: 'dark:bg-fuchsia-800/30', darkText: 'dark:text-fuchsia-300' },
+        { bg: 'bg-lime-100', text: 'text-lime-800', darkBg: 'dark:bg-lime-800/30', darkText: 'dark:text-lime-300' },
+        { bg: 'bg-cyan-100', text: 'text-cyan-800', darkBg: 'dark:bg-cyan-800/30', darkText: 'dark:text-cyan-300' },
+        { bg: 'bg-violet-100', text: 'text-violet-800', darkBg: 'dark:bg-violet-800/30', darkText: 'dark:text-violet-300' },
+    ];
+
+    // Seleccionar un color basado en el hash del nombre del estado
+    const hashCode = getHashCode(normalizedStatus);
+    const colorIndex = Math.abs(hashCode) % colorPalettes.length;
+
+    return colorPalettes[colorIndex];
 };
 
 interface Props extends PageProps {
@@ -337,7 +380,7 @@ export default function Index() {
                     const { bg, text, darkBg, darkText } = getStatusColor(statusName);
 
                     return (
-                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text} dark:${darkBg} dark:${darkText}`}>
+                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text} dark:${darkBg.replace('dark:', '')} dark:${darkText.replace('dark:', '')}`}>
                             {statusName}
                         </div>
                     );
@@ -761,20 +804,21 @@ export default function Index() {
                                     {/* Verificar si hay estado en currentStatus o en el array statuses */}
                                     {(legalCase.currentStatus?.name || (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0)) && (
                                         <div className="text-xs mt-1">
-                                            <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${(() => {
+                                            {(() => {
                                                 // Determinar el nombre del estado a mostrar
                                                 const statusName = legalCase.currentStatus?.name ||
                                                     (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ?
                                                         legalCase.statuses[0].name : '');
 
-                                                const colors = getStatusColor(statusName);
-                                                return `${colors.bg} ${colors.text} ${colors.darkBg} ${colors.darkText}`;
-                                            })()
-                                                }`}>
-                                                {legalCase.currentStatus?.name ||
-                                                    (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ?
-                                                        legalCase.statuses[0].name : 'Sin estado')}
-                                            </div>
+                                                // Obtener clases de colores según el estado
+                                                const { bg, text, darkBg, darkText } = getStatusColor(statusName);
+
+                                                return (
+                                                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text} dark:${darkBg.replace('dark:', '')} dark:${darkText.replace('dark:', '')}`}>
+                                                        {statusName}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     )}
                                     <div className="flex gap-2 mt-2 justify-end">
