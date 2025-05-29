@@ -16,7 +16,7 @@ final class CaseEventSeeder extends Seeder
      */
     public function run(): void
     {
-        $legalCases = LegalCase::take(2)->get();
+        $legalCases = LegalCase::all();
         $user = User::first();
 
         if ($legalCases->isEmpty() || !$user) {
@@ -24,28 +24,44 @@ final class CaseEventSeeder extends Seeder
             return;
         }
 
-        foreach ($legalCases as $case) {
-            CaseEvent::create([
-                'legal_case_id' => $case->id,
-                'user_id' => $user->id,
+        $events = [
+            [
                 'title' => 'Apertura del expediente',
                 'description' => 'Se procede a la apertura formal del expediente legal.',
-                'date' => now()->subDays(10),
-            ]);
-            CaseEvent::create([
-                'legal_case_id' => $case->id,
-                'user_id' => $user->id,
+                'days_ago' => 10,
+            ],
+            [
                 'title' => 'Asignación de juez',
                 'description' => 'Se asigna el juez encargado del caso.',
-                'date' => now()->subDays(8),
-            ]);
-            CaseEvent::create([
-                'legal_case_id' => $case->id,
-                'user_id' => $user->id,
+                'days_ago' => 8,
+            ],
+            [
                 'title' => 'Notificación a las partes',
                 'description' => 'Se procede a notificar a todas las partes involucradas.',
-                'date' => now()->subDays(5),
-            ]);
+                'days_ago' => 5,
+            ],
+            [
+                'title' => 'Primera audiencia',
+                'description' => 'Se celebra la primera audiencia del caso.',
+                'days_ago' => 3,
+            ],
+            [
+                'title' => 'Presentación de pruebas',
+                'description' => 'Se presentan las pruebas documentales y testimoniales.',
+                'days_ago' => 2,
+            ],
+        ];
+
+        foreach ($legalCases as $case) {
+            foreach ($events as $event) {
+                CaseEvent::create([
+                    'legal_case_id' => $case->id,
+                    'user_id' => $user->id,
+                    'title' => $event['title'],
+                    'description' => $event['description'],
+                    'date' => now()->subDays($event['days_ago']),
+                ]);
+            }
         }
     }
 }

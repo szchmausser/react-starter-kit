@@ -6,6 +6,7 @@ use App\Models\CaseType;
 use App\Models\Individual;
 use App\Models\LegalCase;
 use App\Models\LegalEntity;
+use App\Models\StatusList;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -34,6 +35,13 @@ class LegalCaseSeeder extends Seeder
         $legalEntities = LegalEntity::all();
         if ($legalEntities->isEmpty()) {
             $this->command->info('Se requieren entidades legales para asociar a los expedientes. Por favor ejecute primero LegalEntitySeeder.');
+            return;
+        }
+
+        // Verificar que existen estados
+        $statuses = StatusList::all();
+        if ($statuses->isEmpty()) {
+            $this->command->info('Se requieren estados para asociar a los expedientes. Por favor ejecute primero StatusListSeeder.');
             return;
         }
 
@@ -163,6 +171,10 @@ class LegalCaseSeeder extends Seeder
                     $legalCase->legalEntities()->attach($legalEntity->id);
                 }
             }
+            
+            // Asignar un estado aleatorio al caso
+            $randomStatus = $statuses->random();
+            $legalCase->setStatus($randomStatus->name, 'Estado inicial asignado por el seeder');
         }
     }
 }

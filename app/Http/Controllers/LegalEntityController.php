@@ -19,8 +19,8 @@ class LegalEntityController extends Controller
     {
         $query = LegalEntity::query();
         
-        // Filtrado
-        if ($request->has('search')) {
+        // Filtrado global (búsqueda)
+        if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('business_name', 'like', "%{$search}%")
@@ -29,9 +29,56 @@ class LegalEntityController extends Controller
             });
         }
         
-        $legalEntities = $query->orderBy('id', 'desc')
-                              ->paginate(10)
+        // Filtros de columnas individuales
+        if ($request->has('rif') && !empty($request->rif)) {
+            $query->where('rif', 'like', "%{$request->rif}%");
+        }
+        
+        if ($request->has('business_name') && !empty($request->business_name)) {
+            $query->where(function($q) use ($request) {
+                $q->where('business_name', 'like', "%{$request->business_name}%")
+                  ->orWhere('trade_name', 'like', "%{$request->business_name}%");
+            });
+        }
+        
+        if ($request->has('email') && !empty($request->email)) {
+            $query->where('email_1', 'like', "%{$request->email}%");
+        }
+        
+        if ($request->has('phone') && !empty($request->phone)) {
+            $query->where('phone_number_1', 'like', "%{$request->phone}%");
+        }
+        
+        // Ordenamiento
+        $orderBy = $request->order_by ?? 'id';
+        $orderDir = $request->order_dir ?? 'desc';
+        
+        // Validar que la columna de ordenamiento sea válida
+        $validColumns = ['id', 'rif', 'business_name', 'trade_name', 'email_1', 'phone_number_1', 'created_at', 'updated_at'];
+        
+        if (in_array($orderBy, $validColumns)) {
+            $query->orderBy($orderBy, $orderDir);
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+        
+        // Paginación configurable
+        $perPage = $request->input('per_page', 10);
+        
+        // Validar que per_page sea un número válido
+        $validPerPageValues = [5, 10, 20, 50, 100, 200, 500, 1000];
+        if (!in_array($perPage, $validPerPageValues)) {
+            $perPage = 10; // Valor por defecto
+        }
+        
+        $legalEntities = $query->paginate($perPage)
                               ->withQueryString();
+        
+        // Datos adicionales para depuración (si es necesario)
+        $debug = [
+            'total_records' => $legalEntities->total(),
+            'total_pages' => $legalEntities->lastPage(),
+        ];
         
         return Inertia::render('LegalEntities/Index', [
             'legalEntities' => [
@@ -53,7 +100,17 @@ class LegalEntityController extends Controller
                     'total' => $legalEntities->total(),
                 ],
             ],
-            'filters' => $request->only(['search']),
+            'filters' => $request->only([
+                'search', 
+                'rif', 
+                'business_name', 
+                'email', 
+                'phone', 
+                'order_by', 
+                'order_dir', 
+                'per_page'
+            ]),
+            'debug' => $debug,
         ]);
     }
 
