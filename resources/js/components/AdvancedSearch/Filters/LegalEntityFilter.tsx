@@ -13,7 +13,7 @@ interface LegalEntityFilterProps {
 // Campos disponibles para filtrar entidades legales
 const legalEntityFields = [
     { value: 'legal_entity_rif', label: 'RIF' },
-    { value: 'legal_entity_business_name', label: 'Razón Social' },
+    { value: 'legal_entity_business_name', label: 'Nombre (Razón social / Comercial)' },
 ];
 
 // Operadores disponibles para filtro de entidades legales
@@ -46,12 +46,27 @@ export function LegalEntityFilter({ criterion, onChange, onRemove }: LegalEntity
         onChange({ value: e.target.value });
     };
 
+    // Determinar el placeholder y descripción según el campo seleccionado
+    const getPlaceholder = () => {
+        if (criterion.field === 'legal_entity_rif') {
+            return "J-12345678-9";
+        }
+        return "Nombre de la empresa";
+    };
+
+    const getDescription = () => {
+        if (criterion.field === 'legal_entity_rif') {
+            return "Busca expedientes relacionados con entidades legales por su RIF";
+        }
+        return "Busca expedientes por razón social o nombre comercial de la entidad";
+    };
+
     return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div className="md:col-span-1">
                 <div className="text-sm font-medium mb-2">Persona Jurídica</div>
                 <div className="text-xs text-gray-500">
-                    Busca expedientes relacionados con entidades legales
+                    {getDescription()}
                 </div>
             </div>
 
@@ -96,7 +111,7 @@ export function LegalEntityFilter({ criterion, onChange, onRemove }: LegalEntity
                 <Input
                     value={criterion.value || ''}
                     onChange={handleValueChange}
-                    placeholder={criterion.field === 'legal_entity_rif' ? "J-12345678-9" : "Nombre de la empresa"}
+                    placeholder={getPlaceholder()}
                     disabled={!criterion.field || !criterion.operator}
                     className="flex-grow"
                 />

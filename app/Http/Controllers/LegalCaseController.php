@@ -682,6 +682,7 @@ final class LegalCaseController extends Controller
 
         // Determinar qué campo de la entidad legal debemos buscar
         $entityField = null;
+        $shouldSearchTradeNameToo = false;
 
         switch ($field) {
             case 'legal_entity_rif':
@@ -689,6 +690,7 @@ final class LegalCaseController extends Controller
                 break;
             case 'legal_entity_business_name':
                 $entityField = 'business_name';
+                $shouldSearchTradeNameToo = true; // Indicar que también debemos buscar en trade_name
                 break;
             default:
                 return; // Si no es un campo válido, no aplicamos filtro
@@ -696,17 +698,49 @@ final class LegalCaseController extends Controller
 
         // Usamos whereHas para filtrar expedientes que tienen relación con entidades legales
         // que cumplen con el criterio de búsqueda
-        $query->whereHas('legalEntities', function ($subQuery) use ($operator, $value, $entityField) {
-            switch ($operator) {
-                case 'equals':
-                    $subQuery->where($entityField, '=', $value);
-                    break;
-                case 'contains':
-                    $subQuery->where($entityField, 'like', '%' . $value . '%');
-                    break;
-                case 'starts_with':
-                    $subQuery->where($entityField, 'like', $value . '%');
-                    break;
+        $query->whereHas('legalEntities', function ($subQuery) use ($operator, $value, $entityField, $shouldSearchTradeNameToo) {
+            if ($shouldSearchTradeNameToo) {
+                // Si es business_name, también buscamos en trade_name
+                $subQuery->where(function ($q) use ($operator, $value, $entityField) {
+                    // Aplicar el operador al campo business_name
+                    switch ($operator) {
+                        case 'equals':
+                            $q->where($entityField, '=', $value);
+                            break;
+                        case 'contains':
+                            $q->where($entityField, 'like', '%' . $value . '%');
+                            break;
+                        case 'starts_with':
+                            $q->where($entityField, 'like', $value . '%');
+                            break;
+                    }
+
+                    // Aplicar el mismo operador al campo trade_name
+                    switch ($operator) {
+                        case 'equals':
+                            $q->orWhere('trade_name', '=', $value);
+                            break;
+                        case 'contains':
+                            $q->orWhere('trade_name', 'like', '%' . $value . '%');
+                            break;
+                        case 'starts_with':
+                            $q->orWhere('trade_name', 'like', $value . '%');
+                            break;
+                    }
+                });
+            } else {
+                // Para otros campos (como RIF), solo buscamos en ese campo específico
+                switch ($operator) {
+                    case 'equals':
+                        $subQuery->where($entityField, '=', $value);
+                        break;
+                    case 'contains':
+                        $subQuery->where($entityField, 'like', '%' . $value . '%');
+                        break;
+                    case 'starts_with':
+                        $subQuery->where($entityField, 'like', $value . '%');
+                        break;
+                }
             }
         });
     }
