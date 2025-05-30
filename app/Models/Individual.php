@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Searchable\Searchable;
 use Spatie\Searchable\SearchResult;
+use Spatie\Tags\HasTags;
 
 class Individual extends Model implements Searchable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTags;
 
     protected $fillable = [
         'national_id',
@@ -41,10 +42,10 @@ class Individual extends Model implements Searchable
     {
         // El título será el nombre completo
         $title = trim("{$this->first_name} {$this->middle_name} {$this->last_name} {$this->second_last_name}");
-        
+
         // URL para ver el detalle de esta persona
         $url = route('individuals.show', $this->id);
-        
+
         return new SearchResult(
             $this,
             $title,
@@ -56,7 +57,7 @@ class Individual extends Model implements Searchable
     public function legalCases()
     {
         return $this->belongsToMany(LegalCase::class, 'case_individuals')
-                    ->withPivot('role')
-                    ->withTimestamps();
+            ->withPivot('role')
+            ->withTimestamps();
     }
-} 
+}

@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
-        
+
         // Ejecutar los seeders en orden adecuado para mantener las relaciones
         $this->call([
             CaseTypeSeeder::class,
@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             TagSeeder::class,
             LegalCaseSeeder::class,
             CaseEventSeeder::class,
+            TaggableSeeder::class,
         ]);
     }
 }

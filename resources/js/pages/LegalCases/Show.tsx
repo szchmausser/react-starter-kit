@@ -44,6 +44,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { TagRelationsModal } from '@/components/TagRelationsModal';
+import axios from 'axios';
 
 interface CaseType {
     id: number;
@@ -127,10 +129,17 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     const [tagsCollapsed, setTagsCollapsed] = useState(false);
     const [allTags, setAllTags] = useState<TagType[]>([]);
     const [selectedTag, setSelectedTag] = useState<string>('');
+    const [newTagName, setNewTagName] = useState<string>('');
     const [tagDialogOpen, setTagDialogOpen] = useState(false);
     const [isLoadingTags, setIsLoadingTags] = useState(false);
     const [tagToRemove, setTagToRemove] = useState<{ name: string } | null>(null);
     const [isRemoveTagDialogOpen, setIsRemoveTagDialogOpen] = useState(false);
+
+    // Estados para el modal de relaciones de etiquetas
+    const [isTagRelationsModalOpen, setIsTagRelationsModalOpen] = useState(false);
+    const [selectedTagForRelations, setSelectedTagForRelations] = useState<TagType | null>(null);
+    const [tagRelationsData, setTagRelationsData] = useState<Record<string, any[]> | null>(null);
+    const [isLoadingTagRelations, setIsLoadingTagRelations] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -268,7 +277,8 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
         if (tag.name[locale]) return tag.name[locale];
 
         // Caso fallback: tomar cualquier valor no nulo del objeto
-        const firstValue = Object.values(tag.name).find((val) => val);
+        const values = Object.values(tag.name);
+        const firstValue = values.find((val) => val && typeof val === 'string');
         return firstValue || 'Sin nombre';
     };
 
@@ -376,21 +386,40 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
 
     // Agregar una etiqueta (existente o nueva)
     const handleAddTag = () => {
-        if (!selectedTag.trim()) return;
+        // Determinar si estamos agregando una etiqueta existente o creando una nueva
+        const isCreatingNewTag = selectedTag === '' && newTagName.trim() !== '';
+        const tagToAdd = isCreatingNewTag ? newTagName.trim() : selectedTag;
 
-        const tagExists = allTags.some(tag =>
-            (typeof tag.name === 'string' && tag.name.toLowerCase() === selectedTag.toLowerCase()) ||
-            (typeof tag.name === 'object' && Object.values(tag.name).some(name =>
-                typeof name === 'string' && name.toLowerCase() === selectedTag.toLowerCase()
-            ))
-        );
+        if (!tagToAdd) return;
+
+        // Verificar si la etiqueta ya existe en el sistema
+        const tagExists = allTags.some(tag => {
+            try {
+                if (typeof tag.name === 'string') {
+                    return tag.name.toLowerCase() === tagToAdd.toLowerCase();
+                }
+                if (typeof tag.name === 'object' && tag.name !== null) {
+                    return Object.values(tag.name).some(name =>
+                        typeof name === 'string' && name.toLowerCase() === tagToAdd.toLowerCase()
+                    );
+                }
+                return false;
+            } catch (error) {
+                console.error('Error al verificar etiqueta existente:', tag, error);
+                return false;
+            }
+        });
 
         // Validación adicional para evitar duplicados
         if (tagExists) {
-            const tagsAsociadas = tags.map(tag => getTagName(tag).toLowerCase());
-            if (tagsAsociadas.includes(selectedTag.toLowerCase())) {
-                toast.error('Esta etiqueta ya está asociada al expediente');
-                return;
+            try {
+                const tagsAsociadas = tags.map(tag => getTagName(tag).toLowerCase());
+                if (tagsAsociadas.includes(tagToAdd.toLowerCase())) {
+                    toast.error('Esta etiqueta ya está asociada al expediente');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error al verificar etiquetas asociadas:', error);
             }
         }
 
@@ -403,8 +432,8 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
             },
             credentials: 'same-origin',
             body: JSON.stringify({
-                tags: [selectedTag],
-                create_if_not_exists: true // Parámetro para indicar que se debe crear si no existe
+                tags: [tagToAdd],
+                create_if_not_exists: isCreatingNewTag // Solo crear si es una etiqueta nueva
             }),
         })
             .then((res) => {
@@ -417,6 +446,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                 loadTags();
                 loadAllTags(); // Recargar todas las etiquetas para actualizar la lista
                 setSelectedTag('');
+                setNewTagName('');
                 setTagDialogOpen(false);
 
                 if (data.created) {
@@ -531,6 +561,36 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
         return () => window.removeEventListener('popstate', onPopState);
     }, []);
 
+    // Función para manejar la visualización de relaciones de una etiqueta
+    const handleViewTagRelations = async (tag: TagType, e: React.MouseEvent) => {
+        // Evitar que se expanda/contraiga el título
+        e.stopPropagation();
+
+        setSelectedTagForRelations(tag);
+        setIsLoadingTagRelations(true);
+        setTagRelationsData(null); // Limpiar relaciones anteriores
+        setIsTagRelationsModalOpen(true);
+
+        try {
+            const response = await axios.get<Record<string, any[]>>(route('tags.relations', tag.id), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest' // Indicar que es una petición AJAX
+                }
+            });
+
+            if (response.data && Object.keys(response.data).length > 0) {
+                setTagRelationsData(response.data);
+            } else {
+                setTagRelationsData({});
+            }
+        } catch (error) {
+            toast.error('No se pudieron cargar las relaciones');
+            setTagRelationsData(null);
+        } finally {
+            setIsLoadingTagRelations(false);
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detalle del Expediente: ${legalCase.code}`} />
@@ -604,16 +664,31 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                 return (
                                                     <div
                                                         key={tag.id}
-                                                        className={`group inline-flex items-center gap-1 ${bg} ${text} rounded-full border px-3 py-1.5 text-sm ${border} transition-all hover:shadow-sm`}
+                                                        className={`group inline-flex items-center gap-2 ${bg} ${text} rounded-full border px-3 py-1.5 text-sm ${border} transition-all hover:shadow-sm`}
                                                     >
-                                                        <div
-                                                            onClick={(e) => toggleTitleExpand(tagId, e)}
-                                                            className="flex cursor-pointer items-center font-medium"
-                                                            title="Haz clic para expandir/contraer el nombre"
-                                                        >
-                                                            <span className={expandedTitles[tagId] ? '' : 'max-w-[120px] truncate sm:max-w-[200px]'}>
+                                                        <div className="flex items-center font-medium">
+                                                            <span
+                                                                onClick={(e) => handleViewTagRelations(tag, e)}
+                                                                className={`${expandedTitles[tagId] ? '' : 'max-w-[120px] truncate sm:max-w-[200px]'} cursor-pointer`}
+                                                                title="Haz clic para ver las relaciones de esta etiqueta"
+                                                            >
                                                                 {tagName}
                                                             </span>
+                                                            <button
+                                                                onClick={(e) => toggleTitleExpand(tagId, e)}
+                                                                className="ml-1.5 text-current opacity-60 hover:opacity-100 p-1 -m-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full"
+                                                                title="Expandir/contraer texto"
+                                                            >
+                                                                {expandedTitles[tagId] ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-up">
+                                                                        <path d="m18 15-6-6-6 6" />
+                                                                    </svg>
+                                                                ) : (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down">
+                                                                        <path d="m6 9 6 6 6-6" />
+                                                                    </svg>
+                                                                )}
+                                                            </button>
                                                         </div>
                                                         {tag.type && (
                                                             <div className="flex items-center gap-1 opacity-70">
@@ -621,12 +696,13 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                                 <span className="hidden text-xs sm:inline">{tag.type}</span>
                                                             </div>
                                                         )}
+                                                        <div className="h-4 w-px bg-current opacity-20 mx-0.5"></div>
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 confirmRemoveTag(tagName);
                                                             }}
-                                                            className="ml-1 opacity-70 transition-opacity hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-70"
+                                                            className="p-1 -m-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-current opacity-70 transition-all hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:text-red-400"
                                                             title="Eliminar etiqueta"
                                                         >
                                                             <X className="h-4 w-4" />
@@ -1111,19 +1187,30 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                 id="tag-select"
                                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100"
                                 value={selectedTag}
-                                onChange={(e) => setSelectedTag(e.target.value)}
+                                onChange={(e) => {
+                                    setSelectedTag(e.target.value);
+                                    // Limpiar el campo de nueva etiqueta si se selecciona una existente
+                                    if (e.target.value) {
+                                        setNewTagName('');
+                                    }
+                                }}
                                 disabled={allTags.length === 0}
                             >
                                 {allTags.length > 0 ? (
                                     <>
                                         <option value="" className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">Selecciona una etiqueta</option>
                                         {allTags.map((tag) => {
-                                            const displayName = getTagName(tag);
-                                            return (
-                                                <option key={tag.id} value={displayName} className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">
-                                                    {displayName} {tag.type ? `(${tag.type})` : ''}
-                                                </option>
-                                            );
+                                            try {
+                                                const displayName = getTagName(tag);
+                                                return (
+                                                    <option key={tag.id} value={displayName} className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">
+                                                        {displayName} {tag.type ? `(${tag.type})` : ''}
+                                                    </option>
+                                                );
+                                            } catch (error) {
+                                                console.error('Error al procesar etiqueta:', tag, error);
+                                                return null; // Omitir esta etiqueta si hay un error
+                                            }
                                         })}
                                     </>
                                 ) : (
@@ -1146,28 +1233,38 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                 id="new-tag"
                                 type="text"
                                 placeholder="Nombre de la nueva etiqueta"
-                                value={selectedTag === '' ? selectedTag : undefined}
-                                onChange={(e) => setSelectedTag(e.target.value)}
+                                value={newTagName}
+                                onChange={(e) => {
+                                    setNewTagName(e.target.value);
+                                    // Limpiar la selección de etiqueta existente si se está escribiendo una nueva
+                                    if (e.target.value.trim()) {
+                                        setSelectedTag('');
+                                    }
+                                }}
                                 className="border-gray-300 text-gray-900 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100"
                             />
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {allTags.some(tag =>
-                                    (typeof tag.name === 'string' && tag.name.toLowerCase() === selectedTag.toLowerCase()) ||
+                                    (typeof tag.name === 'string' && tag.name.toLowerCase() === newTagName.toLowerCase()) ||
                                     (typeof tag.name === 'object' && Object.values(tag.name).some(name =>
-                                        typeof name === 'string' && name.toLowerCase() === selectedTag.toLowerCase()))
-                                ) && selectedTag !== '' ?
+                                        typeof name === 'string' && name.toLowerCase() === newTagName.toLowerCase()))
+                                ) && newTagName !== '' ?
                                     '⚠️ Ya existe una etiqueta con este nombre' :
                                     'La etiqueta se creará y asignará al expediente'}
                             </p>
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setTagDialogOpen(false)}>
+                        <Button variant="outline" onClick={() => {
+                            setTagDialogOpen(false);
+                            setSelectedTag('');
+                            setNewTagName('');
+                        }}>
                             Cancelar
                         </Button>
                         <Button
                             onClick={handleAddTag}
-                            disabled={!selectedTag.trim()}
+                            disabled={!selectedTag && !newTagName.trim()}
                         >
                             Agregar
                         </Button>
@@ -1215,6 +1312,15 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                     <ArrowDown className="h-4 w-4" />
                 </button>
             </div>
+
+            {/* Modal de relaciones de etiquetas */}
+            <TagRelationsModal
+                isOpen={isTagRelationsModalOpen}
+                onClose={() => setIsTagRelationsModalOpen(false)}
+                tag={selectedTagForRelations}
+                relations={tagRelationsData}
+                isLoading={isLoadingTagRelations}
+            />
         </AppLayout>
     );
 }

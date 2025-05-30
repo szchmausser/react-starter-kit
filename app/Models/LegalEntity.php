@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Searchable\Searchable;
 use Spatie\Searchable\SearchResult;
+use Spatie\Tags\HasTags;
 
 class LegalEntity extends Model implements Searchable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTags;
 
     protected $fillable = [
         'rif',
@@ -39,10 +40,10 @@ class LegalEntity extends Model implements Searchable
         if ($this->trade_name) {
             $title .= " ({$this->trade_name})";
         }
-        
+
         // URL para ver el detalle de esta entidad
         $url = route('legal-entities.show', $this->id);
-        
+
         return new SearchResult(
             $this,
             $title,
@@ -55,11 +56,11 @@ class LegalEntity extends Model implements Searchable
     {
         return $this->belongsTo(Individual::class, 'legal_representative_id');
     }
-    
+
     public function legalCases()
     {
         return $this->belongsToMany(LegalCase::class, 'case_legal_entities')
-                    ->withPivot('role')
-                    ->withTimestamps();
+            ->withPivot('role')
+            ->withTimestamps();
     }
-} 
+}

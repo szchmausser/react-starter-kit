@@ -3,11 +3,12 @@ import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, X, RotateCcw, Network } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useState, useMemo, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import axios from 'axios';
 import {
     ColumnDef,
     ColumnFiltersState,
@@ -23,6 +24,9 @@ import {
     Row,
 } from '@tanstack/react-table';
 import { type BreadcrumbItem } from '@/types';
+
+// Importar el componente del modal de relaciones
+import { TagRelationsModal } from '@/components/TagRelationsModal';
 
 interface Tag {
     id: number;
@@ -47,6 +51,12 @@ export default function Index({ tags: initialTags }: Props) {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [uniqueTypes, setUniqueTypes] = useState<string[]>([]);
+
+    // Estados para el modal de relaciones
+    const [isRelationsModalOpen, setIsRelationsModalOpen] = useState(false);
+    const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+    const [tagRelations, setTagRelations] = useState<Record<string, any[]> | null>(null);
+    const [isLoadingRelations, setIsLoadingRelations] = useState(false);
 
     // Definición de breadcrumbs para la navegación
     const breadcrumbs: BreadcrumbItem[] = [
@@ -141,6 +151,14 @@ export default function Index({ tags: initialTags }: Props) {
                 const tag = row.original;
                 return (
                     <div className="flex justify-end gap-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            title="Ver relaciones"
+                            onClick={() => handleViewRelations(tag)}
+                        >
+                            <Network className="h-4 w-4" />
+                        </Button>
                         <Link href={route('tags.edit', tag.id)}>
                             <Button variant="outline" size="icon">
                                 <Pencil className="h-4 w-4" />
@@ -242,6 +260,33 @@ export default function Index({ tags: initialTags }: Props) {
             });
         }
         setIsDeleteDialogOpen(false);
+    };
+
+    // Función para manejar la visualización de relaciones
+    const handleViewRelations = async (tag: Tag) => {
+        setSelectedTag(tag);
+        setIsLoadingRelations(true);
+        setTagRelations(null); // Limpiar relaciones anteriores
+        setIsRelationsModalOpen(true);
+
+        try {
+            const response = await axios.get<Record<string, any[]>>(route('tags.relations', tag.id), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest' // Indicar que es una petición AJAX
+                }
+            });
+
+            if (response.data && Object.keys(response.data).length > 0) {
+                setTagRelations(response.data);
+            } else {
+                setTagRelations({}); // Objeto vacío para indicar que no hay relaciones
+            }
+        } catch (error) {
+            toast.error('No se pudieron cargar las relaciones');
+            setTagRelations(null);
+        } finally {
+            setIsLoadingRelations(false);
+        }
     };
 
     return (
@@ -386,6 +431,15 @@ export default function Index({ tags: initialTags }: Props) {
                                         Creado: {new Date(tag.created_at).toLocaleDateString()}
                                     </div>
                                     <div className="flex gap-2 mt-2 justify-end">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            title="Ver relaciones"
+                                            onClick={() => handleViewRelations(tag)}
+                                        >
+                                            <Network className="h-4 w-4" />
+                                        </Button>
                                         <Link href={route('tags.edit', tag.id)}>
                                             <Button variant="outline" size="icon" className="h-8 w-8">
                                                 <Pencil className="h-4 w-4" />
@@ -708,6 +762,15 @@ export default function Index({ tags: initialTags }: Props) {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+
+                {/* Modal de relaciones de etiquetas */}
+                <TagRelationsModal
+                    isOpen={isRelationsModalOpen}
+                    onClose={() => setIsRelationsModalOpen(false)}
+                    tag={selectedTag}
+                    relations={tagRelations}
+                    isLoading={isLoadingRelations}
+                />
             </div>
         </AppSidebarLayout>
     );

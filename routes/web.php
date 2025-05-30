@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rutas para la gestión de etiquetas
     Route::resource('tags', TagController::class);
+    Route::get('tags/{tag}/relations', [TagController::class, 'getRelations'])->name('tags.relations');
 
     // Listas de tareas
     Route::resource('todo-lists', TodoListController::class)->except(['create', 'edit', 'show']);
