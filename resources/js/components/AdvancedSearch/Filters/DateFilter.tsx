@@ -285,54 +285,151 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
     };
 
     return (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
-                <Select value={criterion.field} onValueChange={handleFieldChange}>
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar campo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {dateFields.map((field) => (
-                            <SelectItem key={field.value} value={field.value}>
-                                {field.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div>
-                <Select
-                    value={criterion.operator}
-                    onValueChange={handleOperatorChange}
-                    disabled={!criterion.field}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar operador" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {dateOperators.map((op) => (
-                            <SelectItem key={op.value} value={op.value}>
-                                {op.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="md:col-span-2 flex items-center gap-2">
-                <div className="flex-grow">
-                    {renderDateSelector()}
+        <div className="grid grid-cols-1 gap-2 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                <div>
+                    <Select value={criterion.field} onValueChange={handleFieldChange}>
+                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                            <SelectValue placeholder="Seleccionar campo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {dateFields.map((field) => (
+                                <SelectItem key={field.value} value={field.value}>
+                                    {field.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onRemove}
-                    className="flex-shrink-0"
-                    title="Eliminar criterio"
-                >
-                    <X className="h-4 w-4" />
-                </Button>
+
+                <div>
+                    <Select
+                        value={criterion.operator}
+                        onValueChange={handleOperatorChange}
+                        disabled={!criterion.field}
+                    >
+                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                            <SelectValue placeholder="Seleccionar operador" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {dateOperators.map((op) => (
+                                <SelectItem key={op.value} value={op.value}>
+                                    {op.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="sm:col-span-2 flex items-start flex-col sm:flex-row sm:items-center gap-2">
+                    {criterion.operator === 'between' ? (
+                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div className="relative">
+                                <Input
+                                    value={startDateInput}
+                                    onChange={handleStartDateInputChange}
+                                    placeholder="DD/MM/AAAA"
+                                    className="pr-10 text-xs sm:text-sm h-8 sm:h-10"
+                                />
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-0 top-0 h-full w-8"
+                                        >
+                                            <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <CustomCalendar
+                                            selectedDate={startDate}
+                                            onDateSelect={(date) => {
+                                                setStartDate(date);
+                                                setStartDateInput(format(date, 'dd/MM/yyyy'));
+                                            }}
+                                            initialMonth={startDate || new Date()}
+                                            onMonthChange={setStartCalendarDate}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                            <div className="relative">
+                                <Input
+                                    value={endDateInput}
+                                    onChange={handleEndDateInputChange}
+                                    placeholder="DD/MM/AAAA"
+                                    className="pr-10 text-xs sm:text-sm h-8 sm:h-10"
+                                />
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-0 top-0 h-full w-8"
+                                        >
+                                            <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <CustomCalendar
+                                            selectedDate={endDate}
+                                            onDateSelect={(date) => {
+                                                setEndDate(date);
+                                                setEndDateInput(format(date, 'dd/MM/yyyy'));
+                                            }}
+                                            initialMonth={endDate || new Date()}
+                                            onMonthChange={setEndCalendarDate}
+                                            minDate={startDate}
+                                            disabledDates={(date) => startDate ? date < startDate : false}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                        </div>
+                    ) : criterion.operator && criterion.operator !== 'is_null' && criterion.operator !== 'is_not_null' ? (
+                        <div className="relative flex-grow">
+                            <Input
+                                value={startDateInput}
+                                onChange={handleStartDateInputChange}
+                                placeholder="DD/MM/AAAA"
+                                className="pr-10 text-xs sm:text-sm h-8 sm:h-10"
+                            />
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-0 top-0 h-full w-8"
+                                    >
+                                        <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <CustomCalendar
+                                        selectedDate={startDate}
+                                        onDateSelect={(date) => {
+                                            setStartDate(date);
+                                            setStartDateInput(format(date, 'dd/MM/yyyy'));
+                                        }}
+                                        initialMonth={startDate || new Date()}
+                                        onMonthChange={setStartCalendarDate}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    ) : null}
+
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onRemove}
+                        className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 ml-auto"
+                        title="Eliminar criterio"
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
         </div>
     );

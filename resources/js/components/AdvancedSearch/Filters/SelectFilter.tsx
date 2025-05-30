@@ -45,69 +45,71 @@ export function SelectFilter({ criterion, onChange, onRemove, options }: SelectF
     };
 
     return (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
-                <Select value={criterion.field} onValueChange={handleFieldChange}>
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar campo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {selectFields.map((field) => (
-                            <SelectItem key={field.value} value={field.value}>
-                                {field.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div>
-                <Select
-                    value={criterion.operator}
-                    onValueChange={handleOperatorChange}
-                    disabled={!criterion.field}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar operador" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {selectOperators.map((op) => (
-                            <SelectItem key={op.value} value={op.value}>
-                                {op.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="md:col-span-2 flex items-center gap-2">
-                <div className="flex-grow">
-                    <Select
-                        value={criterion.value?.toString() || ''}
-                        onValueChange={handleValueChange}
-                        disabled={!criterion.field || !criterion.operator}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Seleccionar valor" />
+        <div className="grid grid-cols-1 gap-2 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                <div>
+                    <Select value={criterion.field} onValueChange={handleFieldChange}>
+                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                            <SelectValue placeholder="Seleccionar campo" />
                         </SelectTrigger>
                         <SelectContent>
-                            {options.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
+                            {selectFields.map((field) => (
+                                <SelectItem key={field.value} value={field.value}>
+                                    {field.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onRemove}
-                    className="flex-shrink-0"
-                    title="Eliminar criterio"
-                >
-                    <X className="h-4 w-4" />
-                </Button>
+
+                <div>
+                    <Select
+                        value={criterion.operator}
+                        onValueChange={handleOperatorChange}
+                        disabled={!criterion.field}
+                    >
+                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                            <SelectValue placeholder="Seleccionar operador" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {selectOperators.map((op) => (
+                                <SelectItem key={op.value} value={op.value}>
+                                    {op.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="sm:col-span-2 flex items-center gap-2">
+                    <div className="flex-grow">
+                        <Select
+                            value={criterion.value?.toString() || ''}
+                            onValueChange={handleValueChange}
+                            disabled={!criterion.field || !criterion.operator}
+                        >
+                            <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                                <SelectValue placeholder="Seleccionar valor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {options.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onRemove}
+                        className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+                        title="Eliminar criterio"
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
         </div>
     );

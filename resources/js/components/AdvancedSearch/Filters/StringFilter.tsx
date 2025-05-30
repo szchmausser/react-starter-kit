@@ -48,58 +48,60 @@ export function StringFilter({ criterion, onChange, onRemove }: StringFilterProp
     };
 
     return (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
-                <Select value={criterion.field} onValueChange={handleFieldChange}>
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar campo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {stringFields.map((field) => (
-                            <SelectItem key={field.value} value={field.value}>
-                                {field.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
+        <div className="grid grid-cols-1 gap-2 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                <div>
+                    <Select value={criterion.field} onValueChange={handleFieldChange}>
+                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                            <SelectValue placeholder="Seleccionar campo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {stringFields.map((field) => (
+                                <SelectItem key={field.value} value={field.value}>
+                                    {field.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
 
-            <div>
-                <Select
-                    value={criterion.operator}
-                    onValueChange={handleOperatorChange}
-                    disabled={!criterion.field}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar operador" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {stringOperators.map((op) => (
-                            <SelectItem key={op.value} value={op.value}>
-                                {op.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
+                <div>
+                    <Select
+                        value={criterion.operator}
+                        onValueChange={handleOperatorChange}
+                        disabled={!criterion.field}
+                    >
+                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                            <SelectValue placeholder="Seleccionar operador" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {stringOperators.map((op) => (
+                                <SelectItem key={op.value} value={op.value}>
+                                    {op.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
 
-            <div className="md:col-span-2 flex items-center gap-2">
-                <Input
-                    value={criterion.value || ''}
-                    onChange={handleValueChange}
-                    placeholder="Valor a buscar"
-                    disabled={!criterion.field || !criterion.operator}
-                    className="flex-grow"
-                />
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onRemove}
-                    className="flex-shrink-0"
-                    title="Eliminar criterio"
-                >
-                    <X className="h-4 w-4" />
-                </Button>
+                <div className="sm:col-span-2 flex items-center gap-2">
+                    <Input
+                        value={criterion.value || ''}
+                        onChange={handleValueChange}
+                        placeholder="Valor a buscar"
+                        disabled={!criterion.field || !criterion.operator}
+                        className="flex-grow text-xs sm:text-sm h-8 sm:h-10"
+                    />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onRemove}
+                        className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+                        title="Eliminar criterio"
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
         </div>
     );
