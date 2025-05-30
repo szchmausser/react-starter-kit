@@ -63,6 +63,10 @@ final class LegalCaseController extends Controller
                     case 'select':
                         $this->applySelectFilter($query, $field, $operator, $value);
                         break;
+
+                    case 'individual':
+                        $this->applyIndividualFilter($query, $field, $operator, $value);
+                        break;
                 }
             }
         }
@@ -614,5 +618,46 @@ final class LegalCaseController extends Controller
                 $query->where($field, '!=', $value);
                 break;
         }
+    }
+
+    /**
+     * Aplica filtros para buscar expedientes relacionados con individuos por su documento de identidad.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $field
+     * @param string $operator
+     * @param string $value
+     * @return void
+     */
+    private function applyIndividualFilter($query, $field, $operator, $value)
+    {
+        if (empty($value)) {
+            return;
+        }
+
+        // Solo procesamos el campo de documento de identidad
+        if ($field !== 'individual_id_document') {
+            return;
+        }
+
+        // Usamos whereHas para filtrar expedientes que tienen relación con individuos
+        // que cumplen con el criterio de búsqueda
+        $query->whereHas('individuals', function ($subQuery) use ($operator, $value) {
+            // Buscamos en los campos national_id y passport que son los documentos de identidad
+            switch ($operator) {
+                case 'equals':
+                    $subQuery->where(function ($q) use ($value) {
+                        $q->where('national_id', '=', $value)
+                            ->orWhere('passport', '=', $value);
+                    });
+                    break;
+                case 'contains':
+                    $subQuery->where(function ($q) use ($value) {
+                        $q->where('national_id', 'like', '%' . $value . '%')
+                            ->orWhere('passport', 'like', '%' . $value . '%');
+                    });
+                    break;
+            }
+        });
     }
 }

@@ -7,6 +7,7 @@ import { type LegalCase } from '@/types';
 import { StringFilter } from './Filters/StringFilter';
 import { DateFilter } from './Filters/DateFilter';
 import { SelectFilter } from './Filters/SelectFilter';
+import { IndividualFilter } from './Filters/IndividualFilter';
 import { router } from '@inertiajs/react';
 
 export interface FilterCriterion {
@@ -14,7 +15,7 @@ export interface FilterCriterion {
     field: string;
     operator: string;
     value: any;
-    type: 'string' | 'date' | 'select' | 'boolean';
+    type: 'string' | 'date' | 'select' | 'boolean' | 'individual';
     label: string;
 }
 
@@ -98,7 +99,14 @@ export default function AdvancedSearchContainer({
         criteria.forEach((criterion, index) => {
             params[`filter[${index}][field]`] = criterion.field;
             params[`filter[${index}][operator]`] = criterion.operator;
-            params[`filter[${index}][value]`] = String(criterion.value);
+
+            // Manejo especial para valores según el tipo
+            if (criterion.type === 'date' && criterion.operator === 'between' && typeof criterion.value === 'object') {
+                params[`filter[${index}][value]`] = JSON.stringify(criterion.value);
+            } else {
+                params[`filter[${index}][value]`] = String(criterion.value || '');
+            }
+
             params[`filter[${index}][type]`] = criterion.type;
         });
 
@@ -161,6 +169,13 @@ export default function AdvancedSearchContainer({
                                             onRemove={() => removeCriterion(criterion.id)}
                                         />
                                     )}
+                                    {criterion.type === 'individual' && (
+                                        <IndividualFilter
+                                            criterion={criterion}
+                                            onChange={(updates) => updateCriterion(criterion.id, updates)}
+                                            onRemove={() => removeCriterion(criterion.id)}
+                                        />
+                                    )}
                                 </div>
                             ))
                         )}
@@ -192,6 +207,15 @@ export default function AdvancedSearchContainer({
                             >
                                 <Plus className="h-3.5 w-3.5 mr-1" />
                                 Selección
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addCriterion('individual')}
+                                className="flex items-center"
+                            >
+                                <Plus className="h-3.5 w-3.5 mr-1" />
+                                Persona Física
                             </Button>
                         </div>
                     </CardContent>
