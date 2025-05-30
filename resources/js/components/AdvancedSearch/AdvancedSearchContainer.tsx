@@ -8,6 +8,7 @@ import { StringFilter } from './Filters/StringFilter';
 import { DateFilter } from './Filters/DateFilter';
 import { SelectFilter } from './Filters/SelectFilter';
 import { IndividualFilter } from './Filters/IndividualFilter';
+import { LegalEntityFilter } from './Filters/LegalEntityFilter';
 import { router } from '@inertiajs/react';
 
 export interface FilterCriterion {
@@ -15,7 +16,7 @@ export interface FilterCriterion {
     field: string;
     operator: string;
     value: any;
-    type: 'string' | 'date' | 'select' | 'boolean' | 'individual';
+    type: 'string' | 'date' | 'select' | 'boolean' | 'individual' | 'legal_entity';
     label: string;
 }
 
@@ -176,6 +177,13 @@ export default function AdvancedSearchContainer({
                                             onRemove={() => removeCriterion(criterion.id)}
                                         />
                                     )}
+                                    {criterion.type === 'legal_entity' && (
+                                        <LegalEntityFilter
+                                            criterion={criterion}
+                                            onChange={(updates) => updateCriterion(criterion.id, updates)}
+                                            onRemove={() => removeCriterion(criterion.id)}
+                                        />
+                                    )}
                                 </div>
                             ))
                         )}
@@ -216,6 +224,15 @@ export default function AdvancedSearchContainer({
                             >
                                 <Plus className="h-3.5 w-3.5 mr-1" />
                                 Persona Física
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addCriterion('legal_entity')}
+                                className="flex items-center"
+                            >
+                                <Plus className="h-3.5 w-3.5 mr-1" />
+                                Persona Jurídica
                             </Button>
                         </div>
                     </CardContent>

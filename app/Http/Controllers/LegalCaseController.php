@@ -67,6 +67,10 @@ final class LegalCaseController extends Controller
                     case 'individual':
                         $this->applyIndividualFilter($query, $field, $operator, $value);
                         break;
+
+                    case 'legal_entity':
+                        $this->applyLegalEntityFilter($query, $field, $operator, $value);
+                        break;
                 }
             }
         }
@@ -656,6 +660,52 @@ final class LegalCaseController extends Controller
                         $q->where('national_id', 'like', '%' . $value . '%')
                             ->orWhere('passport', 'like', '%' . $value . '%');
                     });
+                    break;
+            }
+        });
+    }
+
+    /**
+     * Aplica filtros para buscar expedientes relacionados con entidades legales por su RIF o razón social.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $field
+     * @param string $operator
+     * @param string $value
+     * @return void
+     */
+    private function applyLegalEntityFilter($query, $field, $operator, $value)
+    {
+        if (empty($value)) {
+            return;
+        }
+
+        // Determinar qué campo de la entidad legal debemos buscar
+        $entityField = null;
+
+        switch ($field) {
+            case 'legal_entity_rif':
+                $entityField = 'rif';
+                break;
+            case 'legal_entity_business_name':
+                $entityField = 'business_name';
+                break;
+            default:
+                return; // Si no es un campo válido, no aplicamos filtro
+        }
+
+        // Usamos whereHas para filtrar expedientes que tienen relación con entidades legales
+        // que cumplen con el criterio de búsqueda
+        $query->whereHas('legalEntities', function ($subQuery) use ($operator, $value, $entityField) {
+            switch ($operator) {
+                case 'equals':
+                    $subQuery->where($entityField, '=', $value);
+                    break;
+                case 'contains':
+                    $subQuery->where($entityField, 'like', '%' . $value . '%');
+                    break;
+                case 'starts_with':
+                    $subQuery->where($entityField, 'like', $value . '%');
                     break;
             }
         });
