@@ -21,25 +21,56 @@ final class LegalCaseController extends Controller
     {
         $perPage = (int) $request->input('per_page', 10);
         $page = (int) $request->input('page', 1);
-        
+
         // Validamos que perPage tenga un valor razonable para evitar problemas de rendimiento
         $perPage = in_array($perPage, [5, 10, 20, 50, 100, 200, 500, 1000]) ? $perPage : 10;
-        
+
         // Modificamos la query para incluir los estados del expediente
         $query = LegalCase::with([
-            'caseType', 
-            'individuals', 
+            'caseType',
+            'individuals',
             'legalEntities',
-            'statuses' => function($query) {
+            'statuses' => function ($query) {
                 // Ordenamos los estados por fecha de creación descendente
                 $query->orderBy('created_at', 'desc');
             }
         ]);
-        
+
+        // Procesamos los filtros avanzados si existen
+        if ($request->has('filter')) {
+            $filters = $request->input('filter');
+
+            foreach ($filters as $filter) {
+                if (empty($filter['field']) || empty($filter['operator'])) {
+                    continue;
+                }
+
+                $field = $filter['field'];
+                $operator = $filter['operator'];
+                $value = $filter['value'] ?? null;
+                $type = $filter['type'] ?? 'string';
+
+                // Aplicar filtros según el tipo de campo
+                switch ($type) {
+                    case 'string':
+                        $this->applyStringFilter($query, $field, $operator, $value);
+                        break;
+
+                    case 'date':
+                        $this->applyDateFilter($query, $field, $operator, $value);
+                        break;
+
+                    case 'select':
+                        $this->applySelectFilter($query, $field, $operator, $value);
+                        break;
+                }
+            }
+        }
+
         // Contar el total de registros para depuración
         // Importante: Clonar la query para evitar que el count afecte a la paginación
         $totalRecords = (clone $query)->count();
-        
+
         // Logs de depuración comentados para mejorar el rendimiento
         /*
         \Log::debug("Total de expedientes: {$totalRecords}");
@@ -47,12 +78,12 @@ final class LegalCaseController extends Controller
         \Log::debug("Página actual: {$page}");
         \Log::debug("Total de páginas calculado: " . ceil($totalRecords / $perPage));
         */
-        
+
         // Usamos paginación estándar de Laravel con límite de registros por rendimiento
         $legalCases = $query->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page)
             ->withQueryString();
-            
+
         // Verificar información de paginación - comentado para mejorar rendimiento
         /*
         \Log::debug("Meta de paginación:", [
@@ -63,36 +94,36 @@ final class LegalCaseController extends Controller
             'has_pages' => $legalCases->hasPages(),
         ]);
         */
-        
+
         // Obtener los links generados manualmente para el frontend
         $paginationLinks = [];
-        
+
         // Agregar link para página anterior
         $paginationLinks[] = [
             'url' => $legalCases->currentPage() > 1 ? $legalCases->url($legalCases->currentPage() - 1) : null,
             'label' => '&laquo; Previous',
             'active' => false
         ];
-        
+
         // Agregar links para todas las páginas
         for ($i = 1; $i <= $legalCases->lastPage(); $i++) {
             $paginationLinks[] = [
                 'url' => $legalCases->url($i),
-                'label' => (string)$i,
+                'label' => (string) $i,
                 'active' => $i === $legalCases->currentPage()
             ];
         }
-        
+
         // Agregar link para página siguiente
         $paginationLinks[] = [
             'url' => $legalCases->currentPage() < $legalCases->lastPage() ? $legalCases->url($legalCases->currentPage() + 1) : null,
             'label' => 'Next &raquo;',
             'active' => false
         ];
-        
+
         // Asignar los links generados manualmente a la respuesta JSON que irá al frontend
         $legalCasesResponse = $legalCases->toArray();
-        
+
         // Procesar los datos para incluir el estado actual
         foreach ($legalCasesResponse['data'] as &$case) {
             // Si tiene estados, tomamos el primero (ya están ordenados por fecha descendente)
@@ -109,17 +140,17 @@ final class LegalCaseController extends Controller
                 $case['currentStatus'] = null;
             }
         }
-        
+
         // Asegurarse de que la estructura meta exista
         if (!isset($legalCasesResponse['meta'])) {
             $legalCasesResponse['meta'] = [];
         }
-        
+
         // Asegurarse de que tengamos todos los metadatos necesarios
         $totalPages = ceil($totalRecords / $perPage);
         $from = ($page - 1) * $perPage + 1;
         $to = min($from + $perPage - 1, $totalRecords);
-        
+
         // Rellenar/corregir los metadatos
         $legalCasesResponse['meta']['current_page'] = $page;
         $legalCasesResponse['meta']['last_page'] = $totalPages;
@@ -128,14 +159,18 @@ final class LegalCaseController extends Controller
         $legalCasesResponse['meta']['total'] = $totalRecords;
         $legalCasesResponse['meta']['per_page'] = $perPage;
         $legalCasesResponse['meta']['links'] = $paginationLinks;
-        
+
         // \Log::debug("Metadatos de paginación finales:", $legalCasesResponse['meta']);
-        
+
+        // Obtener todos los tipos de caso para el filtro
+        $caseTypes = CaseType::orderBy('name')->get();
+
         return Inertia::render('LegalCases/Index', [
             'legalCases' => $legalCasesResponse,
             'filters' => [
                 'per_page' => $perPage,
             ],
+            'caseTypes' => $caseTypes,
             'debug' => [
                 'total_records' => $totalRecords,
                 'total_pages' => ceil($totalRecords / $perPage),
@@ -186,24 +221,24 @@ final class LegalCaseController extends Controller
             ->whereDate('end_date', '>=', now()->toDateString())
             ->orderBy('end_date')
             ->first();
-        
+
         // Depurar los datos de roles
-        Log::debug('Individuos con roles:', $legalCase->individuals->map(function($individual) {
+        Log::debug('Individuos con roles:', $legalCase->individuals->map(function ($individual) {
             return [
                 'id' => $individual->id,
                 'name' => $individual->first_name . ' ' . $individual->last_name,
                 'role' => $individual->pivot->role ?? 'Sin rol definido'
             ];
         })->toArray());
-        
-        Log::debug('Entidades con roles:', $legalCase->legalEntities->map(function($entity) {
+
+        Log::debug('Entidades con roles:', $legalCase->legalEntities->map(function ($entity) {
             return [
                 'id' => $entity->id,
                 'name' => $entity->business_name,
                 'role' => $entity->pivot->role ?? 'Sin rol definido'
             ];
         })->toArray());
-        
+
         return Inertia::render('LegalCases/Show', [
             'legalCase' => $legalCase,
             'events' => $events,
@@ -304,14 +339,14 @@ final class LegalCaseController extends Controller
     {
         try {
             $legalCase = LegalCase::findOrFail($id);
-            $tags = $legalCase->tags()->get()->map(function($tag) {
+            $tags = $legalCase->tags()->get()->map(function ($tag) {
                 // Log para depuración
                 \Log::debug('Tag obtenido del expediente:', [
                     'id' => $tag->id,
                     'name' => $tag->name,
                     'type' => $tag->type
                 ]);
-                
+
                 return [
                     'id' => $tag->id,
                     'name' => $tag->name,
@@ -319,7 +354,7 @@ final class LegalCaseController extends Controller
                     'slug' => $tag->slug,
                 ];
             });
-            
+
             return response()->json($tags);
         } catch (\Exception $e) {
             \Log::error('Error al obtener etiquetas del expediente: ' . $e->getMessage(), [
@@ -341,20 +376,20 @@ final class LegalCaseController extends Controller
             // Obtener el total de etiquetas para debugging
             $totalTags = \Spatie\Tags\Tag::count();
             \Log::debug("Total de etiquetas en la base de datos: {$totalTags}");
-            
+
             $tags = \Spatie\Tags\Tag::orderBy('order_column')->get();
-            
+
             \Log::debug("Etiquetas recuperadas de la BD:", [
                 'count' => $tags->count(),
                 'tags' => $tags->toArray()
             ]);
-            
-            $formattedTags = $tags->map(function($tag) {
+
+            $formattedTags = $tags->map(function ($tag) {
                 // Asegurarse de que el nombre se procese correctamente
                 $name = $tag->name;
                 // Asegurarse de que el slug se procese correctamente
                 $slug = $tag->slug;
-                
+
                 // Para depuración
                 \Log::debug('Tag encontrado:', [
                     'id' => $tag->id,
@@ -363,7 +398,7 @@ final class LegalCaseController extends Controller
                     'type' => $tag->type,
                     'locale' => app()->getLocale()
                 ]);
-                
+
                 return [
                     'id' => $tag->id,
                     'name' => $name,
@@ -371,12 +406,12 @@ final class LegalCaseController extends Controller
                     'slug' => $slug,
                 ];
             });
-            
+
             \Log::debug("Enviando etiquetas formateadas:", [
                 'count' => $formattedTags->count(),
                 'tags' => $formattedTags->toArray()
             ]);
-            
+
             return response()->json($formattedTags);
         } catch (\Exception $e) {
             \Log::error('Error al obtener todas las etiquetas: ' . $e->getMessage(), [
@@ -406,22 +441,22 @@ final class LegalCaseController extends Controller
         $tags = $request->input('tags');
         $createIfNotExists = $request->input('create_if_not_exists', false);
         $created = false;
-        
+
         try {
             foreach ($tags as $tag) {
                 // Verificar si la etiqueta ya existe
                 $existingTag = \Spatie\Tags\Tag::findFromString($tag);
-                
+
                 if (!$existingTag && $createIfNotExists) {
                     // Crear la etiqueta si no existe y está habilitada la opción
                     \Spatie\Tags\Tag::findOrCreate($tag);
                     $created = true;
                     \Log::info("Se ha creado una nueva etiqueta: {$tag}");
                 }
-                
+
                 $legalCase->attachTag($tag);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'created' => $created
@@ -431,7 +466,7 @@ final class LegalCaseController extends Controller
                 'exception' => $e,
                 'tags' => $tags,
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al agregar etiquetas: ' . $e->getMessage()
@@ -454,9 +489,9 @@ final class LegalCaseController extends Controller
 
         $legalCase = LegalCase::findOrFail($id);
         $tag = $request->input('tag');
-        
+
         $legalCase->detachTag($tag);
-        
+
         return response()->json(['success' => true]);
     }
 
@@ -476,9 +511,108 @@ final class LegalCaseController extends Controller
 
         $legalCase = LegalCase::findOrFail($id);
         $tags = $request->input('tags');
-        
+
         $legalCase->syncTags($tags);
-        
+
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Aplica filtros de tipo texto a la consulta.
+     */
+    private function applyStringFilter($query, $field, $operator, $value)
+    {
+        if (empty($value)) {
+            return;
+        }
+
+        switch ($operator) {
+            case 'equals':
+                $query->where($field, '=', $value);
+                break;
+            case 'contains':
+                $query->where($field, 'like', '%' . $value . '%');
+                break;
+            case 'starts_with':
+                $query->where($field, 'like', $value . '%');
+                break;
+            case 'ends_with':
+                $query->where($field, 'like', '%' . $value);
+                break;
+            case 'not_contains':
+                $query->where($field, 'not like', '%' . $value . '%');
+                break;
+        }
+    }
+
+    /**
+     * Aplica filtros de tipo fecha a la consulta.
+     */
+    private function applyDateFilter($query, $field, $operator, $value)
+    {
+        switch ($operator) {
+            case 'equals':
+                $query->whereDate($field, '=', $value);
+                break;
+            case 'before':
+                $query->whereDate($field, '<', $value);
+                break;
+            case 'after':
+                $query->whereDate($field, '>', $value);
+                break;
+            case 'between':
+                // Verificar si el valor es una cadena JSON y decodificarla
+                if (is_string($value) && $this->isJson($value)) {
+                    $dateRange = json_decode($value, true);
+                    if (isset($dateRange['start']) && isset($dateRange['end'])) {
+                        $query->whereDate($field, '>=', $dateRange['start'])
+                            ->whereDate($field, '<=', $dateRange['end']);
+                    }
+                }
+                // Mantener compatibilidad con el formato anterior (array directo)
+                else if (is_array($value) && isset($value['start']) && isset($value['end'])) {
+                    $query->whereDate($field, '>=', $value['start'])
+                        ->whereDate($field, '<=', $value['end']);
+                }
+                break;
+            case 'is_null':
+                $query->whereNull($field);
+                break;
+            case 'is_not_null':
+                $query->whereNotNull($field);
+                break;
+        }
+    }
+
+    /**
+     * Verifica si una cadena es JSON válido.
+     */
+    private function isJson($string)
+    {
+        if (!is_string($string)) {
+            return false;
+        }
+
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    /**
+     * Aplica filtros de tipo selección a la consulta.
+     */
+    private function applySelectFilter($query, $field, $operator, $value)
+    {
+        if (empty($value)) {
+            return;
+        }
+
+        switch ($operator) {
+            case 'equals':
+                $query->where($field, '=', $value);
+                break;
+            case 'not_equals':
+                $query->where($field, '!=', $value);
+                break;
+        }
     }
 }

@@ -22,10 +22,11 @@ import {
     RotateCcw,
     Search,
     Trash2,
-    X
+    X,
+    Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { LegalCase } from '@/types/index';
+import type { LegalCase, CaseType } from '@/types/index';
 import {
     createColumnHelper,
     flexRender,
@@ -40,6 +41,7 @@ import {
 } from '@tanstack/react-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LaravelPagination from '@/components/LaravelPagination';
+import AdvancedSearchContainer, { FilterCriterion } from '@/components/AdvancedSearch/AdvancedSearchContainer';
 
 // Función para obtener clases de colores según el estado
 const getStatusColor = (statusName: string): { bg: string, text: string, darkBg: string, darkText: string } => {
@@ -156,6 +158,7 @@ interface Props extends PageProps {
     filters: {
         per_page: number;
     };
+    caseTypes: CaseType[];
     debug?: {
         total_records: number;
         total_pages: number;
@@ -163,19 +166,23 @@ interface Props extends PageProps {
 }
 
 export default function Index() {
-    const { legalCases, filters, debug } = usePage<Props>().props;
+    const { legalCases, filters, caseTypes, debug } = usePage<Props>().props;
+
+    // Extraer valores de la URL para inicialización
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlPage = parseInt(urlParams.get('page') || '1', 10);
+    // Verificar si el panel de búsqueda debe estar abierto
+    const shouldOpenSearch = urlParams.get('open_search') === 'true';
+
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [caseToDelete, setCaseToDelete] = useState<LegalCase | null>(null);
     const [expandedTitles, setExpandedTitles] = useState<Record<number, boolean>>({});
+    const [isAdvancedSearchVisible, setIsAdvancedSearchVisible] = useState(shouldOpenSearch);
 
     // Estados para TanStack Table
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
-
-    // Extraer valores de la URL para inicialización
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlPage = parseInt(urlParams.get('page') || '1', 10);
 
     // Inicialización segura de la paginación
     const initialPage = useMemo(() => {
@@ -228,10 +235,23 @@ export default function Index() {
     const handlePerPageChange = (value: string) => {
         const newPerPage = parseInt(value, 10);
 
-        router.visit(route('legal-cases.index', {
-            per_page: newPerPage,
-            page: 1, // Volver a la primera página al cambiar la cantidad por página
-        }), {
+        // Obtener todos los parámetros actuales de la URL para preservar los filtros
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        const params: Record<string, string> = {};
+
+        // Copiar todos los parámetros actuales excepto 'page' y 'per_page'
+        currentUrlParams.forEach((value, key) => {
+            // Excluimos 'page' porque queremos volver a la primera página
+            if (key !== 'page') {
+                params[key] = value;
+            }
+        });
+
+        // Añadir/actualizar el parámetro per_page
+        params.per_page = newPerPage.toString();
+        params.page = '1'; // Volver a la primera página al cambiar la cantidad por página
+
+        router.visit(route('legal-cases.index', params), {
             preserveState: true,
             replace: true,
             only: ['legalCases', 'filters', 'debug'],
@@ -242,13 +262,81 @@ export default function Index() {
     const handlePageNavigation = (url: string | null) => {
         if (!url) return; // Si la URL es null, simplemente retornamos sin hacer nada
 
-        // Usar Inertia.js para navegar a la URL proporcionada por Laravel
-        router.visit(url, {
-            preserveState: true,
-            replace: true,
-            only: ['legalCases', 'filters', 'debug'],
-        });
+        try {
+            // Parsear la URL proporcionada por Laravel para obtener la página
+            const urlObj = new URL(url);
+            const targetPage = urlObj.searchParams.get('page') || '1';
+
+            // Obtener todos los parámetros actuales de la URL para preservar los filtros
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            const params: Record<string, string> = {};
+
+            // Copiar todos los parámetros actuales
+            currentUrlParams.forEach((value, key) => {
+                params[key] = value;
+            });
+
+            // Actualizar el parámetro de página
+            params.page = targetPage;
+
+            // Usar Inertia.js para navegar con todos los parámetros preservados
+            router.visit(route('legal-cases.index', params), {
+                preserveState: true,
+                replace: true,
+                only: ['legalCases', 'filters', 'debug'],
+            });
+        } catch (error) {
+            // Si hay algún error al parsear la URL, usamos la URL original como fallback
+            router.visit(url, {
+                preserveState: true,
+                replace: true,
+                only: ['legalCases', 'filters', 'debug'],
+            });
+        }
     };
+
+    // Extraer los criterios de búsqueda de la URL para inicializar la búsqueda avanzada
+    const extractSearchCriteriaFromUrl = (): FilterCriterion[] => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const criteria: FilterCriterion[] = [];
+
+        // Buscar todos los parámetros filter[n][field]
+        for (let i = 0; i < 100; i++) { // Límite arbitrario para evitar bucles infinitos
+            const fieldParam = urlParams.get(`filter[${i}][field]`);
+            if (!fieldParam) break;
+
+            const operatorParam = urlParams.get(`filter[${i}][operator]`);
+            const valueParam = urlParams.get(`filter[${i}][value]`);
+            const typeParam = urlParams.get(`filter[${i}][type]`);
+
+            if (fieldParam && operatorParam) {
+                let value: any = valueParam || '';
+
+                // Procesar valores especiales según el tipo
+                if (typeParam === 'date' && operatorParam === 'between') {
+                    try {
+                        value = JSON.parse(valueParam || '{}');
+                    } catch (e) {
+                        value = { start: null, end: null };
+                    }
+                }
+
+                criteria.push({
+                    id: `criterion-${Date.now()}-${i}`,
+                    field: fieldParam,
+                    operator: operatorParam,
+                    value: value,
+                    type: (typeParam as FilterCriterion['type']) || 'string',
+                    label: '',
+                });
+            }
+        }
+
+        return criteria;
+    };
+
+    // Inicializar criterios de búsqueda desde la URL
+    const initialSearchCriteria = useMemo(() => extractSearchCriteriaFromUrl(), []);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -493,15 +581,18 @@ export default function Index() {
         setSorting([]);
         setColumnFilters([]);
         setGlobalFilter('');
+        // No cerramos el panel de búsqueda avanzada
+        // setIsAdvancedSearchVisible(false);
 
-        // Reiniciar la búsqueda y volver a la primera página
+        // Reiniciar la búsqueda y volver a la primera página sin preservar el estado
+        // Añadimos el parámetro open_search para mantener abierto el panel
         router.visit(route('legal-cases.index', {
             per_page: initialPageSize,
-            page: 1
+            page: 1,
+            open_search: 'true'
         }), {
-            preserveState: true,
+            preserveState: false,
             replace: true,
-            only: ['legalCases', 'filters', 'debug'],
         });
     };
 
@@ -596,6 +687,15 @@ export default function Index() {
                         )}
                     </h1>
                     <div className="flex flex-1 gap-2 items-center justify-end">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsAdvancedSearchVisible(!isAdvancedSearchVisible)}
+                            className="flex items-center"
+                            title="Búsqueda avanzada"
+                        >
+                            <Filter className="h-4 w-4 mr-2" />
+                            Búsqueda Avanzada
+                        </Button>
                         {hasActiveFilters && (
                             <Button
                                 variant="outline"
@@ -618,6 +718,15 @@ export default function Index() {
                         </Link>
                     </div>
                 </div>
+
+                {isAdvancedSearchVisible && (
+                    <div className="mb-6">
+                        <AdvancedSearchContainer
+                            caseTypes={caseTypes}
+                            initialCriteria={initialSearchCriteria}
+                        />
+                    </div>
+                )}
 
                 {/* Mostrar filtros activos */}
                 {hasActiveFilters && (
