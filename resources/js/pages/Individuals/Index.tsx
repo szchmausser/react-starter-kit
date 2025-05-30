@@ -500,8 +500,8 @@ export default function IndividualsIndex() {
       <Head title="Personas Naturales" />
 
       <div className="p-4 sm:p-6 relative">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-          <h1 className="text-2xl font-bold">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold">
             Gestión de Personas Naturales
             {hasActiveFilters && (
               <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -524,8 +524,8 @@ export default function IndividualsIndex() {
 
         {/* Mostrar filtros activos */}
         {hasActiveFilters && (
-          <div className="bg-white dark:bg-zinc-900 rounded shadow p-3 mb-4">
-            <div className="flex flex-wrap gap-2">
+          <div className="bg-white dark:bg-zinc-900 rounded shadow p-2 sm:p-3 mb-3">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
               {table.getState().columnFilters.map(filter => {
                 const column = table.getColumn(filter.id);
                 return (
@@ -561,17 +561,17 @@ export default function IndividualsIndex() {
         )}
 
         {/* Vista tipo card para móvil */}
-        <div className="block sm:hidden space-y-2 mb-24">
+        <div className="block sm:hidden space-y-1 sm:space-y-2 mb-16 sm:mb-24">
           {/* Selector de filtros para móvil */}
-          <div className="bg-white dark:bg-zinc-900 rounded shadow p-3 mb-2">
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold mb-2">Filtros</h3>
+          <div className="bg-white dark:bg-zinc-900 rounded shadow p-2 sm:p-3 mb-2">
+            <div className="space-y-1 sm:space-y-2">
+              <h3 className="text-sm font-semibold mb-1 sm:mb-2">Filtros</h3>
 
               {/* Filtros de columnas */}
               {table.getAllColumns().filter(column =>
                 column.getCanFilter()
               ).map(column => (
-                <div key={column.id} className="space-y-1">
+                <div key={column.id} className="space-y-0.5 sm:space-y-1">
                   <label htmlFor={`filter-${column.id}`} className="text-xs text-gray-500">
                     {column.columnDef.header as string}
                   </label>
@@ -580,16 +580,16 @@ export default function IndividualsIndex() {
                     value={(column.getFilterValue() as string) ?? ''}
                     onChange={e => column.setFilterValue(e.target.value)}
                     placeholder={`Filtrar ${column.columnDef.header as string}...`}
-                    className="h-8 text-xs"
+                    className="h-7 sm:h-8 text-xs"
                   />
                 </div>
               ))}
 
               {/* Filtros activos */}
               {(table.getState().columnFilters.length > 0 || sorting.length > 0) && (
-                <div className="mt-4">
-                  <h3 className="text-xs font-semibold mb-2">Filtros activos:</h3>
-                  <div className="flex flex-wrap gap-2">
+                <div className="mt-2 sm:mt-4">
+                  <h3 className="text-xs font-semibold mb-1 sm:mb-2">Filtros activos:</h3>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     {table.getState().columnFilters.map(filter => {
                       const column = table.getColumn(filter.id);
                       return (
@@ -625,7 +625,7 @@ export default function IndividualsIndex() {
                       variant="outline"
                       size="sm"
                       onClick={handleResetFilters}
-                      className="text-xs h-7 mt-1"
+                      className="text-xs h-6 sm:h-7 mt-1"
                     >
                       <RotateCcw className="h-3 w-3 mr-1" />
                       Limpiar todo
@@ -635,15 +635,15 @@ export default function IndividualsIndex() {
               )}
 
               {/* Selector de registros por página para móvil */}
-              <div className="mt-4">
-                <label htmlFor="mobile-per-page" className="text-xs text-gray-500 block mb-1">
+              <div className="mt-2 sm:mt-4">
+                <label htmlFor="mobile-per-page" className="text-xs text-gray-500 block mb-0.5 sm:mb-1">
                   Registros por página
                 </label>
                 <Select
                   value={pageSize.toString()}
                   onValueChange={handlePerPageChange}
                 >
-                  <SelectTrigger className="h-8 w-full">
+                  <SelectTrigger className="h-7 sm:h-8 w-full">
                     <SelectValue placeholder="10" />
                   </SelectTrigger>
                   <SelectContent>
@@ -663,7 +663,7 @@ export default function IndividualsIndex() {
             tableRows.map((row) => {
               const individual = row.original;
               return (
-                <div key={individual.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
+                <div key={individual.id} className="bg-white dark:bg-zinc-900 rounded shadow p-2 sm:p-3 flex flex-col gap-1 sm:gap-2">
                   <div
                     className="font-bold text-base flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors"
                     onClick={(e) => toggleTitleExpand(individual.id, e)}
@@ -694,18 +694,18 @@ export default function IndividualsIndex() {
                   <div className="text-xs text-gray-400">
                     Teléfono: {individual.phone_number_1 || '-'}
                   </div>
-                  <div className="flex gap-2 mt-2 justify-end">
+                  <div className="flex gap-1 sm:gap-2 mt-1 sm:mt-2 justify-end">
                     <Link href={route('individuals.show', individual.id)}>
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Button variant="outline" size="icon" className="h-7 sm:h-8 w-7 sm:w-8">
                         <Eye className="h-4 w-4" />
                       </Button>
                     </Link>
                     <Link href={route('individuals.edit', individual.id)}>
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Button variant="outline" size="icon" className="h-7 sm:h-8 w-7 sm:w-8">
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(individual)}>
+                    <Button variant="destructive" size="icon" className="h-7 sm:h-8 w-7 sm:w-8" onClick={() => confirmDelete(individual)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -713,13 +713,13 @@ export default function IndividualsIndex() {
               );
             })
           ) : (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-4 sm:py-8 text-gray-500 dark:text-gray-400">
               No se encontraron registros.
             </div>
           )}
 
           {/* Paginación móvil */}
-          <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-2 sm:p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
             <div className="flex items-center justify-between">
               <div className="text-xs text-gray-500 whitespace-nowrap">
                 <span className="inline-flex items-center">
@@ -736,7 +736,7 @@ export default function IndividualsIndex() {
                   value={pageSize.toString()}
                   onValueChange={handlePerPageChange}
                 >
-                  <SelectTrigger className="h-7 w-16 text-xs">
+                  <SelectTrigger className="h-6 sm:h-7 w-16 text-xs">
                     <SelectValue placeholder="10" />
                   </SelectTrigger>
                   <SelectContent>
@@ -756,11 +756,11 @@ export default function IndividualsIndex() {
             </div>
 
             {/* Paginación móvil usando botones más grandes (estilo cliente-side) */}
-            <div className="flex justify-between mt-2">
+            <div className="flex justify-between mt-1 sm:mt-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 px-2 text-xs"
+                className="h-7 sm:h-8 px-2 text-xs"
                 onClick={() => {
                   const firstPageUrl = individuals.meta?.links?.find(link => link.label === "1")?.url;
                   if (firstPageUrl) handlePageNavigation(firstPageUrl);
@@ -774,7 +774,7 @@ export default function IndividualsIndex() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 px-2 text-xs"
+                className="h-7 sm:h-8 px-2 text-xs"
                 onClick={() => {
                   const prevUrl = individuals.meta?.links?.find(link => link.label === "&laquo; Previous")?.url;
                   if (prevUrl) handlePageNavigation(prevUrl);
@@ -788,7 +788,7 @@ export default function IndividualsIndex() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 px-2 text-xs"
+                className="h-7 sm:h-8 px-2 text-xs"
                 onClick={() => {
                   const nextUrl = individuals.meta?.links?.find(link => link.label === "Next &raquo;")?.url;
                   if (nextUrl) handlePageNavigation(nextUrl);
@@ -802,7 +802,7 @@ export default function IndividualsIndex() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 px-2 text-xs"
+                className="h-7 sm:h-8 px-2 text-xs"
                 onClick={() => {
                   const lastPageNumber = individuals.meta?.last_page;
                   const lastPageUrl = individuals.meta?.links?.find(link => link.label === String(lastPageNumber))?.url;
@@ -817,7 +817,7 @@ export default function IndividualsIndex() {
           </div>
 
           {/* Espacio para compensar la paginación fija en móvil */}
-          <div className="sm:hidden h-20"></div>
+          <div className="sm:hidden h-16 sm:h-20"></div>
         </div>
 
         {/* Tabla solo visible en escritorio/tablet */}
@@ -827,16 +827,16 @@ export default function IndividualsIndex() {
           </div>
         </div>
 
-        <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-4 gap-4">
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
+        <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-2 sm:py-4 gap-2 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-3 sm:gap-4">
               <div>
                 Mostrando {individuals?.meta?.to && individuals?.meta?.from
                   ? individuals.meta.to - individuals.meta.from + 1
                   : Math.min(pageSize, tableRows.length)} de {totalItemsGlobal} registros
               </div>
               <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
-                <SelectTrigger className="h-8 w-24">
+                <SelectTrigger className="h-7 sm:h-8 w-20 sm:w-24">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
                 <SelectContent>
@@ -851,7 +851,7 @@ export default function IndividualsIndex() {
           </div>
 
           {/* Paginación mejorada */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Indicador de página actual */}
             <div className="text-sm text-gray-700 dark:text-gray-300">
               Página <span className="font-semibold">{individuals?.meta?.current_page || 1}</span> de{" "}

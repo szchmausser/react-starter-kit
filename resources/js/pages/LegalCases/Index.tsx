@@ -677,8 +677,8 @@ export default function Index() {
             <Head title="Expedientes Legales" />
 
             <div className="p-4 sm:p-6 relative">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-                    <h1 className="text-2xl font-bold">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                    <h1 className="text-xl sm:text-2xl font-bold">
                         Gestión de Expedientes Legales
                         {hasActiveFilters && (
                             <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -720,7 +720,7 @@ export default function Index() {
                 </div>
 
                 {isAdvancedSearchVisible && (
-                    <div className="mb-6">
+                    <div className="mb-4">
                         <AdvancedSearchContainer
                             caseTypes={caseTypes}
                             initialCriteria={initialSearchCriteria}
@@ -730,8 +730,8 @@ export default function Index() {
 
                 {/* Mostrar filtros activos */}
                 {hasActiveFilters && (
-                    <div className="bg-white dark:bg-zinc-900 rounded shadow p-3 mb-4">
-                        <div className="flex flex-wrap gap-2">
+                    <div className="bg-white dark:bg-zinc-900 rounded shadow p-2 sm:p-3 mb-3">
+                        <div className="flex flex-wrap gap-1 sm:gap-2">
                             {table.getState().columnFilters.map(filter => {
                                 const column = table.getColumn(filter.id);
                                 return (
@@ -767,11 +767,11 @@ export default function Index() {
                 )}
 
                 {/* Vista tipo card para móvil */}
-                <div className="block sm:hidden space-y-2 mb-24">
+                <div className="block sm:hidden space-y-1 sm:space-y-2 mb-16 sm:mb-24">
                     {/* Selector de filtros para móvil */}
-                    <div className="bg-white dark:bg-zinc-900 rounded shadow p-3 mb-2">
-                        <div className="space-y-2">
-                            <h3 className="text-sm font-semibold mb-2">Filtros</h3>
+                    <div className="bg-white dark:bg-zinc-900 rounded shadow p-2 sm:p-3 mb-2">
+                        <div className="space-y-1 sm:space-y-2">
+                            <h3 className="text-sm font-semibold mb-1 sm:mb-2">Filtros</h3>
 
                             {/* Filtros de columnas */}
                             {table.getAllColumns().filter(column =>
@@ -841,15 +841,15 @@ export default function Index() {
                             )}
 
                             {/* Selector de registros por página para móvil */}
-                            <div className="mt-4">
-                                <label htmlFor="mobile-per-page" className="text-xs text-gray-500 block mb-1">
+                            <div className="mt-2 sm:mt-4">
+                                <label htmlFor="mobile-per-page" className="text-xs text-gray-500 block mb-0.5 sm:mb-1">
                                     Registros por página
                                 </label>
                                 <Select
                                     value={pageSize.toString()}
                                     onValueChange={handlePerPageChange}
                                 >
-                                    <SelectTrigger className="h-8 w-full">
+                                    <SelectTrigger className="h-7 sm:h-8 w-full">
                                         <SelectValue placeholder="10" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -869,7 +869,7 @@ export default function Index() {
                         tableRows.map((row) => {
                             const legalCase = row.original;
                             return (
-                                <div key={legalCase.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
+                                <div key={legalCase.id} className="bg-white dark:bg-zinc-900 rounded shadow p-2 sm:p-3 flex flex-col gap-1 sm:gap-2">
                                     <div
                                         className="font-bold text-base flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 -mx-1 px-1 py-0.5 rounded transition-colors"
                                         onClick={(e) => toggleTitleExpand(legalCase.id, e)}
@@ -930,18 +930,18 @@ export default function Index() {
                                             })()}
                                         </div>
                                     )}
-                                    <div className="flex gap-2 mt-2 justify-end">
+                                    <div className="flex gap-1 sm:gap-2 mt-1 sm:mt-2 justify-end">
                                         <Link href={route('legal-cases.show', legalCase.id)}>
-                                            <Button variant="outline" size="icon" className="h-8 w-8">
+                                            <Button variant="outline" size="icon" className="h-7 sm:h-8 w-7 sm:w-8">
                                                 <Eye className="h-4 w-4" />
                                             </Button>
                                         </Link>
                                         <Link href={route('legal-cases.edit', legalCase.id)}>
-                                            <Button variant="outline" size="icon" className="h-8 w-8">
+                                            <Button variant="outline" size="icon" className="h-7 sm:h-8 w-7 sm:w-8">
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(legalCase)}>
+                                        <Button variant="destructive" size="icon" className="h-7 sm:h-8 w-7 sm:w-8" onClick={() => confirmDelete(legalCase)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -949,13 +949,13 @@ export default function Index() {
                             );
                         })
                     ) : (
-                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <div className="text-center py-4 sm:py-8 text-gray-500 dark:text-gray-400">
                             No se encontraron registros.
                         </div>
                     )}
 
                     {/* Paginación móvil */}
-                    <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
+                    <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-2 sm:p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
                         <div className="flex items-center justify-between">
                             <div className="text-xs text-gray-500 whitespace-nowrap">
                                 <span className="inline-flex items-center">
@@ -1053,7 +1053,7 @@ export default function Index() {
                     </div>
 
                     {/* Espacio para compensar la paginación fija en móvil */}
-                    <div className="sm:hidden h-20"></div>
+                    <div className="sm:hidden h-16 sm:h-20"></div>
                 </div>
 
                 {/* Tabla solo visible en escritorio/tablet */}
@@ -1063,7 +1063,7 @@ export default function Index() {
                     </div>
                 </div>
 
-                <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-4 gap-4">
+                <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-2 sm:py-4 gap-2 sm:gap-4">
                     <div className="flex items-center gap-4">
                         <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
                             <div>
