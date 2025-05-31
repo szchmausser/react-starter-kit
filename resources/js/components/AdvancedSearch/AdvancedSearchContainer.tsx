@@ -312,7 +312,7 @@ export default function AdvancedSearchContainer({
                             </div>
                         )}
                     </CardContent>
-                    <CardFooter className="flex justify-between px-4 sm:px-6 py-1.5 pt-1.5 pb-1 sm:pt-1.5 sm:pb-1 mt-0.5 sm:mt-1">
+                    <CardFooter className="flex justify-between px-4 sm:px-6 pt-1.5 pb-1 sm:pt-1.5 sm:pb-1 mt-0.5 sm:mt-1">
                         <Button
                             variant="outline"
                             onClick={resetCriteria}

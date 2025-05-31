@@ -503,7 +503,7 @@ export default function Index({ tags: initialTags }: Props) {
                                                                         value={(header.column.getFilterValue() as string) ?? ''}
                                                                         onValueChange={value => header.column.setFilterValue(value)}
                                                                     >
-                                                                        <SelectTrigger className="h-8 text-xs">
+                                                                        <SelectTrigger className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900">
                                                                             <SelectValue placeholder={`Filtrar ${header.column.columnDef.header as string}...`} />
                                                                         </SelectTrigger>
                                                                         <SelectContent>
@@ -520,7 +520,7 @@ export default function Index({ tags: initialTags }: Props) {
                                                                         value={(header.column.getFilterValue() as string) ?? ''}
                                                                         onChange={e => header.column.setFilterValue(e.target.value)}
                                                                         placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
-                                                                        className="h-8 text-xs"
+                                                                        className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
                                                                     />
                                                                 )}
                                                             </div>

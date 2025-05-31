@@ -42,12 +42,13 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LaravelPagination from '@/components/LaravelPagination';
 import AdvancedSearchContainer, { FilterCriterion } from '@/components/AdvancedSearch/AdvancedSearchContainer';
+import { CardFooter } from '@/components/ui/card';
 
 // Función para obtener clases de colores según el estado
 const getStatusColor = (statusName: string): { bg: string, text: string, darkBg: string, darkText: string } => {
     // Si no hay nombre de estado, devolver color por defecto
     if (!statusName) {
-        return { bg: 'bg-slate-100', text: 'text-slate-800', darkBg: 'dark:bg-slate-800/30', darkText: 'dark:text-slate-300' };
+        return { bg: 'bg-slate-100', text: 'text-slate-800', darkBg: 'dark:bg-slate-200/10', darkText: 'dark:text-slate-200' };
     }
 
     // Normalizar el nombre del estado (minúsculas, sin espacios ni acentos)
@@ -58,41 +59,41 @@ const getStatusColor = (statusName: string): { bg: string, text: string, darkBg:
     // Mapeo de estados a colores - Mejorados para modo oscuro
     const colorMap: Record<string, { bg: string, text: string, darkBg: string, darkText: string }> = {
         // Estados de tramitación
-        'enproceso': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-800/30', darkText: 'dark:text-blue-300' },
-        'tramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-800/30', darkText: 'dark:text-blue-300' },
-        'entramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-800/30', darkText: 'dark:text-blue-300' },
+        'enproceso': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-100/20', darkText: 'dark:text-blue-200' },
+        'tramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-100/20', darkText: 'dark:text-blue-200' },
+        'entramite': { bg: 'bg-blue-100', text: 'text-blue-800', darkBg: 'dark:bg-blue-100/20', darkText: 'dark:text-blue-200' },
 
         // Estados de conclusión
-        'finalizado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-800/30', darkText: 'dark:text-green-300' },
-        'completado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-800/30', darkText: 'dark:text-green-300' },
-        'cerrado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-800/30', darkText: 'dark:text-green-300' },
+        'finalizado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-100/20', darkText: 'dark:text-green-200' },
+        'completado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-100/20', darkText: 'dark:text-green-200' },
+        'cerrado': { bg: 'bg-green-100', text: 'text-green-800', darkBg: 'dark:bg-green-100/20', darkText: 'dark:text-green-200' },
 
         // Estados de espera
-        'enespera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-800/30', darkText: 'dark:text-yellow-300' },
-        'pendiente': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-800/30', darkText: 'dark:text-yellow-300' },
-        'espera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-800/30', darkText: 'dark:text-yellow-300' },
+        'enespera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-100/20', darkText: 'dark:text-yellow-200' },
+        'pendiente': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-100/20', darkText: 'dark:text-yellow-200' },
+        'espera': { bg: 'bg-yellow-100', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-100/20', darkText: 'dark:text-yellow-200' },
 
         // Estados críticos
-        'urgente': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-800/30', darkText: 'dark:text-red-300' },
-        'critico': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-800/30', darkText: 'dark:text-red-300' },
+        'urgente': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-100/20', darkText: 'dark:text-red-200' },
+        'critico': { bg: 'bg-red-100', text: 'text-red-800', darkBg: 'dark:bg-red-100/20', darkText: 'dark:text-red-200' },
 
         // Estados de pausa
-        'suspendido': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-700/50', darkText: 'dark:text-gray-300' },
-        'cancelado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-700/50', darkText: 'dark:text-gray-300' },
-        'archivado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-700/50', darkText: 'dark:text-gray-300' },
+        'suspendido': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-200/10', darkText: 'dark:text-gray-300' },
+        'cancelado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-200/10', darkText: 'dark:text-gray-300' },
+        'archivado': { bg: 'bg-gray-100', text: 'text-gray-800', darkBg: 'dark:bg-gray-200/10', darkText: 'dark:text-gray-300' },
 
         // Estados adicionales
-        'distribuidos': { bg: 'bg-indigo-100', text: 'text-indigo-800', darkBg: 'dark:bg-indigo-800/30', darkText: 'dark:text-indigo-300' },
-        'aceptar': { bg: 'bg-indigo-100', text: 'text-indigo-800', darkBg: 'dark:bg-indigo-800/30', darkText: 'dark:text-indigo-300' },
-        'expedientes': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-800/30', darkText: 'dark:text-purple-300' },
-        'provenientes': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-800/30', darkText: 'dark:text-purple-300' },
-        'archivo': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-800/30', darkText: 'dark:text-purple-300' },
-        'judicial': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-800/30', darkText: 'dark:text-purple-300' },
-        'paralizados': { bg: 'bg-orange-100', text: 'text-orange-800', darkBg: 'dark:bg-orange-800/30', darkText: 'dark:text-orange-300' },
-        'ejecucion': { bg: 'bg-orange-100', text: 'text-orange-800', darkBg: 'dark:bg-orange-800/30', darkText: 'dark:text-orange-300' },
-        'sentencia': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-800/30', darkText: 'dark:text-teal-300' },
-        'fuera': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-800/30', darkText: 'dark:text-teal-300' },
-        'lapso': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-800/30', darkText: 'dark:text-teal-300' },
+        'distribuidos': { bg: 'bg-indigo-100', text: 'text-indigo-800', darkBg: 'dark:bg-indigo-100/20', darkText: 'dark:text-indigo-200' },
+        'aceptar': { bg: 'bg-indigo-100', text: 'text-indigo-800', darkBg: 'dark:bg-indigo-100/20', darkText: 'dark:text-indigo-200' },
+        'expedientes': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-100/20', darkText: 'dark:text-purple-200' },
+        'provenientes': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-100/20', darkText: 'dark:text-purple-200' },
+        'archivo': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-100/20', darkText: 'dark:text-purple-200' },
+        'judicial': { bg: 'bg-purple-100', text: 'text-purple-800', darkBg: 'dark:bg-purple-100/20', darkText: 'dark:text-purple-200' },
+        'paralizados': { bg: 'bg-orange-100', text: 'text-orange-800', darkBg: 'dark:bg-orange-100/20', darkText: 'dark:text-orange-200' },
+        'ejecucion': { bg: 'bg-orange-100', text: 'text-orange-800', darkBg: 'dark:bg-orange-100/20', darkText: 'dark:text-orange-200' },
+        'sentencia': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-100/20', darkText: 'dark:text-teal-200' },
+        'fuera': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-100/20', darkText: 'dark:text-teal-200' },
+        'lapso': { bg: 'bg-teal-100', text: 'text-teal-800', darkBg: 'dark:bg-teal-100/20', darkText: 'dark:text-teal-200' },
     };
 
     // Buscar coincidencia en el mapa de colores
@@ -114,14 +115,14 @@ const getStatusColor = (statusName: string): { bg: string, text: string, darkBg:
 
     // Paleta de colores para estados desconocidos
     const colorPalettes = [
-        { bg: 'bg-sky-100', text: 'text-sky-800', darkBg: 'dark:bg-sky-800/30', darkText: 'dark:text-sky-300' },
-        { bg: 'bg-emerald-100', text: 'text-emerald-800', darkBg: 'dark:bg-emerald-800/30', darkText: 'dark:text-emerald-300' },
-        { bg: 'bg-amber-100', text: 'text-amber-800', darkBg: 'dark:bg-amber-800/30', darkText: 'dark:text-amber-300' },
-        { bg: 'bg-rose-100', text: 'text-rose-800', darkBg: 'dark:bg-rose-800/30', darkText: 'dark:text-rose-300' },
-        { bg: 'bg-fuchsia-100', text: 'text-fuchsia-800', darkBg: 'dark:bg-fuchsia-800/30', darkText: 'dark:text-fuchsia-300' },
-        { bg: 'bg-lime-100', text: 'text-lime-800', darkBg: 'dark:bg-lime-800/30', darkText: 'dark:text-lime-300' },
-        { bg: 'bg-cyan-100', text: 'text-cyan-800', darkBg: 'dark:bg-cyan-800/30', darkText: 'dark:text-cyan-300' },
-        { bg: 'bg-violet-100', text: 'text-violet-800', darkBg: 'dark:bg-violet-800/30', darkText: 'dark:text-violet-300' },
+        { bg: 'bg-sky-100', text: 'text-sky-800', darkBg: 'dark:bg-sky-100/20', darkText: 'dark:text-sky-200' },
+        { bg: 'bg-emerald-100', text: 'text-emerald-800', darkBg: 'dark:bg-emerald-100/20', darkText: 'dark:text-emerald-200' },
+        { bg: 'bg-amber-100', text: 'text-amber-800', darkBg: 'dark:bg-amber-100/20', darkText: 'dark:text-amber-200' },
+        { bg: 'bg-rose-100', text: 'text-rose-800', darkBg: 'dark:bg-rose-100/20', darkText: 'dark:text-rose-200' },
+        { bg: 'bg-fuchsia-100', text: 'text-fuchsia-800', darkBg: 'dark:bg-fuchsia-100/20', darkText: 'dark:text-fuchsia-200' },
+        { bg: 'bg-lime-100', text: 'text-lime-800', darkBg: 'dark:bg-lime-100/20', darkText: 'dark:text-lime-200' },
+        { bg: 'bg-cyan-100', text: 'text-cyan-800', darkBg: 'dark:bg-cyan-100/20', darkText: 'dark:text-cyan-200' },
+        { bg: 'bg-violet-100', text: 'text-violet-800', darkBg: 'dark:bg-violet-100/20', darkText: 'dark:text-violet-200' },
     ];
 
     // Seleccionar un color basado en el hash del nombre del estado
@@ -639,7 +640,7 @@ export default function Index() {
                                                     value={(header.column.getFilterValue() as string) ?? ''}
                                                     onChange={e => header.column.setFilterValue(e.target.value)}
                                                     placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
-                                                    className="h-8 text-xs"
+                                                    className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
                                                 />
                                             </div>
                                         )}
@@ -786,7 +787,7 @@ export default function Index() {
                                         value={(column.getFilterValue() as string) ?? ''}
                                         onChange={e => column.setFilterValue(e.target.value)}
                                         placeholder={`Filtrar ${column.columnDef.header as string}...`}
-                                        className="h-8 text-xs"
+                                        className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
                                     />
                                 </div>
                             ))}

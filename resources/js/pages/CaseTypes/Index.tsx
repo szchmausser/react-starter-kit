@@ -341,7 +341,7 @@ export default function Index() {
                                                                         value={(header.column.getFilterValue() as string) ?? ''}
                                                                         onChange={e => header.column.setFilterValue(e.target.value)}
                                                                         placeholder={`Filtrar...`}
-                                                                        className="h-7 text-xs w-full"
+                                                                        className="h-7 text-xs w-full bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
                                                                     />
                                                                 </div>
                                                             )}

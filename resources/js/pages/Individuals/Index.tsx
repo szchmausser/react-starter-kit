@@ -462,7 +462,7 @@ export default function IndividualsIndex() {
                           value={(header.column.getFilterValue() as string) ?? ''}
                           onChange={e => header.column.setFilterValue(e.target.value)}
                           placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
-                          className="h-8 text-xs"
+                          className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
                         />
                       </div>
                     )}
@@ -580,7 +580,7 @@ export default function IndividualsIndex() {
                     value={(column.getFilterValue() as string) ?? ''}
                     onChange={e => column.setFilterValue(e.target.value)}
                     placeholder={`Filtrar ${column.columnDef.header as string}...`}
-                    className="h-7 sm:h-8 text-xs"
+                    className="h-7 sm:h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
                   />
                 </div>
               ))}
