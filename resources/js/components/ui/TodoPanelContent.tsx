@@ -211,18 +211,18 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
         <div className="text-gray-500 text-sm mb-2">Crea tu primera lista de tareas</div>
         <div className="flex gap-2 w-full max-w-xs">
           <input
-            className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+            className="flex-1 rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200"
             placeholder="Nombre de la lista"
             value={newListName}
             onChange={e => setNewListName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleCreateList()}
           />
           <button
-            className="rounded bg-gray-200 hover:bg-gray-300 p-2"
+            className="rounded bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 p-2"
             onClick={handleCreateList}
             title="Crear lista"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 dark:text-gray-200" />
           </button>
         </div>
       </div>
@@ -239,7 +239,7 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
       {showCreateList && (
         <div className="flex gap-2 items-center mt-2">
           <input
-            className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+            className="flex-1 rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200"
             value={newListName}
             onChange={e => setNewListName(e.target.value)}
             placeholder="Nombre para la nueva lista de tareas"
@@ -247,28 +247,28 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
             onKeyDown={e => e.key === 'Enter' && handleCreateList()}
           />
           <button
-            className="p-2 rounded bg-gray-200 hover:bg-gray-300"
+            className="p-2 rounded bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600"
             onClick={handleCreateList}
             title="Crear"
           >
-            <Check className="h-4 w-4 text-green-600" />
+            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
           </button>
           <button
-            className="p-2 rounded hover:bg-gray-100"
+            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700"
             onClick={() => {
               setShowCreateList(false);
               setNewListName('');
             }}
             title="Cancelar"
           >
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
       )}
       {/* Selector de lista */}
       <div className="flex items-center gap-2">
         <select
-          className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm bg-gray-100"
+          className="flex-1 rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-gray-200"
           value={selectedListId ?? ''}
           onChange={e => setSelectedListId(Number(e.target.value))}
         >
@@ -277,7 +277,7 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
           ))}
         </select>
         <button
-          className="rounded p-2 hover:bg-gray-100"
+          className="rounded p-2 hover:bg-gray-100 dark:hover:bg-zinc-700"
           onClick={() => {
             if (selectedListId) {
               const list = lists.find(l => l.id === selectedListId);
@@ -288,21 +288,21 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
           }}
           title="Renombrar lista"
         >
-          <Edit className="h-4 w-4 text-gray-500" />
+          <Edit className="h-4 w-4 text-gray-500 dark:text-gray-400" />
         </button>
         <button
-          className="rounded p-2 hover:bg-gray-100"
+          className="rounded p-2 hover:bg-gray-100 dark:hover:bg-zinc-700"
           onClick={() => setConfirmDeleteListId(selectedListId!)}
           title="Eliminar lista"
         >
-          <Trash2 className="h-4 w-4 text-red-500" />
+          <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
         </button>
       </div>
       {/* Formulario de edición de lista */}
       {editMode === 'edit' && (
         <div className="flex gap-2 items-center mt-2">
           <input
-            className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+            className="flex-1 rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200"
             value={editListName}
             onChange={e => setEditListName(e.target.value)}
             placeholder="Nuevo nombre"
@@ -310,71 +310,71 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
             onKeyDown={e => e.key === 'Enter' && handleRenameList()}
           />
           <button
-            className="p-2 rounded bg-gray-200 hover:bg-gray-300"
+            className="p-2 rounded bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600"
             onClick={handleRenameList}
             title="Guardar"
           >
-            <Check className="h-4 w-4 text-green-600" />
+            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
           </button>
           <button
-            className="p-2 rounded hover:bg-gray-100"
+            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700"
             onClick={() => {
               setEditMode(null);
               setEditListName('');
             }}
             title="Cancelar"
           >
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
       )}
       {/* Lista de tareas */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="text-center text-gray-400 py-8">Cargando...</div>
+          <div className="text-center text-gray-400 dark:text-gray-500 py-8">Cargando...</div>
         ) : (
           <>
             <ul className="flex flex-col gap-2">
               {todosPendientes.map(todo => (
-                <li key={todo.id} className="flex items-center gap-2 bg-gray-50 rounded px-2 py-1">
+                <li key={todo.id} className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-800/50 rounded px-2 py-1">
                   <button
-                    className={`rounded p-1 ${todo.is_completed ? 'bg-green-100' : 'bg-gray-200'} hover:bg-green-200`}
+                    className={`rounded p-1 ${todo.is_completed ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-200 dark:bg-zinc-700'} hover:bg-green-200 dark:hover:bg-green-900/50`}
                     onClick={() => handleToggleTodo(todo)}
                     title={todo.is_completed ? 'Marcar como pendiente' : 'Marcar como completada'}
                   >
-                    <Check className={`h-4 w-4 ${todo.is_completed ? 'text-green-600' : 'text-gray-400'}`} />
+                    <Check className={`h-4 w-4 ${todo.is_completed ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`} />
                   </button>
-                  <span className={`flex-1 text-sm ${todo.is_completed ? 'line-through text-gray-400' : ''}`}>{todo.title}</span>
+                  <span className={`flex-1 text-sm ${todo.is_completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'}`}>{todo.title}</span>
                   <button
-                    className="rounded p-1 hover:bg-red-100"
+                    className="rounded p-1 hover:bg-red-100 dark:hover:bg-red-900/30"
                     onClick={() => setConfirmDeleteTodo(todo)}
                     title="Eliminar tarea"
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
+                    <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
                   </button>
                 </li>
               ))}
             </ul>
             {todosCompletados.length > 0 && (
               <>
-                <div className="text-xs text-gray-400 mt-4 mb-1">Completadas</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 mt-4 mb-1">Completadas</div>
                 <ul className="flex flex-col gap-2 opacity-70">
                   {todosCompletados.map(todo => (
-                    <li key={todo.id} className="flex items-center gap-2 bg-gray-50 rounded px-2 py-1">
+                    <li key={todo.id} className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-800/50 rounded px-2 py-1">
                       <button
-                        className={`rounded p-1 bg-green-100 hover:bg-green-200`}
+                        className={`rounded p-1 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50`}
                         onClick={() => handleToggleTodo(todo)}
                         title="Marcar como pendiente"
                       >
-                        <Check className="h-4 w-4 text-green-600" />
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                       </button>
-                      <span className="flex-1 text-sm line-through text-gray-400">{todo.title}</span>
+                      <span className="flex-1 text-sm line-through text-gray-400 dark:text-gray-500">{todo.title}</span>
                       <button
-                        className="rounded p-1 hover:bg-red-100"
+                        className="rounded p-1 hover:bg-red-100 dark:hover:bg-red-900/30"
                         onClick={() => setConfirmDeleteTodo(todo)}
                         title="Eliminar tarea"
                       >
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                        <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
                       </button>
                     </li>
                   ))}
@@ -387,18 +387,18 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
       {/* Agregar nueva tarea */}
       <div className="flex gap-2 mt-2">
         <input
-          className="flex-1 rounded border border-green-500 px-2 py-1 text-sm"
+          className="flex-1 rounded border border-primary/60 dark:border-primary/40 px-2 py-1 text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary"
           placeholder="Nueva tarea"
           value={newTodo}
           onChange={e => setNewTodo(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleCreateTodo()}
         />
         <button
-          className="rounded bg-gray-200 hover:bg-gray-300 p-2"
+          className="rounded bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 p-2"
           onClick={handleCreateTodo}
           title="Agregar tarea"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4 dark:text-gray-200" />
         </button>
       </div>
       {/* Diálogo de confirmación para eliminar lista */}

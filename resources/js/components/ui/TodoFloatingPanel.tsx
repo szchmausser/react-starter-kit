@@ -33,14 +33,14 @@ export const TodoFloatingPanel: React.FC<TodoFloatingPanelProps> = ({ open, onCl
               className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none"
               aria-label="Crear nueva lista"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </button>
             <button
               onClick={onClose}
               className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none"
               aria-label="Cerrar"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </button>
           </div>
         </div>
