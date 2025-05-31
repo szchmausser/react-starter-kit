@@ -182,9 +182,9 @@ export default function AdvancedSearchContainer({
     };
 
     return (
-        <Card className={`w-full ${className}`}>
+        <Card className={`w-full ${className} mb-0`}>
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-                <CardHeader className="flex flex-row items-center justify-between py-3 px-4 sm:py-4 sm:px-6 bg-slate-50 dark:bg-zinc-800/50">
+                <CardHeader className="flex flex-row items-center justify-between py-1.5 px-4 sm:py-2 sm:px-6 bg-sidebar dark:bg-zinc-800/50">
                     <CardTitle className="text-base sm:text-lg flex items-center">
                         <Filter className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                         Búsqueda Avanzada
@@ -200,17 +200,17 @@ export default function AdvancedSearchContainer({
                     </CollapsibleTrigger>
                 </CardHeader>
                 <CollapsibleContent>
-                    <CardContent className="grid gap-3 sm:gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5 sm:pb-6">
-                        <div className="bg-slate-50 dark:bg-zinc-800/50 rounded-lg p-3 sm:p-4 max-w-full">
-                            <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3">Añadir filtros</h3>
+                    <CardContent className="grid gap-2 sm:gap-3 px-4 sm:px-6 pt-1.5 sm:pt-2 pb-1.5 sm:pb-2">
+                        <div className="bg-sidebar dark:bg-zinc-800/50 rounded-lg p-1.5 sm:p-2 max-w-full">
+                            <h3 className="text-xs sm:text-sm font-medium mb-0.5 sm:mb-1">Añadir filtros</h3>
 
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <TabsList className="w-full mb-3 sm:mb-4 grid grid-cols-2 h-auto">
+                                <TabsList className="w-full mb-1 sm:mb-2 grid grid-cols-2 h-auto">
                                     {filterGroups.map(group => (
                                         <TabsTrigger
                                             key={group.id}
                                             value={group.id}
-                                            className="flex items-center gap-1 flex-1 py-1.5 px-2 text-xs sm:text-sm"
+                                            className="flex items-center gap-1 flex-1 py-0.5 px-2 text-xs sm:text-sm"
                                         >
                                             {group.icon}
                                             <span className="truncate">{group.name}</span>
@@ -225,17 +225,17 @@ export default function AdvancedSearchContainer({
 
                                 {filterGroups.map(group => (
                                     <TabsContent key={group.id} value={group.id} className="mt-0">
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">
                                             {group.description}
                                         </div>
-                                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                        <div className="flex flex-wrap gap-1 sm:gap-1.5">
                                             {group.filters.map(filter => (
                                                 <Button
                                                     key={filter.type}
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => addCriterion(filter.type)}
-                                                    className="flex items-center text-xs sm:text-sm h-8 px-2 py-1"
+                                                    className="flex items-center text-xs sm:text-sm h-7 px-2 py-0.5"
                                                 >
                                                     {filter.icon}
                                                     <span className="truncate">{filter.name}</span>
@@ -253,16 +253,16 @@ export default function AdvancedSearchContainer({
                         </div>
 
                         {criteria.length === 0 ? (
-                            <div className="text-center py-4 sm:py-6 text-gray-500 dark:text-gray-400 text-sm">
+                            <div className="text-center py-1.5 sm:py-2 text-gray-500 dark:text-gray-400 text-sm">
                                 No hay criterios de búsqueda. Añade un criterio para comenzar.
                             </div>
                         ) : (
-                            <div className="bg-slate-50 dark:bg-zinc-800/50 rounded-lg p-3 sm:p-4 max-w-full">
-                                <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3">Criterios activos</h3>
+                            <div className="bg-sidebar dark:bg-zinc-800/50 rounded-lg p-1.5 sm:p-2 max-w-full">
+                                <h3 className="text-xs sm:text-sm font-medium mb-0.5 sm:mb-1">Criterios activos</h3>
 
-                                <div className="space-y-3 sm:space-y-4">
+                                <div className="space-y-1.5 sm:space-y-2">
                                     {criteria.map((criterion) => (
-                                        <div key={criterion.id} className="border rounded-md p-3 sm:p-4 bg-white dark:bg-zinc-900 shadow-sm overflow-x-auto">
+                                        <div key={criterion.id} className="border rounded-md p-1.5 sm:p-2 bg-white dark:bg-zinc-900 shadow-sm overflow-x-auto">
                                             {criterion.type === 'string' && (
                                                 <StringFilter
                                                     criterion={criterion}
@@ -312,22 +312,22 @@ export default function AdvancedSearchContainer({
                             </div>
                         )}
                     </CardContent>
-                    <CardFooter className="flex justify-between px-4 sm:px-6 py-4 sm:py-5 border-t mt-3 sm:mt-5">
+                    <CardFooter className="flex justify-between px-4 sm:px-6 py-1.5 pt-1.5 pb-1 sm:pt-1.5 sm:pb-1 mt-0.5 sm:mt-1">
                         <Button
                             variant="outline"
                             onClick={resetCriteria}
-                            className="flex items-center text-xs sm:text-sm h-8 sm:h-9"
+                            className="flex items-center text-xs sm:text-sm h-6 sm:h-6"
                             disabled={criteria.length === 0}
                         >
-                            <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            <RotateCcw className="h-3 w-3 mr-1" />
                             Limpiar
                         </Button>
                         <Button
                             onClick={executeSearch}
-                            className="flex items-center text-xs sm:text-sm h-8 sm:h-9"
+                            className="flex items-center text-xs sm:text-sm h-6 sm:h-6"
                             disabled={criteria.length === 0}
                         >
-                            <Search className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            <Search className="h-3 w-3 mr-1" />
                             Buscar
                         </Button>
                     </CardFooter>
