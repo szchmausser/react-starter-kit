@@ -201,68 +201,6 @@ export default function AdvancedSearchContainer({
                 </CardHeader>
                 <CollapsibleContent>
                     <CardContent className="grid gap-3 sm:gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5 sm:pb-6">
-                        {criteria.length > 0 && (
-                            <div className="space-y-3 sm:space-y-4 mb-0">
-                                <h3 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">Criterios activos</h3>
-                                {criteria.map((criterion) => (
-                                    <div key={criterion.id} className="border rounded-md p-3 sm:p-4 bg-white dark:bg-zinc-900 shadow-sm overflow-x-auto">
-                                        {criterion.type === 'string' && (
-                                            <StringFilter
-                                                criterion={criterion}
-                                                onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
-                                                onRemove={() => removeCriterion(criterion.id)}
-                                            />
-                                        )}
-                                        {criterion.type === 'date' && (
-                                            <DateFilter
-                                                criterion={criterion}
-                                                onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
-                                                onRemove={() => removeCriterion(criterion.id)}
-                                            />
-                                        )}
-                                        {criterion.type === 'select' && (
-                                            <SelectFilter
-                                                criterion={criterion}
-                                                options={
-                                                    criterion.field === 'case_type_id'
-                                                        ? caseTypes.map((type) => ({
-                                                            value: type.id.toString(),
-                                                            label: type.name,
-                                                        }))
-                                                        : []
-                                                }
-                                                onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
-                                                onRemove={() => removeCriterion(criterion.id)}
-                                            />
-                                        )}
-                                        {criterion.type === 'individual' && (
-                                            <IndividualFilter
-                                                criterion={criterion}
-                                                onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
-                                                onRemove={() => removeCriterion(criterion.id)}
-                                            />
-                                        )}
-                                        {criterion.type === 'legal_entity' && (
-                                            <LegalEntityFilter
-                                                criterion={criterion}
-                                                onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
-                                                onRemove={() => removeCriterion(criterion.id)}
-                                            />
-                                        )}
-                                    </div>
-                                ))}
-                                <div className="py-3 sm:py-4">
-                                    <Separator />
-                                </div>
-                            </div>
-                        )}
-
-                        {criteria.length === 0 && (
-                            <div className="text-center py-4 sm:py-6 text-gray-500 dark:text-gray-400 text-sm">
-                                No hay criterios de búsqueda. Añade un criterio para comenzar.
-                            </div>
-                        )}
-
                         <div className="bg-slate-50 dark:bg-zinc-800/50 rounded-lg p-3 sm:p-4 max-w-full">
                             <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3">Añadir filtros</h3>
 
@@ -313,6 +251,66 @@ export default function AdvancedSearchContainer({
                                 ))}
                             </Tabs>
                         </div>
+
+                        {criteria.length === 0 ? (
+                            <div className="text-center py-4 sm:py-6 text-gray-500 dark:text-gray-400 text-sm">
+                                No hay criterios de búsqueda. Añade un criterio para comenzar.
+                            </div>
+                        ) : (
+                            <div className="bg-slate-50 dark:bg-zinc-800/50 rounded-lg p-3 sm:p-4 max-w-full">
+                                <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3">Criterios activos</h3>
+
+                                <div className="space-y-3 sm:space-y-4">
+                                    {criteria.map((criterion) => (
+                                        <div key={criterion.id} className="border rounded-md p-3 sm:p-4 bg-white dark:bg-zinc-900 shadow-sm overflow-x-auto">
+                                            {criterion.type === 'string' && (
+                                                <StringFilter
+                                                    criterion={criterion}
+                                                    onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
+                                                    onRemove={() => removeCriterion(criterion.id)}
+                                                />
+                                            )}
+                                            {criterion.type === 'date' && (
+                                                <DateFilter
+                                                    criterion={criterion}
+                                                    onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
+                                                    onRemove={() => removeCriterion(criterion.id)}
+                                                />
+                                            )}
+                                            {criterion.type === 'select' && (
+                                                <SelectFilter
+                                                    criterion={criterion}
+                                                    options={
+                                                        criterion.field === 'case_type_id'
+                                                            ? caseTypes.map((type) => ({
+                                                                value: type.id.toString(),
+                                                                label: type.name,
+                                                            }))
+                                                            : []
+                                                    }
+                                                    onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
+                                                    onRemove={() => removeCriterion(criterion.id)}
+                                                />
+                                            )}
+                                            {criterion.type === 'individual' && (
+                                                <IndividualFilter
+                                                    criterion={criterion}
+                                                    onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
+                                                    onRemove={() => removeCriterion(criterion.id)}
+                                                />
+                                            )}
+                                            {criterion.type === 'legal_entity' && (
+                                                <LegalEntityFilter
+                                                    criterion={criterion}
+                                                    onChange={(updates: Partial<FilterCriterion>) => updateCriterion(criterion.id, updates)}
+                                                    onRemove={() => removeCriterion(criterion.id)}
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                     <CardFooter className="flex justify-between px-4 sm:px-6 py-4 sm:py-5 border-t mt-3 sm:mt-5">
                         <Button
