@@ -39,6 +39,26 @@ class MediaLibraryController extends Controller
                 });
             }
 
+            // Filtrar por fecha de creación
+            if ($request->filled('date_type') && $request->input('date_type') === 'created') {
+                if ($request->filled('start_date')) {
+                    $query->whereDate('created_at', '>=', $request->input('start_date'));
+                }
+                if ($request->filled('end_date')) {
+                    $query->whereDate('created_at', '<=', $request->input('end_date'));
+                }
+            }
+
+            // Filtrar por fecha de actualización
+            if ($request->filled('date_type') && $request->input('date_type') === 'updated') {
+                if ($request->filled('start_date')) {
+                    $query->whereDate('updated_at', '>=', $request->input('start_date'));
+                }
+                if ($request->filled('end_date')) {
+                    $query->whereDate('updated_at', '<=', $request->input('end_date'));
+                }
+            }
+
             $media = $query->latest()->paginate(10);
 
             // Transformar los resultados para incluir información adicional
@@ -67,7 +87,7 @@ class MediaLibraryController extends Controller
 
             return Inertia::render('MediaLibrary/Index', [
                 'mediaItems' => $media,
-                'filters' => $request->only(['search', 'collection']),
+                'filters' => $request->only(['search', 'collection', 'date_type', 'start_date', 'end_date']),
                 'collections' => Media::select('collection_name')->distinct()->pluck('collection_name'),
             ]);
         } catch (\Exception $e) {

@@ -14,7 +14,11 @@ import {
 } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import {
     FileIcon,
     PlusIcon,
@@ -30,7 +34,9 @@ import {
     MusicIcon,
     ArchiveIcon,
     PresentationIcon,
-    FileSpreadsheetIcon
+    FileSpreadsheetIcon,
+    CalendarIcon,
+    XIcon
 } from 'lucide-react';
 
 interface Media {
@@ -69,6 +75,9 @@ interface MediaLibraryIndexProps {
     filters: {
         search?: string;
         collection?: string;
+        date_type?: 'created' | 'updated';
+        start_date?: string;
+        end_date?: string;
     };
     collections: string[];
 }
@@ -76,6 +85,10 @@ interface MediaLibraryIndexProps {
 export default function MediaLibraryIndex({ mediaItems, filters, collections }: MediaLibraryIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [selectedCollection, setSelectedCollection] = useState(filters.collection || '');
+    const [dateType, setDateType] = useState<'created' | 'updated'>(filters.date_type || 'created');
+    const [startDate, setStartDate] = useState(filters.start_date || '');
+    const [endDate, setEndDate] = useState(filters.end_date || '');
+    const [showDateFilter, setShowDateFilter] = useState(!!filters.start_date || !!filters.end_date);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Inicio', href: '/' },
@@ -102,6 +115,38 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
         const params = value === '_all'
             ? { search }
             : { search, collection: value };
+
+        router.get(
+            route('media-library.index'),
+            params,
+            { preserveState: true, replace: true }
+        );
+    };
+
+    const handleDateFilterApply = () => {
+        const params = {
+            search,
+            collection: selectedCollection !== '_all' ? selectedCollection : undefined,
+            date_type: dateType,
+            start_date: startDate || undefined,
+            end_date: endDate || undefined
+        };
+
+        router.get(
+            route('media-library.index'),
+            params,
+            { preserveState: true, replace: true }
+        );
+    };
+
+    const clearDateFilter = () => {
+        setStartDate('');
+        setEndDate('');
+
+        const params = {
+            search,
+            collection: selectedCollection !== '_all' ? selectedCollection : undefined
+        };
 
         router.get(
             route('media-library.index'),
@@ -167,38 +212,131 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                         <CardTitle>Buscar y Filtrar</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="relative flex-grow">
-                                <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                                <Input
-                                    type="search"
-                                    placeholder="Buscar por nombre o descripción..."
-                                    className="pl-8"
-                                    value={search}
-                                    onChange={(e) => handleSearch(e.target.value)}
-                                />
+                        <div className="flex flex-col space-y-4">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="relative flex-grow">
+                                    <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                                    <Input
+                                        type="search"
+                                        placeholder="Buscar por nombre o descripción..."
+                                        className="pl-8"
+                                        value={search}
+                                        onChange={(e) => handleSearch(e.target.value)}
+                                    />
+                                </div>
+                                <div className="w-full sm:w-64">
+                                    <Select
+                                        value={selectedCollection}
+                                        onValueChange={handleCollectionChange}
+                                    >
+                                        <SelectTrigger>
+                                            <div className="flex items-center">
+                                                <FilterIcon className="h-4 w-4 mr-2 text-gray-500" />
+                                                <SelectValue placeholder="Filtrar por colección" />
+                                            </div>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="_all">Todas las colecciones</SelectItem>
+                                            {collections.map((collection) => (
+                                                <SelectItem key={collection} value={collection}>
+                                                    {collection.charAt(0).toUpperCase() + collection.slice(1)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
-                            <div className="w-full sm:w-64">
-                                <Select
-                                    value={selectedCollection}
-                                    onValueChange={handleCollectionChange}
+
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowDateFilter(!showDateFilter)}
+                                    className="flex items-center"
                                 >
-                                    <SelectTrigger>
-                                        <div className="flex items-center">
-                                            <FilterIcon className="h-4 w-4 mr-2 text-gray-500" />
-                                            <SelectValue placeholder="Filtrar por colección" />
-                                        </div>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="_all">Todas las colecciones</SelectItem>
-                                        {collections.map((collection) => (
-                                            <SelectItem key={collection} value={collection}>
-                                                {collection.charAt(0).toUpperCase() + collection.slice(1)}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    <CalendarIcon className="h-4 w-4 mr-2" />
+                                    {showDateFilter ? 'Ocultar filtro de fechas' : 'Filtrar por fechas'}
+                                </Button>
+
+                                {(filters.start_date || filters.end_date) && (
+                                    <div className="flex items-center">
+                                        <Badge variant="outline" className="flex items-center gap-1">
+                                            <span>
+                                                {filters.date_type === 'created' ? 'Creado' : 'Actualizado'}:
+                                                {filters.start_date && ` desde ${filters.start_date}`}
+                                                {filters.end_date && ` hasta ${filters.end_date}`}
+                                            </span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-4 w-4 p-0 ml-1"
+                                                onClick={clearDateFilter}
+                                            >
+                                                <XIcon className="h-3 w-3" />
+                                            </Button>
+                                        </Badge>
+                                    </div>
+                                )}
                             </div>
+
+                            {showDateFilter && (
+                                <Card className="border border-dashed">
+                                    <CardContent className="p-4">
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h3 className="text-sm font-medium mb-2">Tipo de fecha</h3>
+                                                <RadioGroup
+                                                    value={dateType}
+                                                    onValueChange={(value: 'created' | 'updated') => setDateType(value)}
+                                                    className="flex space-x-4"
+                                                >
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="created" id="created" />
+                                                        <Label htmlFor="created">Fecha de creación</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="updated" id="updated" />
+                                                        <Label htmlFor="updated">Fecha de actualización</Label>
+                                                    </div>
+                                                </RadioGroup>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div>
+                                                    <Label htmlFor="start-date" className="text-sm">Fecha inicial</Label>
+                                                    <Input
+                                                        id="start-date"
+                                                        type="date"
+                                                        value={startDate}
+                                                        onChange={(e) => setStartDate(e.target.value)}
+                                                        className="mt-1"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor="end-date" className="text-sm">Fecha final</Label>
+                                                    <Input
+                                                        id="end-date"
+                                                        type="date"
+                                                        value={endDate}
+                                                        onChange={(e) => setEndDate(e.target.value)}
+                                                        className="mt-1"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-end">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={handleDateFilterApply}
+                                                    disabled={!startDate && !endDate}
+                                                >
+                                                    Aplicar filtro
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -214,6 +352,8 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                                         <TableHead>Colección</TableHead>
                                         <TableHead>Tipo</TableHead>
                                         <TableHead>Tamaño</TableHead>
+                                        <TableHead className="hidden md:table-cell">Creado</TableHead>
+                                        <TableHead className="hidden md:table-cell">Actualizado</TableHead>
                                         <TableHead>Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -262,6 +402,30 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className="text-sm">{media.human_readable_size}</span>
+                                                </TableCell>
+                                                <TableCell className="hidden md:table-cell">
+                                                    <span
+                                                        className="text-sm cursor-help"
+                                                        title={new Date(media.created_at).toLocaleString('es-ES')}
+                                                    >
+                                                        {new Date(media.created_at).toLocaleDateString('es-ES', {
+                                                            day: '2-digit',
+                                                            month: '2-digit',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="hidden md:table-cell">
+                                                    <span
+                                                        className="text-sm cursor-help"
+                                                        title={new Date(media.updated_at).toLocaleString('es-ES')}
+                                                    >
+                                                        {new Date(media.updated_at).toLocaleDateString('es-ES', {
+                                                            day: '2-digit',
+                                                            month: '2-digit',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </span>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center space-x-2">
