@@ -437,7 +437,7 @@ export default function IndividualsIndex() {
                     <div
                       {...{
                         className: header.column.getCanSort()
-                          ? 'cursor-pointer select-none flex items-center gap-1 hover:text-primary transition-colors'
+                          ? 'cursor-pointer select-none flex items-center gap-1 hover:text-primary transition-colors group'
                           : '',
                         onClick: header.column.getToggleSortingHandler(),
                       }}
@@ -446,12 +446,17 @@ export default function IndividualsIndex() {
                         header.column.columnDef.header,
                         header.getContext()
                       )}
-                      {header.column.getIsSorted() && (
-                        <span className="ml-1">
+                      {header.column.getCanSort() && (
+                        <span className="inline-flex ml-1 text-muted-foreground">
                           {header.column.getIsSorted() === 'asc' ? (
-                            <ArrowUp className="h-4 w-4" />
+                            <ArrowUp className="h-4 w-4 text-primary" />
+                          ) : header.column.getIsSorted() === 'desc' ? (
+                            <ArrowDown className="h-4 w-4 text-primary" />
                           ) : (
-                            <ArrowDown className="h-4 w-4" />
+                            <div className="h-4 w-4 flex flex-col opacity-50 group-hover:opacity-100">
+                              <ArrowUp className="h-2 w-4" />
+                              <ArrowDown className="h-2 w-4" />
+                            </div>
                           )}
                         </span>
                       )}

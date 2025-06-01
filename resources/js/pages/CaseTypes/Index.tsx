@@ -299,53 +299,51 @@ export default function Index() {
                                                 {header.isPlaceholder ? null : (
                                                     <div className="space-y-2">
                                                         {/* Cabecera con título y controles de ordenación */}
-                                                        <div className="flex items-center justify-between gap-2">
-                                                            <div
-                                                                {...{
-                                                                    className: cn(
-                                                                        "flex items-center gap-1 whitespace-nowrap",
-                                                                        header.column.getCanSort()
-                                                                            ? "cursor-pointer select-none hover:text-primary transition-colors group"
-                                                                            : "",
-                                                                        header.id === 'numero' && "justify-center w-full",
-                                                                        header.id === 'actions' && "justify-end ml-auto"
-                                                                    ),
-                                                                    onClick: header.column.getToggleSortingHandler(),
-                                                                }}
-                                                            >
-                                                                <span className="font-medium">{flexRender(
-                                                                    header.column.columnDef.header,
-                                                                    header.getContext()
-                                                                )}</span>
+                                                        <div
+                                                            {...{
+                                                                className: cn(
+                                                                    "flex items-center gap-1 whitespace-nowrap",
+                                                                    header.column.getCanSort()
+                                                                        ? "cursor-pointer select-none hover:text-primary transition-colors group"
+                                                                        : "",
+                                                                    header.id === 'numero' && "justify-center w-full",
+                                                                    header.id === 'actions' && "justify-end ml-auto"
+                                                                ),
+                                                                onClick: header.column.getToggleSortingHandler(),
+                                                            }}
+                                                        >
+                                                            <span className="font-medium">{flexRender(
+                                                                header.column.columnDef.header,
+                                                                header.getContext()
+                                                            )}</span>
 
-                                                                {header.column.getCanSort() && (
-                                                                    <span className="inline-flex ml-1 text-muted-foreground">
-                                                                        {header.column.getIsSorted() === 'asc' ? (
-                                                                            <ArrowUp className="h-4 w-4 text-primary" />
-                                                                        ) : header.column.getIsSorted() === 'desc' ? (
-                                                                            <ArrowDown className="h-4 w-4 text-primary" />
-                                                                        ) : (
-                                                                            <div className="h-4 w-4 flex flex-col opacity-50 group-hover:opacity-100">
-                                                                                <ArrowUp className="h-2 w-4" />
-                                                                                <ArrowDown className="h-2 w-4" />
-                                                                            </div>
-                                                                        )}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            {/* Filtro de columna (en línea para optimizar espacio) */}
-                                                            {header.column.getCanFilter() && (
-                                                                <div className="flex-1 min-w-[120px]">
-                                                                    <Input
-                                                                        value={(header.column.getFilterValue() as string) ?? ''}
-                                                                        onChange={e => header.column.setFilterValue(e.target.value)}
-                                                                        placeholder={`Filtrar...`}
-                                                                        className="h-7 text-xs w-full bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
-                                                                    />
-                                                                </div>
+                                                            {header.column.getCanSort() && (
+                                                                <span className="inline-flex ml-1 text-muted-foreground">
+                                                                    {header.column.getIsSorted() === 'asc' ? (
+                                                                        <ArrowUp className="h-4 w-4 text-primary" />
+                                                                    ) : header.column.getIsSorted() === 'desc' ? (
+                                                                        <ArrowDown className="h-4 w-4 text-primary" />
+                                                                    ) : (
+                                                                        <div className="h-4 w-4 flex flex-col opacity-50 group-hover:opacity-100">
+                                                                            <ArrowUp className="h-2 w-4" />
+                                                                            <ArrowDown className="h-2 w-4" />
+                                                                        </div>
+                                                                    )}
+                                                                </span>
                                                             )}
                                                         </div>
+
+                                                        {/* Filtro de columna debajo del título (no en línea) */}
+                                                        {header.column.getCanFilter() && (
+                                                            <div>
+                                                                <Input
+                                                                    value={(header.column.getFilterValue() as string) ?? ''}
+                                                                    onChange={e => header.column.setFilterValue(e.target.value)}
+                                                                    placeholder={`Filtrar...`}
+                                                                    className="h-7 text-xs w-full bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </TableHead>
