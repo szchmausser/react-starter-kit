@@ -59,10 +59,11 @@ class MediaLibraryController extends Controller
                 }
             }
 
-            $media = $query->latest()->paginate(10);
+            // Obtener todos los registros para paginación del lado del cliente
+            $media = $query->latest()->get();
 
             // Transformar los resultados para incluir información adicional
-            $media->getCollection()->transform(function ($item) {
+            $media = $media->map(function ($item) {
                 $item->type_name = $this->getTypeNameForMimeType($item->mime_type);
                 $item->type_icon = $this->getTypeIconForMimeType($item->mime_type);
                 $item->extension = pathinfo($item->file_name, PATHINFO_EXTENSION);
@@ -685,5 +686,43 @@ class MediaLibraryController extends Controller
     {
         // Construir la URL correcta basada en la estructura de carpetas observada
         return url("/storage/media/{$media->collection_name}/{$media->file_name}");
+    }
+
+    /**
+     * Actualiza la descripción de un archivo.
+     *
+     * @param Request $request
+     * @param Media $media
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateDescription(Request $request, Media $media)
+    {
+        $validated = $request->validate([
+            'description' => 'nullable|string',
+        ]);
+
+        try {
+            // Actualizar propiedades personalizadas
+            $customProperties = $media->custom_properties;
+            $customProperties['description'] = $validated['description'] ?? null;
+            $customProperties['updated_by'] = Auth::id() ?? 1;
+            $customProperties['updated_at'] = now()->toDateTimeString();
+            $media->custom_properties = $customProperties;
+
+            $media->save();
+
+            // Actualizar el objeto media con las propiedades adicionales
+            $media->description = $media->getCustomProperty('description');
+
+            return redirect()->back()->with([
+                'success' => 'Descripción actualizada correctamente',
+                'updatedMedia' => $media
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error al actualizar descripción: ' . $e->getMessage());
+            return redirect()->back()->withErrors([
+                'error' => 'Error al actualizar la descripción: ' . $e->getMessage()
+            ]);
+        }
     }
 }
