@@ -229,9 +229,9 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                                             <TableRow key={media.id}>
                                                 <TableCell className="w-12">
                                                     <div className="relative h-10 w-10 overflow-hidden rounded-md">
-                                                        {media.thumbnail ? (
+                                                        {media.mime_type && media.mime_type.startsWith('image/') ? (
                                                             <img
-                                                                src={media.thumbnail}
+                                                                src={media.thumbnail || media.file_url}
                                                                 alt={media.name}
                                                                 className="h-full w-full object-cover"
                                                             />

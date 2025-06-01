@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Folder, LayoutGrid, Search, Users, Tag, ChevronsUpDown } from 'lucide-react';
+import { BookOpen, Building, Folder, LayoutGrid, Search, Users, Tag, ChevronsUpDown, FileImage } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useState } from 'react';
 import { TodoFloatingPanel } from '@/components/ui/TodoFloatingPanel';
@@ -49,6 +49,11 @@ const mainNavItems: NavItem[] = [
         title: 'Etiquetas',
         href: route('tags.index'),
         icon: Tag,
+    },
+    {
+        title: 'Biblioteca de Archivos',
+        href: route('media-library.index'),
+        icon: FileImage,
     },
 ];
 

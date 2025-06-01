@@ -85,10 +85,49 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
             return (
                 <div className="flex items-center justify-center">
                     <img
-                        src={mediaItem.preview_url || mediaItem.file_url || ''}
+                        src={mediaItem.file_url}
                         alt={mediaItem.name}
                         className="max-h-[600px] object-contain rounded-md"
                     />
+                </div>
+            );
+        }
+
+        if (mediaItem.mime_type.startsWith('video/')) {
+            return (
+                <div className="flex items-center justify-center">
+                    <video
+                        src={mediaItem.file_url}
+                        controls
+                        className="max-h-[600px] max-w-full rounded-md"
+                        controlsList="nodownload"
+                        poster={mediaItem.thumbnail || undefined}
+                    >
+                        Tu navegador no soporta la reproducción de videos.
+                        <a href={route('media-library.download', mediaItem.id)} target="_blank" rel="noopener noreferrer">
+                            Descargar video
+                        </a>
+                    </video>
+                </div>
+            );
+        }
+
+        if (mediaItem.mime_type.startsWith('audio/')) {
+            return (
+                <div className="flex flex-col items-center justify-center py-8">
+                    <div className="text-5xl mb-6">{getTypeIcon()}</div>
+                    <h3 className="text-xl font-medium mb-4">{mediaItem.name}</h3>
+                    <audio
+                        src={mediaItem.file_url}
+                        controls
+                        className="w-full max-w-md"
+                        controlsList="nodownload"
+                    >
+                        Tu navegador no soporta la reproducción de audio.
+                        <a href={route('media-library.download', mediaItem.id)} target="_blank" rel="noopener noreferrer">
+                            Descargar audio
+                        </a>
+                    </audio>
                 </div>
             );
         }
@@ -168,98 +207,110 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
                                 <CardTitle>Información del Archivo</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Nombre</h3>
-                                    <p className="mt-1">{mediaItem.name}</p>
-                                </div>
-
-                                {mediaItem.description && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Descripción</h3>
-                                        <p className="mt-1">{mediaItem.description}</p>
+                                        <h3 className="text-sm font-medium text-gray-500">Nombre</h3>
+                                        <p className="mt-1">{mediaItem.name}</p>
                                     </div>
-                                )}
 
-                                {mediaItem.category && (
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Categoría</h3>
-                                        <Badge variant="outline" className="mt-1">{mediaItem.category}</Badge>
+                                        <h3 className="text-sm font-medium text-gray-500">Tipo de archivo</h3>
+                                        <div className="flex items-center mt-1 space-x-2">
+                                            {getTypeIcon()}
+                                            <span>{mediaItem.type_name || mediaItem.mime_type}</span>
+                                        </div>
                                     </div>
-                                )}
 
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Nombre del archivo</h3>
-                                    <p className="mt-1">{mediaItem.file_name}</p>
-                                </div>
+                                    {mediaItem.description && (
+                                        <div className="col-span-1 sm:col-span-2">
+                                            <h3 className="text-sm font-medium text-gray-500">Descripción</h3>
+                                            <p className="mt-1">{mediaItem.description}</p>
+                                        </div>
+                                    )}
 
-                                {mediaItem.original_filename && mediaItem.original_filename !== mediaItem.file_name && (
+                                    {mediaItem.category && (
+                                        <div>
+                                            <h3 className="text-sm font-medium text-gray-500">Categoría</h3>
+                                            <Badge variant="outline" className="mt-1">{mediaItem.category}</Badge>
+                                        </div>
+                                    )}
+
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Nombre original</h3>
-                                        <p className="mt-1">{mediaItem.original_filename}</p>
+                                        <h3 className="text-sm font-medium text-gray-500">Tamaño</h3>
+                                        <p className="mt-1">{mediaItem.human_readable_size}</p>
                                     </div>
-                                )}
 
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Tipo de archivo</h3>
-                                    <div className="flex items-center mt-1 space-x-2">
-                                        {getTypeIcon()}
-                                        <span>{mediaItem.type_name || mediaItem.mime_type}</span>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">MIME Type</h3>
-                                    <p className="mt-1">{mediaItem.mime_type}</p>
-                                </div>
-
-                                {mediaItem.extension && (
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Extensión</h3>
-                                        <p className="mt-1 uppercase">{mediaItem.extension}</p>
+                                        <h3 className="text-sm font-medium text-gray-500">Colección</h3>
+                                        <p className="mt-1 capitalize">{mediaItem.collection_name}</p>
                                     </div>
-                                )}
 
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Tamaño</h3>
-                                    <p className="mt-1">{mediaItem.human_readable_size}</p>
-                                </div>
-
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Colección</h3>
-                                    <p className="mt-1 capitalize">{mediaItem.collection_name}</p>
-                                </div>
-
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Fecha de creación</h3>
-                                    <p className="mt-1">
-                                        {new Date(mediaItem.created_at).toLocaleDateString('es-ES', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    </p>
-                                </div>
-
-                                {mediaItem.last_modified && (
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Última modificación</h3>
-                                        <p className="mt-1">{mediaItem.last_modified}</p>
+                                        <h3 className="text-sm font-medium text-gray-500">Fecha de creación</h3>
+                                        <p className="mt-1">
+                                            {new Date(mediaItem.created_at).toLocaleDateString('es-ES', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                            })}
+                                        </p>
                                     </div>
-                                )}
 
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Almacenamiento</h3>
-                                    <p className="mt-1">{mediaItem.disk}</p>
+                                    {mediaItem.last_modified && (
+                                        <div>
+                                            <h3 className="text-sm font-medium text-gray-500">Última modificación</h3>
+                                            <p className="mt-1">{mediaItem.last_modified}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="col-span-1 sm:col-span-2 border-t pt-3">
+                                        <details className="group">
+                                            <summary className="flex items-center font-medium cursor-pointer list-none text-sm text-gray-500">
+                                                <span>Información técnica</span>
+                                                <span className="transition group-open:rotate-180 ml-auto">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6" /></svg>
+                                                </span>
+                                            </summary>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 mt-3">
+                                                <div>
+                                                    <h3 className="text-sm font-medium text-gray-500">Nombre del archivo</h3>
+                                                    <p className="mt-1 text-xs break-all">{mediaItem.file_name}</p>
+                                                </div>
+
+                                                {mediaItem.original_filename && mediaItem.original_filename !== mediaItem.file_name && (
+                                                    <div>
+                                                        <h3 className="text-sm font-medium text-gray-500">Nombre original</h3>
+                                                        <p className="mt-1 text-xs break-all">{mediaItem.original_filename}</p>
+                                                    </div>
+                                                )}
+
+                                                <div>
+                                                    <h3 className="text-sm font-medium text-gray-500">MIME Type</h3>
+                                                    <p className="mt-1 text-xs">{mediaItem.mime_type}</p>
+                                                </div>
+
+                                                {mediaItem.extension && (
+                                                    <div>
+                                                        <h3 className="text-sm font-medium text-gray-500">Extensión</h3>
+                                                        <p className="mt-1 uppercase">{mediaItem.extension}</p>
+                                                    </div>
+                                                )}
+
+                                                <div>
+                                                    <h3 className="text-sm font-medium text-gray-500">Almacenamiento</h3>
+                                                    <p className="mt-1">{mediaItem.disk}</p>
+                                                </div>
+
+                                                {mediaItem.uuid && (
+                                                    <div>
+                                                        <h3 className="text-sm font-medium text-gray-500">UUID</h3>
+                                                        <p className="mt-1 text-xs break-all">{mediaItem.uuid}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </details>
+                                    </div>
                                 </div>
-
-                                {mediaItem.uuid && (
-                                    <div>
-                                        <h3 className="text-sm font-medium text-gray-500">UUID</h3>
-                                        <p className="mt-1 text-xs break-all">{mediaItem.uuid}</p>
-                                    </div>
-                                )}
                             </CardContent>
                         </Card>
                     </div>

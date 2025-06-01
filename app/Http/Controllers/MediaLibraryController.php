@@ -48,8 +48,19 @@ class MediaLibraryController extends Controller
                 $item->extension = pathinfo($item->file_name, PATHINFO_EXTENSION);
                 $item->description = $item->getCustomProperty('description');
                 $item->category = $item->getCustomProperty('category');
+
+                // Construir URLs correctas para los archivos
+                $item->file_url = $this->getCorrectUrl($item);
                 $item->preview_url = $item->hasGeneratedConversion('preview') ? $item->getUrl('preview') : null;
                 $item->thumbnail = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : null;
+
+                // Para imágenes, si no hay miniaturas, usar la URL directa
+                if (strpos($item->mime_type, 'image/') === 0 && !$item->thumbnail) {
+                    $item->thumbnail = $item->file_url;
+                }
+
+                // Calcular el tamaño legible para humanos
+                $item->human_readable_size = $this->getHumanReadableSize($item->size);
 
                 return $item;
             });
@@ -181,7 +192,7 @@ class MediaLibraryController extends Controller
         $media->uploaded_by = $media->getCustomProperty('uploaded_by');
         $media->preview_url = $media->hasGeneratedConversion('preview') ? $media->getUrl('preview') : null;
         $media->thumbnail = $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : null;
-        $media->file_url = $media->getUrl();
+        $media->file_url = $this->getCorrectUrl($media);
         $media->last_modified = $media->updated_at->format('d/m/Y, H:i');
 
         return Inertia::render('MediaLibrary/Show', [
@@ -624,5 +635,35 @@ class MediaLibraryController extends Controller
                 'error' => 'Error al limpiar archivos huérfanos: ' . $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Convierte un tamaño en bytes a un formato legible para humanos.
+     *
+     * @param int $bytes
+     * @return string
+     */
+    private function getHumanReadableSize(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        $bytes /= pow(1024, $pow);
+
+        return round($bytes, 2) . ' ' . $units[$pow];
+    }
+
+    /**
+     * Obtiene la URL correcta para un archivo de media.
+     * 
+     * @param Media $media
+     * @return string
+     */
+    private function getCorrectUrl(Media $media): string
+    {
+        // Construir la URL correcta basada en la estructura de carpetas observada
+        return url("/storage/media/{$media->collection_name}/{$media->file_name}");
     }
 }
