@@ -13,12 +13,23 @@ use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StatusListController;
 use App\Http\Controllers\CaseTypeController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\MediaLibraryController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
+
+// Rutas para la gestión de archivos directamente con el modelo Media
+Route::get('media-library', [MediaLibraryController::class, 'index'])->name('media-library.index')->middleware([]);
+Route::get('media-library/create', [MediaLibraryController::class, 'create'])->name('media-library.create')->middleware([]);
+Route::get('media-library/clean-orphaned-files', [MediaLibraryController::class, 'cleanOrphanedFiles'])->name('media-library.clean-orphaned-files')->middleware([]);
+Route::post('media-library', [MediaLibraryController::class, 'store'])->name('media-library.store')->middleware([]);
+Route::get('media-library/{media}', [MediaLibraryController::class, 'show'])->name('media-library.show')->middleware([]);
+Route::delete('media-library/{media}', [MediaLibraryController::class, 'destroy'])->name('media-library.destroy')->middleware([]);
+Route::get('media-library/{media}/download', [MediaLibraryController::class, 'download'])->name('media-library.download')->middleware([]);
+Route::get('media-library/{media}/info', [MediaLibraryController::class, 'fileInfo'])->name('media-library.info')->middleware([]);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
