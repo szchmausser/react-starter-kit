@@ -639,9 +639,9 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Biblioteca de Archivos" />
 
-            <div className="p-4 sm:p-6 space-y-6">
+            <div className="p-4 sm:p-6 relative">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-                    <h1 className="text-2xl font-semibold">
+                    <h1 className="text-2xl font-bold">
                         Biblioteca de Archivos
                         {hasActiveFilters && (
                             <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -967,97 +967,12 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                     </div>
                 </div>
 
-                {/* Paginación para móvil */}
-                <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
-                    <div className="flex items-center justify-between">
-                        <div className="text-xs text-gray-500 whitespace-nowrap">
-                            <span className="inline-flex items-center">
-                                <span className="hidden xs:inline">{pagination.pageIndex * pagination.pageSize + 1}-{Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount)}</span>
-                                <span className="xs:hidden">{Math.min(pagination.pageSize, tableRows.length)}</span>
-                                <span className="mx-1">/</span>
-                                <span>{filteredCount}</span>
-                            </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            {/* Selector de registros por página */}
-                            <Select
-                                value={pagination.pageSize.toString()}
-                                onValueChange={handlePerPageChange}
-                            >
-                                <SelectTrigger className="h-7 w-16 text-xs">
-                                    <SelectValue placeholder={pagination.pageSize.toString()} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {[5, 10, 20, 50, 100].map(size => (
-                                        <SelectItem key={size} value={size.toString()}>
-                                            {size}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-
-                            {/* Indicador de página en móvil */}
-                            <div className="text-xs font-medium">
-                                Pág. {currentPage}/{pageCount || 1}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Paginación móvil usando botones más grandes */}
-                    <div className="flex justify-between mt-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2 text-xs"
-                            onClick={() => table.setPageIndex(0)}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            <ChevronsLeft className="h-4 w-4 mr-1" />
-                            Inicio
-                        </Button>
-
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2 text-xs"
-                            onClick={() => table.previousPage()}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            Anterior
-                            <ChevronLeft className="h-4 w-4 mr-1" />
-                        </Button>
-
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2 text-xs"
-                            onClick={() => table.nextPage()}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            Siguiente
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2 text-xs"
-                            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            Final
-                            <ChevronsRight className="h-4 w-4 ml-1" />
-                        </Button>
-                    </div>
-                </div>
-
                 {/* Paginación para escritorio */}
-                <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-4 gap-4 bg-white dark:bg-zinc-900 rounded-b-lg">
+                <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-4 gap-4">
                     <div className="flex items-center gap-4">
                         <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
                             <div>
-                                Mostrando {pagination.pageIndex * pagination.pageSize + 1} a {Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount)} de {filteredCount} registros
+                                Mostrando {Math.min(pagination.pageSize, tableRows.length)} de {filteredCount} registros
                             </div>
                             <Select
                                 value={pagination.pageSize.toString()}
@@ -1186,6 +1101,91 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+            </div>
+
+            {/* Paginación para móvil */}
+            <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
+                <div className="flex items-center justify-between">
+                    <div className="text-xs text-gray-500 whitespace-nowrap">
+                        <span className="inline-flex items-center">
+                            <span className="hidden xs:inline">{pagination.pageIndex * pagination.pageSize + 1}-{Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount)}</span>
+                            <span className="xs:hidden">{Math.min(pagination.pageSize, tableRows.length)}</span>
+                            <span className="mx-1">/</span>
+                            <span>{filteredCount}</span>
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {/* Selector de registros por página */}
+                        <Select
+                            value={pagination.pageSize.toString()}
+                            onValueChange={handlePerPageChange}
+                        >
+                            <SelectTrigger className="h-7 w-16 text-xs">
+                                <SelectValue placeholder={pagination.pageSize.toString()} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {[5, 10, 20, 50, 100].map(size => (
+                                    <SelectItem key={size} value={size.toString()}>
+                                        {size}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        {/* Indicador de página en móvil */}
+                        <div className="text-xs font-medium">
+                            Pág. {currentPage}/{pageCount || 1}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Paginación móvil usando botones más grandes */}
+                <div className="flex justify-between mt-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => table.setPageIndex(0)}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        <ChevronsLeft className="h-4 w-4 mr-1" />
+                        Inicio
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Anterior
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Siguiente
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Final
+                        <ChevronsRight className="h-4 w-4 ml-1" />
+                    </Button>
+                </div>
             </div>
         </AppLayout>
     );
