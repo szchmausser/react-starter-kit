@@ -639,7 +639,7 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Biblioteca de Archivos" />
 
-            <div className="p-4 sm:p-6 relative">
+            <div className="p-4 sm:p-6 relative min-h-[calc(100vh-120px)]">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                     <h1 className="text-2xl font-bold">
                         Biblioteca de Archivos
@@ -783,7 +783,7 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                 )}
 
                 {/* Vista tipo card para móvil */}
-                <div className="block sm:hidden space-y-2 mb-16">
+                <div className="block sm:hidden space-y-2 mb-24 pb-4">
                     {tableRows.length > 0 ? (
                         tableRows.map((row, index) => {
                             const media = row.original;
