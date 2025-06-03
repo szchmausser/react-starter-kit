@@ -411,8 +411,7 @@ export default function Index() {
         columnHelper.accessor('code', {
             header: 'Código',
             cell: (info) => (
-                <div className="font-medium flex items-center">
-                    <Briefcase className="h-4 w-4 mr-2 text-gray-500" />
+                <div className="font-bold">
                     {info.getValue()}
                 </div>
             ),
@@ -465,14 +464,7 @@ export default function Index() {
 
                     if (!statusName) return <span className="text-gray-400">Sin estado</span>;
 
-                    // Obtener clases de colores según el estado
-                    const { bg, text, darkBg, darkText } = getStatusColor(statusName);
-
-                    return (
-                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text} dark:${darkBg.replace('dark:', '')} dark:${darkText.replace('dark:', '')}`}>
-                            {statusName}
-                        </div>
-                    );
+                    return <span>{statusName}</span>;
                 },
                 enableSorting: true,
                 enableColumnFilter: true,
@@ -888,9 +880,6 @@ export default function Index() {
                                                 return baseIndex + row.index; // Índice global = base + índice local
                                             })()}
                                         </span>
-                                        <span className="mr-2 mt-0.5 flex-shrink-0">
-                                            <Briefcase className="h-4 w-4 text-gray-500" />
-                                        </span>
                                         <span className={expandedTitles[legalCase.id] ? '' : 'truncate'}>
                                             {legalCase.code}
                                         </span>
@@ -925,14 +914,7 @@ export default function Index() {
                                                     (Array.isArray(legalCase.statuses) && legalCase.statuses.length > 0 ?
                                                         legalCase.statuses[0].name : '');
 
-                                                // Obtener clases de colores según el estado
-                                                const { bg, text, darkBg, darkText } = getStatusColor(statusName);
-
-                                                return (
-                                                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text} dark:${darkBg.replace('dark:', '')} dark:${darkText.replace('dark:', '')}`}>
-                                                        {statusName}
-                                                    </div>
-                                                );
+                                                return <span>{statusName}</span>;
                                             })()}
                                         </div>
                                     )}
