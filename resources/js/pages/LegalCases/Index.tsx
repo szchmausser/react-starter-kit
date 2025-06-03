@@ -686,13 +686,22 @@ export default function Index() {
                     </h1>
                     <div className="flex flex-1 gap-2 items-center justify-end">
                         <Button
-                            variant="outline"
+                            variant={isAdvancedSearchVisible ? "secondary" : "outline"}
                             onClick={() => setIsAdvancedSearchVisible(!isAdvancedSearchVisible)}
-                            className="flex items-center"
+                            className="hidden sm:flex items-center"
                             title="Búsqueda avanzada"
                         >
                             <Filter className="h-4 w-4 mr-2" />
                             Búsqueda Avanzada
+                        </Button>
+                        <Button
+                            variant={isAdvancedSearchVisible ? "secondary" : "outline"}
+                            onClick={() => setIsAdvancedSearchVisible(!isAdvancedSearchVisible)}
+                            className="sm:hidden"
+                            size="icon"
+                            title="Búsqueda avanzada"
+                        >
+                            <Filter className="h-4 w-4" />
                         </Button>
                         {hasActiveFilters && (
                             <Button
@@ -706,11 +715,18 @@ export default function Index() {
                             </Button>
                         )}
                         <Link href={route('legal-cases.create')}>
-                            <Button className="hidden sm:inline-flex">
+                            <Button
+                                className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground"
+                                title="Nuevo Expediente"
+                            >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Nuevo Expediente
                             </Button>
-                            <Button className="sm:hidden" size="icon">
+                            <Button
+                                className="sm:hidden bg-primary hover:bg-primary/90 text-primary-foreground"
+                                size="icon"
+                                title="Nuevo Expediente"
+                            >
                                 <Plus className="h-4 w-4" />
                             </Button>
                         </Link>

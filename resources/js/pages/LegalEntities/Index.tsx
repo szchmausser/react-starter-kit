@@ -516,11 +516,18 @@ export default function LegalEntitiesIndex() {
               </Button>
             )}
             <Link href={route('legal-entities.create')}>
-              <Button className="hidden sm:inline-flex">
+              <Button
+                className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground"
+                title="Nueva Entidad"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Nueva Entidad
               </Button>
-              <Button className="sm:hidden" size="icon">
+              <Button
+                className="sm:hidden bg-primary hover:bg-primary/90 text-primary-foreground"
+                size="icon"
+                title="Nueva Entidad"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </Link>

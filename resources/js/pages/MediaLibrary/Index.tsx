@@ -47,7 +47,8 @@ import {
     ChevronsRight,
     ChevronDown,
     ChevronUp,
-    Filter
+    Filter,
+    Trash2
 } from 'lucide-react';
 
 import {
@@ -438,10 +439,9 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                         <Button
                             size="sm"
                             variant="destructive"
-                            className="text-red-500"
                             onClick={() => deleteMedia(media.id)}
                         >
-                            <TrashIcon className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>
                 );
@@ -579,20 +579,29 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                     </h1>
                     <div className="flex flex-1 gap-2 items-center justify-end">
                         <Button
-                            variant="outline"
+                            variant={isDateFilterVisible ? "secondary" : "outline"}
                             onClick={() => setIsDateFilterVisible(!isDateFilterVisible)}
-                            className="flex items-center"
+                            className="hidden sm:flex items-center"
                             title="Filtrar por fechas"
                         >
                             <CalendarIcon className="h-4 w-4 mr-2" />
                             Filtrar por Fechas
                             {(filters.start_date || filters.end_date) && (
-                                <Badge variant="secondary" className="ml-2 h-5 px-1">
+                                <Badge variant="default" className="ml-2 h-5 px-1">
                                     <span className="text-xs">
                                         {filters.date_type === 'created' ? 'Creación' : 'Actualización'}
                                     </span>
                                 </Badge>
                             )}
+                        </Button>
+                        <Button
+                            variant={isDateFilterVisible ? "secondary" : "outline"}
+                            onClick={() => setIsDateFilterVisible(!isDateFilterVisible)}
+                            className="sm:hidden"
+                            size="icon"
+                            title="Filtrar por fechas"
+                        >
+                            <CalendarIcon className="h-4 w-4" />
                         </Button>
                         {hasActiveFilters && (
                             <Button
@@ -606,20 +615,36 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                             </Button>
                         )}
                         <Link href={route('media-library.clean-orphaned-files')}>
-                            <Button variant="outline" className="hidden sm:inline-flex">
+                            <Button
+                                variant="outline"
+                                className="hidden sm:inline-flex"
+                                title="Limpiar Archivos Huérfanos"
+                            >
                                 <TrashIcon className="h-4 w-4 mr-2" />
                                 Limpiar Archivos Huérfanos
                             </Button>
-                            <Button variant="outline" className="sm:hidden" size="icon">
+                            <Button
+                                variant="outline"
+                                className="sm:hidden"
+                                size="icon"
+                                title="Limpiar Archivos Huérfanos"
+                            >
                                 <TrashIcon className="h-4 w-4" />
                             </Button>
                         </Link>
                         <Link href={route('media-library.create')}>
-                            <Button className="hidden sm:inline-flex">
+                            <Button
+                                className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground"
+                                title="Nuevo Archivo"
+                            >
                                 <PlusIcon className="h-4 w-4 mr-2" />
                                 Nuevo Archivo
                             </Button>
-                            <Button className="sm:hidden" size="icon">
+                            <Button
+                                className="sm:hidden bg-primary hover:bg-primary/90 text-primary-foreground"
+                                size="icon"
+                                title="Nuevo Archivo"
+                            >
                                 <PlusIcon className="h-4 w-4" />
                             </Button>
                         </Link>

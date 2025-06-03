@@ -231,11 +231,18 @@ export default function Index() {
                             </Button>
                         )}
                         <Link href={route('case-types.create')}>
-                            <Button className="hidden sm:inline-flex">
+                            <Button
+                                className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground"
+                                title="Nuevo Tipo"
+                            >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Nuevo Tipo
                             </Button>
-                            <Button className="sm:hidden" size="icon">
+                            <Button
+                                className="sm:hidden bg-primary hover:bg-primary/90 text-primary-foreground"
+                                size="icon"
+                                title="Nuevo Tipo"
+                            >
                                 <Plus className="h-4 w-4" />
                             </Button>
                         </Link>

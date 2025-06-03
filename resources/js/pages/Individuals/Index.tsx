@@ -515,12 +515,30 @@ export default function IndividualsIndex() {
             )}
           </h1>
           <div className="flex flex-1 gap-2 items-center justify-end">
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleResetFilters}
+                title="Limpiar filtros"
+                className="shrink-0"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            )}
             <Link href={route('individuals.create')}>
-              <Button className="hidden sm:inline-flex">
+              <Button
+                className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground"
+                title="Nueva Persona"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Nueva Persona
               </Button>
-              <Button className="sm:hidden" size="icon">
+              <Button
+                className="sm:hidden bg-primary hover:bg-primary/90 text-primary-foreground"
+                size="icon"
+                title="Nueva Persona"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </Link>
