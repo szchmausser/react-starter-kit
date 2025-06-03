@@ -724,7 +724,7 @@ export default function IndividualsIndex() {
           )}
 
           {/* Paginación móvil */}
-          <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-2 sm:p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 w-full bg-sidebar dark:bg-zinc-800 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
             <div className="flex items-center justify-between">
               <div className="text-xs text-gray-500 whitespace-nowrap">
                 <span className="inline-flex items-center">
@@ -825,51 +825,55 @@ export default function IndividualsIndex() {
           <div className="sm:hidden h-16 sm:h-20"></div>
         </div>
 
-        {/* Tabla solo visible en escritorio/tablet */}
-        <div className="hidden sm:block bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
-          <div className="overflow-x-auto">
-            {renderTable}
+        {/* Tabla y paginación para escritorio/tablet */}
+        <div className="hidden sm:block overflow-hidden shadow-sm">
+          {/* Tabla */}
+          <div className="bg-white dark:bg-zinc-900 overflow-hidden sm:rounded-t-lg">
+            <div className="overflow-x-auto">
+              {renderTable}
+            </div>
           </div>
-        </div>
 
-        <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-2 sm:py-4 gap-2 sm:gap-4">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-3 sm:gap-4">
-              <div>
-                Mostrando {individuals?.meta?.to && individuals?.meta?.from
-                  ? individuals.meta.to - individuals.meta.from + 1
-                  : Math.min(pageSize, tableRows.length)} de {totalItemsGlobal} registros
+          {/* Paginación para escritorio */}
+          <div className="flex flex-row-reverse items-center justify-between px-4 py-4 gap-4 bg-sidebar dark:bg-zinc-800 border-t border-gray-200 dark:border-zinc-800 sm:rounded-b-lg">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-3 sm:gap-4">
+                <div>
+                  Mostrando {individuals?.meta?.to && individuals?.meta?.from
+                    ? individuals.meta.to - individuals.meta.from + 1
+                    : Math.min(pageSize, tableRows.length)} de {totalItemsGlobal} registros
+                </div>
+                <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
+                  <SelectTrigger className="h-7 sm:h-8 w-20 sm:w-24">
+                    <SelectValue placeholder="10" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[5, 10, 20, 50, 100, 200, 500, 1000].map(size => (
+                      <SelectItem key={size} value={size.toString()}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
-                <SelectTrigger className="h-7 sm:h-8 w-20 sm:w-24">
-                  <SelectValue placeholder="10" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[5, 10, 20, 50, 100, 200, 500, 1000].map(size => (
-                    <SelectItem key={size} value={size.toString()}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Paginación mejorada */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Indicador de página actual */}
-            <div className="text-sm text-gray-700 dark:text-gray-300">
-              Página <span className="font-semibold">{individuals?.meta?.current_page || 1}</span> de{" "}
-              <span className="font-semibold">{individuals?.meta?.last_page || 1}</span>
             </div>
 
-            {/* Botones de navegación */}
-            {individuals?.meta?.links && (
-              <LaravelPagination
-                links={individuals.meta.links}
-                onPageChange={handlePageNavigation}
-              />
-            )}
+            {/* Paginación mejorada */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Indicador de página actual */}
+              <div className="text-sm text-gray-700 dark:text-gray-300">
+                Página <span className="font-semibold">{individuals?.meta?.current_page || 1}</span> de{" "}
+                <span className="font-semibold">{individuals?.meta?.last_page || 1}</span>
+              </div>
+
+              {/* Botones de navegación */}
+              {individuals?.meta?.links && (
+                <LaravelPagination
+                  links={individuals.meta.links}
+                  onPageChange={handlePageNavigation}
+                />
+              )}
+            </div>
           </div>
         </div>
 

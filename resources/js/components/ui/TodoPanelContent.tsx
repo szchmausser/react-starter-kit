@@ -39,7 +39,7 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
       setEditListName('');
       setShowCreateList(true);
     }
-    // eslint-disable-next-line
+     
   }, [createListTrigger]);
 
   // Cargar listas desde el backend al montar
@@ -79,7 +79,7 @@ export const TodoPanelContent: React.FC<TodoPanelContentProps> = ({ createListTr
     } else {
       setTodos([]);
     }
-    // eslint-disable-next-line
+     
   }, [selectedListId]);
 
   // Crear nueva lista

@@ -464,104 +464,214 @@ export default function Index({ tags: initialTags }: Props) {
                     )}
                 </div>
 
-                <div className="hidden sm:block bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                {table.getHeaderGroups().map(headerGroup => (
-                                    <TableRow key={headerGroup.id}>
-                                        {headerGroup.headers.map(header => (
-                                            <TableHead key={header.id} className={header.id === 'actions' ? 'text-right' : ''}>
-                                                {header.isPlaceholder ? null : (
-                                                    <div>
-                                                        <div
-                                                            {...{
-                                                                className: header.column.getCanSort()
-                                                                    ? 'cursor-pointer select-none flex items-center gap-1 hover:text-primary transition-colors group'
-                                                                    : '',
-                                                                onClick: header.column.getToggleSortingHandler(),
-                                                            }}
-                                                        >
-                                                            {flexRender(
-                                                                header.column.columnDef.header,
-                                                                header.getContext()
-                                                            )}
-                                                            {header.column.getCanSort() && (
-                                                                <span className="inline-flex ml-1 text-muted-foreground">
-                                                                    {header.column.getIsSorted() === 'asc' ? (
-                                                                        <ArrowUp className="h-4 w-4 text-primary" />
-                                                                    ) : header.column.getIsSorted() === 'desc' ? (
-                                                                        <ArrowDown className="h-4 w-4 text-primary" />
-                                                                    ) : (
-                                                                        <div className="h-4 w-4 flex flex-col opacity-50 group-hover:opacity-100">
-                                                                            <ArrowUp className="h-2 w-4" />
-                                                                            <ArrowDown className="h-2 w-4" />
-                                                                        </div>
-                                                                    )}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        {header.column.getCanFilter() && (
-                                                            <div className="mt-2">
-                                                                {header.column.id === 'type' ? (
-                                                                    <Select
-                                                                        value={(header.column.getFilterValue() as string) ?? ''}
-                                                                        onValueChange={value => header.column.setFilterValue(value)}
-                                                                    >
-                                                                        <SelectTrigger className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900">
-                                                                            <SelectValue placeholder={`Filtrar ${header.column.columnDef.header as string}...`} />
-                                                                        </SelectTrigger>
-                                                                        <SelectContent>
-                                                                            <SelectItem value="all">Todos</SelectItem>
-                                                                            {uniqueTypes.map(type => (
-                                                                                <SelectItem key={type} value={type}>
-                                                                                    {type}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </SelectContent>
-                                                                    </Select>
-                                                                ) : (
-                                                                    <Input
-                                                                        value={(header.column.getFilterValue() as string) ?? ''}
-                                                                        onChange={e => header.column.setFilterValue(e.target.value)}
-                                                                        placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
-                                                                        className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
-                                                                    />
+                {/* Tabla solo visible en escritorio/tablet */}
+                <div className="hidden sm:block overflow-hidden shadow-sm">
+                    {/* Tabla */}
+                    <div className="bg-white dark:bg-zinc-900 overflow-hidden sm:rounded-t-lg">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    {table.getHeaderGroups().map(headerGroup => (
+                                        <TableRow key={headerGroup.id}>
+                                            {headerGroup.headers.map(header => (
+                                                <TableHead key={header.id} className={header.id === 'actions' ? 'text-right' : ''}>
+                                                    {header.isPlaceholder ? null : (
+                                                        <div>
+                                                            <div
+                                                                {...{
+                                                                    className: header.column.getCanSort()
+                                                                        ? 'cursor-pointer select-none flex items-center gap-1 hover:text-primary transition-colors group'
+                                                                        : '',
+                                                                    onClick: header.column.getToggleSortingHandler(),
+                                                                }}
+                                                            >
+                                                                {flexRender(
+                                                                    header.column.columnDef.header,
+                                                                    header.getContext()
+                                                                )}
+                                                                {header.column.getCanSort() && (
+                                                                    <span className="inline-flex ml-1 text-muted-foreground">
+                                                                        {header.column.getIsSorted() === 'asc' ? (
+                                                                            <ArrowUp className="h-4 w-4 text-primary" />
+                                                                        ) : header.column.getIsSorted() === 'desc' ? (
+                                                                            <ArrowDown className="h-4 w-4 text-primary" />
+                                                                        ) : (
+                                                                            <div className="h-4 w-4 flex flex-col opacity-50 group-hover:opacity-100">
+                                                                                <ArrowUp className="h-2 w-4" />
+                                                                                <ArrowDown className="h-2 w-4" />
+                                                                            </div>
+                                                                        )}
+                                                                    </span>
                                                                 )}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </TableHead>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableHeader>
-                            <TableBody>
-                                {tableRows.length > 0 ? (
-                                    tableRows.map((row) => (
-                                        <TableRow key={row.id}>
-                                            {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>
-                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                </TableCell>
+                                                            {header.column.getCanFilter() && (
+                                                                <div className="mt-2">
+                                                                    {header.column.id === 'type' ? (
+                                                                        <Select
+                                                                            value={(header.column.getFilterValue() as string) ?? ''}
+                                                                            onValueChange={value => header.column.setFilterValue(value)}
+                                                                        >
+                                                                            <SelectTrigger className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900">
+                                                                                <SelectValue placeholder={`Filtrar ${header.column.columnDef.header as string}...`} />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                                <SelectItem value="all">Todos</SelectItem>
+                                                                                {uniqueTypes.map(type => (
+                                                                                    <SelectItem key={type} value={type}>
+                                                                                        {type}
+                                                                                    </SelectItem>
+                                                                                ))}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    ) : (
+                                                                        <Input
+                                                                            value={(header.column.getFilterValue() as string) ?? ''}
+                                                                            onChange={e => header.column.setFilterValue(e.target.value)}
+                                                                            placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
+                                                                            className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </TableHead>
                                             ))}
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={columns.length} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                            No se encontraron etiquetas.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                    ))}
+                                </TableHeader>
+                                <TableBody>
+                                    {tableRows.length > 0 ? (
+                                        tableRows.map((row) => (
+                                            <TableRow key={row.id}>
+                                                {row.getVisibleCells().map((cell) => (
+                                                    <TableCell key={cell.id}>
+                                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                                No se encontraron etiquetas.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+
+                    {/* Paginación para escritorio */}
+                    <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-4 gap-4 bg-sidebar dark:bg-zinc-800 border-t border-gray-200 dark:border-zinc-800 sm:rounded-b-lg">
+                        <div className="flex items-center gap-4">
+                            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
+                                <div>
+                                    Mostrando {Math.min(pagination.pageSize, tableRows.length)} de {filteredCount} registros
+                                </div>
+                                <Select
+                                    value={pagination.pageSize.toString()}
+                                    onValueChange={handlePerPageChange}
+                                >
+                                    <SelectTrigger className="h-8 w-24">
+                                        <SelectValue placeholder={pagination.pageSize.toString()} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {[5, 10, 20, 50, 100].map(size => (
+                                            <SelectItem key={size} value={size.toString()}>
+                                                {size}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {/* Paginación mejorada */}
+                        <div className="flex items-center gap-4">
+                            {/* Indicador de página actual */}
+                            <div className="text-sm text-gray-700 dark:text-gray-300">
+                                Página <span className="font-semibold">{currentPage}</span> de{" "}
+                                <span className="font-semibold">{pageCount || 1}</span>
+                            </div>
+
+                            {/* Botones de navegación */}
+                            <div className="flex items-center space-x-1">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => table.setPageIndex(0)}
+                                    disabled={!table.getCanPreviousPage()}
+                                    className="h-8 w-8"
+                                >
+                                    <ChevronsLeft className="h-4 w-4" />
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => table.previousPage()}
+                                    disabled={!table.getCanPreviousPage()}
+                                    className="h-8 w-8"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+
+                                {/* Números de página */}
+                                {Array.from({ length: pageCount || 1 }, (_, i) => {
+                                    // Solo mostrar 5 páginas como máximo
+                                    if (pageCount <= 5 ||
+                                        i === 0 ||
+                                        i === pageCount - 1 ||
+                                        Math.abs(i - pagination.pageIndex) <= 1) {
+                                        return (
+                                            <Button
+                                                key={i}
+                                                variant={i === pagination.pageIndex ? "default" : "outline"}
+                                                size="icon"
+                                                onClick={() => table.setPageIndex(i)}
+                                                disabled={i === pagination.pageIndex}
+                                                className={`h-8 w-8 ${i === pagination.pageIndex ? 'font-bold' : ''}`}
+                                            >
+                                                {i + 1}
+                                            </Button>
+                                        );
+                                    }
+                                    // Agregar puntos suspensivos en el medio
+                                    if ((i === 1 && pagination.pageIndex > 2) ||
+                                        (i === pageCount - 2 && pagination.pageIndex < pageCount - 3)) {
+                                        return <span key={i} className="px-2 text-gray-500">...</span>;
+                                    }
+                                    return null;
+                                })}
+
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => table.nextPage()}
+                                    disabled={!table.getCanNextPage()}
+                                    className="h-8 w-8"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => table.setPageIndex(pageCount - 1)}
+                                    disabled={!table.getCanNextPage()}
+                                    className="h-8 w-8"
+                                >
+                                    <ChevronsRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Paginación para móvil */}
-                <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
+                <div className="sm:hidden fixed bottom-0 left-0 right-0 w-full bg-sidebar dark:bg-zinc-800 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
                     <div className="flex items-center justify-between">
                         <div className="text-xs text-gray-500 whitespace-nowrap">
                             <span className="inline-flex items-center">
@@ -642,112 +752,6 @@ export default function Index({ tags: initialTags }: Props) {
                             Final
                             <ChevronsRight className="h-4 w-4 ml-1" />
                         </Button>
-                    </div>
-                </div>
-
-                {/* Paginación para escritorio */}
-                <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-4 gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
-                            <div>
-                                Mostrando {Math.min(pagination.pageSize, tableRows.length)} de {filteredCount} registros
-                            </div>
-                            <Select
-                                value={pagination.pageSize.toString()}
-                                onValueChange={handlePerPageChange}
-                            >
-                                <SelectTrigger className="h-8 w-24">
-                                    <SelectValue placeholder={pagination.pageSize.toString()} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {[5, 10, 20, 50, 100].map(size => (
-                                        <SelectItem key={size} value={size.toString()}>
-                                            {size}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    {/* Paginación mejorada */}
-                    <div className="flex items-center gap-4">
-                        {/* Indicador de página actual */}
-                        <div className="text-sm text-gray-700 dark:text-gray-300">
-                            Página <span className="font-semibold">{currentPage}</span> de{" "}
-                            <span className="font-semibold">{pageCount || 1}</span>
-                        </div>
-
-                        {/* Botones de navegación */}
-                        <div className="flex items-center space-x-1">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => table.setPageIndex(0)}
-                                disabled={!table.getCanPreviousPage()}
-                                className="h-8 w-8"
-                            >
-                                <ChevronsLeft className="h-4 w-4" />
-                            </Button>
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => table.previousPage()}
-                                disabled={!table.getCanPreviousPage()}
-                                className="h-8 w-8"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-
-                            {/* Números de página */}
-                            {Array.from({ length: pageCount || 1 }, (_, i) => {
-                                // Solo mostrar 5 páginas como máximo
-                                if (pageCount <= 5 ||
-                                    i === 0 ||
-                                    i === pageCount - 1 ||
-                                    Math.abs(i - pagination.pageIndex) <= 1) {
-                                    return (
-                                        <Button
-                                            key={i}
-                                            variant={i === pagination.pageIndex ? "default" : "outline"}
-                                            size="icon"
-                                            onClick={() => table.setPageIndex(i)}
-                                            disabled={i === pagination.pageIndex}
-                                            className={`h-8 w-8 ${i === pagination.pageIndex ? 'font-bold' : ''}`}
-                                        >
-                                            {i + 1}
-                                        </Button>
-                                    );
-                                }
-                                // Agregar puntos suspensivos en el medio
-                                if ((i === 1 && pagination.pageIndex > 2) ||
-                                    (i === pageCount - 2 && pagination.pageIndex < pageCount - 3)) {
-                                    return <span key={i} className="px-2 text-gray-500">...</span>;
-                                }
-                                return null;
-                            })}
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => table.nextPage()}
-                                disabled={!table.getCanNextPage()}
-                                className="h-8 w-8"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => table.setPageIndex(pageCount - 1)}
-                                disabled={!table.getCanNextPage()}
-                                className="h-8 w-8"
-                            >
-                                <ChevronsRight className="h-4 w-4" />
-                            </Button>
-                        </div>
                     </div>
                 </div>
 
