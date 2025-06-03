@@ -26,11 +26,12 @@ Route::get('media-library', [MediaLibraryController::class, 'index'])->name('med
 Route::get('media-library/create', [MediaLibraryController::class, 'create'])->name('media-library.create')->middleware([]);
 Route::get('media-library/clean-orphaned-files', [MediaLibraryController::class, 'cleanOrphanedFiles'])->name('media-library.clean-orphaned-files')->middleware([]);
 Route::post('media-library', [MediaLibraryController::class, 'store'])->name('media-library.store')->middleware([]);
+Route::get('media-library/{media}/edit', [MediaLibraryController::class, 'edit'])->name('media-library.edit')->middleware([]);
 Route::get('media-library/{media}', [MediaLibraryController::class, 'show'])->name('media-library.show')->middleware([]);
 Route::delete('media-library/{media}', [MediaLibraryController::class, 'destroy'])->name('media-library.destroy')->middleware([]);
 Route::get('media-library/{media}/download', [MediaLibraryController::class, 'download'])->name('media-library.download')->middleware([]);
 Route::get('media-library/{media}/info', [MediaLibraryController::class, 'fileInfo'])->name('media-library.info')->middleware([]);
-Route::patch('media-library/{media}/description', [MediaLibraryController::class, 'updateDescription'])->name('media-library.update-description')->middleware([]);
+Route::put('media-library/{media}', [MediaLibraryController::class, 'update'])->name('media-library.update')->middleware([]);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {

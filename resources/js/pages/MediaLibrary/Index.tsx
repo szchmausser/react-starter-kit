@@ -19,8 +19,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
     FileIcon,
@@ -118,11 +116,6 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
         pageIndex: 0,
         pageSize: 10,
     });
-
-    // Estados para el diálogo de edición
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [mediaToEdit, setMediaToEdit] = useState<Media | null>(null);
-    const [editDescription, setEditDescription] = useState('');
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Inicio', href: '/' },
@@ -267,74 +260,6 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
             default:
                 return <FileIcon className="h-6 w-6 text-gray-500" />;
         }
-    };
-
-    // Función para abrir el diálogo de edición
-    const openEditDialog = (media: Media) => {
-        setMediaToEdit(media);
-        setEditDescription(media.description || '');
-        setIsEditDialogOpen(true);
-    };
-
-    // Función para guardar la descripción editada
-    const saveDescription = () => {
-        if (!mediaToEdit) return;
-
-        // Cerrar el diálogo inmediatamente para mejorar la experiencia del usuario
-        setIsEditDialogOpen(false);
-
-        // Crear una copia profunda de los datos actuales para asegurar una actualización completa
-        const updatedMedia = JSON.parse(JSON.stringify(localMediaItems)) as Media[];
-
-        // Actualizar la descripción en la copia local
-        const mediaIndex = updatedMedia.findIndex(item => item.id === mediaToEdit.id);
-        if (mediaIndex !== -1) {
-            updatedMedia[mediaIndex].description = editDescription;
-        }
-
-        // Actualizar el estado local con la copia actualizada
-        setLocalMediaItems(updatedMedia);
-
-        // Forzar re-renderización incrementando refreshKey
-        setRefreshKey(prev => prev + 1);
-
-        // Enviar la actualización al servidor
-        router.patch(route('media-library.update-description', mediaToEdit.id), {
-            description: editDescription
-        }, {
-            preserveState: true,
-            onSuccess: (page) => {
-                // Verificar si hay un mensaje de éxito en la respuesta
-                const flash = page?.props?.flash as { success?: string } || {};
-                if (flash.success) {
-                    toast.success(flash.success);
-
-                    // Forzar re-renderización nuevamente después de la respuesta exitosa
-                    setRefreshKey(prev => prev + 1);
-                }
-            },
-            onError: (errors) => {
-                // Reabrir el diálogo en caso de error
-                setIsEditDialogOpen(true);
-
-                // Revertir el cambio local en caso de error
-                const originalMedia = JSON.parse(JSON.stringify(localMediaItems)) as Media[];
-                const originalIndex = originalMedia.findIndex(item => item.id === mediaToEdit.id);
-                if (originalIndex !== -1) {
-                    originalMedia[originalIndex].description = mediaToEdit.description;
-                }
-                setLocalMediaItems(originalMedia);
-
-                // Forzar re-renderización después de revertir
-                setRefreshKey(prev => prev + 1);
-
-                if (errors?.error) {
-                    toast.error(errors.error);
-                } else {
-                    toast.error('Error al actualizar la descripción');
-                }
-            }
-        });
     };
 
     // Función para obtener el índice global de una fila
@@ -500,16 +425,19 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                         >
                             <DownloadIcon className="h-4 w-4" />
                         </Button>
+                        <Link href={route('media-library.edit', media.id)}>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                title="Editar archivo"
+                            >
+                                <PencilIcon className="h-4 w-4" />
+                            </Button>
+                        </Link>
                         <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => openEditDialog(media)}
-                        >
-                            <PencilIcon className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant="outline"
+                            variant="destructive"
                             className="text-red-500"
                             onClick={() => deleteMedia(media.id)}
                         >
@@ -807,14 +735,16 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="font-bold text-base flex items-start">
+                                        <div className="flex-1 min-w-0 overflow-hidden">
+                                            <div className="font-bold text-base flex items-start min-w-0">
                                                 <span className="mr-2 mt-0.5 flex-shrink-0 text-gray-500">
                                                     #{rowNumber}
                                                 </span>
-                                                <span>{media.name}</span>
+                                                <span className="truncate">
+                                                    {media.name}
+                                                </span>
                                             </div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                                                 {media.description || 'Sin descripción'}
                                             </div>
                                             <div className="flex items-center mt-1 space-x-2">
@@ -841,14 +771,16 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                                         >
                                             <DownloadIcon className="h-4 w-4" />
                                         </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="h-8 w-8"
-                                            onClick={() => openEditDialog(media)}
-                                        >
-                                            <PencilIcon className="h-4 w-4" />
-                                        </Button>
+                                        <Link href={route('media-library.edit', media.id)}>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                title="Editar archivo"
+                                            >
+                                                <PencilIcon className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
                                         <Button
                                             variant="destructive"
                                             size="icon"
@@ -1072,35 +1004,6 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                         </div>
                     </div>
                 </div>
-
-                {/* Diálogo para editar descripción */}
-                <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Editar Descripción</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="edit-description">Descripción</Label>
-                                <Textarea
-                                    id="edit-description"
-                                    placeholder="Añade una descripción para este archivo..."
-                                    value={editDescription}
-                                    onChange={(e) => setEditDescription(e.target.value)}
-                                    rows={4}
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                                Cancelar
-                            </Button>
-                            <Button onClick={saveDescription}>
-                                Guardar
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
             </div>
 
             {/* Paginación para móvil */}

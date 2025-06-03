@@ -175,6 +175,12 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
                                 Volver al listado
                             </Button>
                         </Link>
+                        <Link href={route('media-library.edit', mediaItem.id)}>
+                            <Button variant="outline">
+                                <PencilIcon className="h-4 w-4 mr-2" />
+                                Editar
+                            </Button>
+                        </Link>
                         <Button
                             variant="outline"
                             onClick={() => window.open(route('media-library.download', mediaItem.id), '_blank')}

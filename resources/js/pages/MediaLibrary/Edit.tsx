@@ -95,26 +95,54 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
         formData.append('category', category || '');
 
         if (file) {
+            console.log('Añadiendo archivo al FormData:', file.name, file.type, file.size);
             formData.append('file', file);
+        } else {
+            console.log('No se seleccionó ningún archivo para subir');
+        }
+
+        // Depurar FormData
+        console.log('FormData entries:');
+        for (const pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
         }
 
         router.post(route('media-library.update', mediaItem.id), formData, {
             forceFormData: true,
             onProgress: (progress) => {
                 if (progress && progress.percentage) {
+                    console.log('Upload progress:', progress.percentage);
                     // setUploadProgress(progress.percentage);
                 }
             },
-            onSuccess: () => {
+            onSuccess: (page) => {
                 clearInterval(progressInterval);
                 setUploadProgress(100);
+                console.log('Upload successful:', page);
+
+                // Mostrar mensaje de éxito
+                const flash = page?.props?.flash as { success?: string } || {};
+                if (flash.success) {
+                    alert(flash.success);
+                } else {
+                    alert('Archivo actualizado correctamente');
+                }
             },
             onError: (errors) => {
                 clearInterval(progressInterval);
                 setIsUploading(false);
                 setErrors(errors);
+                console.error('Upload error:', errors);
+
+                // Mostrar mensaje de error
+                if (errors?.error) {
+                    alert('Error: ' + errors.error);
+                } else {
+                    alert('Error al actualizar el archivo');
+                }
             },
             onFinish: () => {
+                console.log('Upload finished');
                 // setIsUploading(false);
             }
         });
@@ -147,7 +175,7 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
                     </Link>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="md:col-span-2">
                             <Card>

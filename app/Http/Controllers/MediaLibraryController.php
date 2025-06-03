@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Support\Str;
+use App\Models\MediaOwner;
 
 class MediaLibraryController extends Controller
 {
@@ -172,9 +173,12 @@ class MediaLibraryController extends Controller
             $media->order_column = Media::max('order_column') + 1;
             $media->generated_conversions = [];
 
+            // Obtener o crear la instancia de MediaOwner
+            $mediaOwner = MediaOwner::instance();
+
             // Campos obligatorios: model_id y model_type
-            $media->model_id = Auth::id() ?? 1;
-            $media->model_type = \App\Models\User::class;
+            $media->model_id = $mediaOwner->id;
+            $media->model_type = MediaOwner::class;
 
             // Guardar el registro en la base de datos
             $media->save();
@@ -256,6 +260,14 @@ class MediaLibraryController extends Controller
         ]);
 
         try {
+            // Depuración: Verificar si se recibió un archivo
+            \Log::debug('Actualización de archivo iniciada', [
+                'media_id' => $media->id,
+                'has_file' => $request->hasFile('file'),
+                'all_inputs' => $request->all(),
+                'files' => $request->allFiles()
+            ]);
+
             // Actualizar nombre
             $media->name = $validated['name'];
 
@@ -279,7 +291,9 @@ class MediaLibraryController extends Controller
                 \Log::info('Reemplazando archivo', [
                     'media_id' => $media->id,
                     'old_file_name' => $media->file_name,
-                    'new_file_name' => $request->file('file')->getClientOriginalName()
+                    'new_file_name' => $request->file('file')->getClientOriginalName(),
+                    'new_file_size' => $request->file('file')->getSize(),
+                    'new_file_mime' => $request->file('file')->getMimeType()
                 ]);
 
                 // Guardar información original
@@ -301,14 +315,25 @@ class MediaLibraryController extends Controller
                 $collection = $this->getCollectionForMimeType($mimeType);
                 $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
 
-                // Guardar el nuevo archivo
-                $path = Storage::disk('public')->putFileAs(
-                    'media/' . $collection,
-                    $file,
-                    $fileName
-                );
+                try {
+                    // Guardar el nuevo archivo
+                    $path = Storage::disk('public')->putFileAs(
+                        'media/' . $collection,
+                        $file,
+                        $fileName
+                    );
 
-                \Log::info('Nuevo archivo guardado en disco', ['path' => $path]);
+                    \Log::info('Nuevo archivo guardado en disco', ['path' => $path]);
+
+                    if (!Storage::disk('public')->exists('media/' . $collection . '/' . $fileName)) {
+                        throw new \Exception('El archivo no se guardó correctamente en el disco');
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Error al guardar el archivo en el disco: ' . $e->getMessage());
+                    return redirect()->back()->withErrors([
+                        'error' => 'Error al guardar el archivo: ' . $e->getMessage()
+                    ])->withInput();
+                }
 
                 // Actualizar el registro de Media
                 $media->file_name = $fileName;
@@ -686,43 +711,5 @@ class MediaLibraryController extends Controller
     {
         // Construir la URL correcta basada en la estructura de carpetas observada
         return url("/storage/media/{$media->collection_name}/{$media->file_name}");
-    }
-
-    /**
-     * Actualiza la descripción de un archivo.
-     *
-     * @param Request $request
-     * @param Media $media
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function updateDescription(Request $request, Media $media)
-    {
-        $validated = $request->validate([
-            'description' => 'nullable|string',
-        ]);
-
-        try {
-            // Actualizar propiedades personalizadas
-            $customProperties = $media->custom_properties;
-            $customProperties['description'] = $validated['description'] ?? null;
-            $customProperties['updated_by'] = Auth::id() ?? 1;
-            $customProperties['updated_at'] = now()->toDateTimeString();
-            $media->custom_properties = $customProperties;
-
-            $media->save();
-
-            // Actualizar el objeto media con las propiedades adicionales
-            $media->description = $media->getCustomProperty('description');
-
-            return redirect()->back()->with([
-                'success' => 'Descripción actualizada correctamente',
-                'updatedMedia' => $media
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error al actualizar descripción: ' . $e->getMessage());
-            return redirect()->back()->withErrors([
-                'error' => 'Error al actualizar la descripción: ' . $e->getMessage()
-            ]);
-        }
     }
 }

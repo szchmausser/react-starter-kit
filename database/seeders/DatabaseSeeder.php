@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
 
         // Ejecutar los seeders en orden adecuado para mantener las relaciones
         $this->call([
+            MediaOwnerSeeder::class,
             CaseTypeSeeder::class,
             IndividualSeeder::class,
             LegalEntitySeeder::class,

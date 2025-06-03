@@ -2,70 +2,49 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
-use Spatie\Searchable\Searchable;
-use Spatie\Searchable\SearchResult;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class User extends Authenticatable implements Searchable, HasMedia
+/**
+ * Modelo para gestionar los archivos compartidos de la biblioteca multimedia.
+ * 
+ * Este modelo actúa como propietario de los archivos compartidos que no pertenecen
+ * a ningún usuario específico, permitiendo una gestión centralizada de los mismos.
+ */
+class MediaOwner extends Model implements HasMedia
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia;
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que son asignables masivamente.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
-        'email',
-        'password',
+        'description',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
-
-    /**
-     * Implementación del método requerido por la interfaz Searchable
+     * Método estático para obtener o crear la instancia principal de MediaOwner.
      * 
-     * @return \Spatie\Searchable\SearchResult
+     * @return \App\Models\MediaOwner
      */
-    public function getSearchResult(): SearchResult
+    public static function instance(): self
     {
-        $url = route('users.show', $this->id);
+        $instance = static::first();
 
-        return new SearchResult(
-            $this,
-            $this->name,
-            $url
-        );
+        if (!$instance) {
+            $instance = static::create([
+                'name' => 'Shared files owner',
+                'description' => 'Sample model to use as media owner'
+            ]);
+        }
+
+        return $instance;
     }
 
     /**
