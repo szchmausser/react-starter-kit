@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { type BreadcrumbItem } from '@/types';
 import { formatDateSafe } from '@/lib/utils';
-import { FileText, Download, Edit, Trash2, ArrowLeft, Grid, List } from 'lucide-react';
+import { FileText, Download, Edit, Trash2, ArrowLeft, Grid, List, Upload } from 'lucide-react';
 
 interface MediaItem {
     id: number;
@@ -177,13 +177,13 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                 <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
                     <div className="p-4 text-gray-900 sm:p-6 dark:text-gray-100">
                         <div className="mb-4 flex items-center justify-between">
-                            <h1 className="text-xl font-bold">Archivos Multimedia - Expediente: {legalCase.code}</h1>
+                            <h1 className="text-lg sm:text-xl font-bold truncate pr-2">Archivos Multimedia - <span className="hidden sm:inline">Expediente:</span> {legalCase.code}</h1>
                             <div className="flex gap-2">
                                 <Button
                                     onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
                                     variant="outline"
                                     size="sm"
-                                    className="flex items-center gap-2"
+                                    className="flex items-center gap-1 sm:gap-2"
                                     title={viewMode === 'list' ? 'Ver como iconos' : 'Ver como lista'}
                                 >
                                     {viewMode === 'list' ? (
@@ -202,16 +202,21 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                     onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
                                     variant="outline"
                                     size="sm"
+                                    className="flex items-center"
+                                    title="Volver al Expediente"
                                 >
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver al Expediente
+                                    <ArrowLeft className="h-4 w-4" />
+                                    <span className="hidden sm:inline ml-2">Volver al Expediente</span>
                                 </Button>
                                 <Button
                                     onClick={() => router.visit(route('legal-cases.media.create', legalCase.id))}
                                     variant="default"
                                     size="sm"
+                                    className="flex items-center"
+                                    title="Subir Nuevo Archivo"
                                 >
-                                    Subir Nuevo Archivo
+                                    <Upload className="h-4 w-4" />
+                                    <span className="hidden sm:inline ml-2">Subir</span>
                                 </Button>
                             </div>
                         </div>
@@ -229,7 +234,8 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                         ) : viewMode === 'list' ? (
                             // Vista de lista
                             <div className="overflow-hidden rounded-md border dark:border-zinc-700">
-                                <div className="bg-gray-50 px-4 py-3 font-medium dark:bg-zinc-800">
+                                {/* Encabezado de tabla - solo visible en pantallas medianas y grandes */}
+                                <div className="bg-gray-50 px-4 py-3 font-medium hidden sm:block dark:bg-zinc-800">
                                     <div className="grid grid-cols-12 gap-2">
                                         <div className="col-span-4 text-sm text-gray-600 dark:text-gray-400">Nombre</div>
                                         <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">Tipo</div>
@@ -241,7 +247,8 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                 <div className="divide-y divide-gray-200 dark:divide-zinc-700 dark:bg-zinc-900">
                                     {mediaItems.map((mediaItem) => (
                                         <div key={mediaItem.id} className="px-4 py-3">
-                                            <div className="grid grid-cols-12 gap-2 items-center">
+                                            {/* Vista para pantallas medianas y grandes */}
+                                            <div className="hidden sm:grid grid-cols-12 gap-2 items-center">
                                                 <div className="col-span-4 flex items-center">
                                                     <div className="mr-3 flex-shrink-0">
                                                         {getFileIcon(mediaItem.mime_type)}
@@ -256,14 +263,8 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                     </div>
                                                 </div>
                                                 <div className="col-span-3">
-                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-full" title={mediaItem.mime_type}>
-                                                        {mediaItem.type_name ? (
-                                                            mediaItem.type_name.length > 15 ?
-                                                                mediaItem.type_name.substring(0, 15) + '...' :
-                                                                mediaItem.type_name
-                                                        ) : (
-                                                            mediaItem.mime_type.split('/')[1]?.toUpperCase() || mediaItem.mime_type
-                                                        )}
+                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)]" title={mediaItem.mime_type}>
+                                                        {mediaItem.type_name || mediaItem.mime_type.split('/')[1]?.toUpperCase() || mediaItem.mime_type}
                                                     </span>
                                                 </div>
                                                 <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
@@ -272,7 +273,7 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
                                                     {formatDate(mediaItem.created_at)}
                                                 </div>
-                                                <div className="col-span-1 flex justify-end space-x-1">
+                                                <div className="col-span-1 flex justify-start space-x-1">
                                                     <Button
                                                         onClick={() => window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank')}
                                                         variant="ghost"
@@ -306,6 +307,76 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                     </Button>
                                                 </div>
                                             </div>
+
+                                            {/* Vista para móviles - formato de tarjeta apilada */}
+                                            <div
+                                                className="sm:hidden flex flex-col cursor-pointer"
+                                                onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]))}
+                                            >
+                                                <div className="flex items-center mb-2">
+                                                    <div className="mr-3 flex-shrink-0">
+                                                        {getFileIcon(mediaItem.mime_type)}
+                                                    </div>
+                                                    <div className="flex-grow min-w-0">
+                                                        <p className="font-medium truncate" title={mediaItem.name}>{mediaItem.name}</p>
+                                                        <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)] mt-1" title={mediaItem.mime_type}>
+                                                            {mediaItem.type_name || mediaItem.mime_type.split('/')[1]?.toUpperCase() || mediaItem.mime_type}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 ml-10 mb-2">
+                                                    <div>
+                                                        <p>{mediaItem.human_readable_size}</p>
+                                                        <p>{formatDate(mediaItem.created_at)}</p>
+                                                        {mediaItem.description && (
+                                                            <p className="truncate max-w-[180px]" title={mediaItem.description}>
+                                                                {mediaItem.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex space-x-1">
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank');
+                                                            }}
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            title="Descargar"
+                                                        >
+                                                            <Download className="h-3 w-3" />
+                                                        </Button>
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]));
+                                                            }}
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            title="Editar"
+                                                        >
+                                                            <Edit className="h-3 w-3" />
+                                                        </Button>
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (confirm('¿Está seguro que desea eliminar este archivo?')) {
+                                                                    router.delete(route('legal-cases.media.destroy', [legalCase.id, mediaItem.id]));
+                                                                }
+                                                            }}
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7 text-red-500 hover:text-red-700"
+                                                            title="Eliminar"
+                                                        >
+                                                            <Trash2 className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -337,14 +408,8 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                         {formatDate(mediaItem.created_at)}
                                                     </p>
                                                     <div className="mt-1">
-                                                        <span className="inline-flex items-center rounded-full bg-blue-50 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-full" title={mediaItem.mime_type}>
-                                                            {mediaItem.type_name ? (
-                                                                mediaItem.type_name.length > 10 ?
-                                                                    mediaItem.type_name.substring(0, 10) + '...' :
-                                                                    mediaItem.type_name
-                                                            ) : (
-                                                                mediaItem.mime_type.split('/')[1]?.toUpperCase() || mediaItem.mime_type
-                                                            )}
+                                                        <span className="inline-flex items-center rounded-full bg-blue-50 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)]" title={mediaItem.mime_type}>
+                                                            {mediaItem.type_name || mediaItem.mime_type.split('/')[1]?.toUpperCase() || mediaItem.mime_type}
                                                         </span>
                                                     </div>
                                                 </div>
