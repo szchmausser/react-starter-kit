@@ -230,6 +230,33 @@ final class LegalCaseController extends Controller
             ->orderBy('end_date')
             ->first();
 
+        // Obtener todos los archivos multimedia (sin filtrar por colección)
+        $allMedia = $legalCase->getMedia('*');
+
+        Log::debug('Todos los archivos multimedia encontrados:', [
+            'legal_case_id' => $legalCase->id,
+            'count' => $allMedia->count(),
+            'collections' => $allMedia->pluck('collection_name')->unique()->toArray()
+        ]);
+
+        // Obtener los 5 archivos multimedia más recientes para mostrar en la tarjeta
+        $mediaItems = $allMedia->sortByDesc('created_at')->take(5)->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'mime_type' => $item->mime_type,
+                'extension' => pathinfo($item->file_name, PATHINFO_EXTENSION),
+                'human_readable_size' => $this->getHumanReadableSize($item->size),
+                'created_at' => $item->created_at->toDateTimeString(),
+            ];
+        })->values();
+
+        Log::debug('Archivos multimedia para mostrar:', [
+            'legal_case_id' => $legalCase->id,
+            'count' => $mediaItems->count(),
+            'items' => $mediaItems->toArray()
+        ]);
+
         // Depurar los datos de roles
         Log::debug('Individuos con roles:', $legalCase->individuals->map(function ($individual) {
             return [
@@ -255,7 +282,28 @@ final class LegalCaseController extends Controller
                 'title' => $nextImportantDate->title,
                 'end_date' => $nextImportantDate->end_date->toDateString(),
             ] : null,
+            'mediaItems' => $mediaItems,
         ]);
+    }
+
+    /**
+     * Calcula el tamaño legible para humanos
+     *
+     * @param int $bytes
+     * @param int $precision
+     * @return string
+     */
+    private function getHumanReadableSize(int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        $bytes /= pow(1024, $pow);
+
+        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 
     /**

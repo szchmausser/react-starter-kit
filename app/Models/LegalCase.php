@@ -14,10 +14,12 @@ use Spatie\Searchable\Searchable;
 use Spatie\Searchable\SearchResult;
 use Spatie\ModelStatus\HasStatuses;
 use Spatie\Tags\HasTags;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-final class LegalCase extends Model implements Searchable
+final class LegalCase extends Model implements Searchable, HasMedia
 {
-    use HasFactory, SoftDeletes, HasStatuses, HasTags;
+    use HasFactory, SoftDeletes, HasStatuses, HasTags, InteractsWithMedia;
 
     protected $fillable = [
         'code',
@@ -33,11 +35,25 @@ final class LegalCase extends Model implements Searchable
         'closing_date' => 'date',
     ];
 
+    /**
+     * Registra las colecciones de media y sus conversiones.
+     *
+     * @return void
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('documents');
+        $this->addMediaCollection('images');
+        $this->addMediaCollection('videos');
+        $this->addMediaCollection('audio');
+        $this->addMediaCollection('other');
+    }
+
     public function getSearchResult(): SearchResult
     {
         // URL para ver el detalle del caso
         $url = route('legal-cases.show', $this->id);
-        
+
         return new SearchResult(
             $this,
             "Expediente: {$this->code}",
@@ -92,7 +108,7 @@ final class LegalCase extends Model implements Searchable
             'reason' => $reason,
         ]);
     }
-    
+
     /**
      * Obtener las etiquetas del caso legal.
      *
@@ -102,4 +118,4 @@ final class LegalCase extends Model implements Searchable
     {
         return $this->morphToMany(\Spatie\Tags\Tag::class, 'taggable');
     }
-} 
+}

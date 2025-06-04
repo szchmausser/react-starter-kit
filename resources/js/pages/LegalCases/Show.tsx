@@ -33,7 +33,9 @@ import {
     UserCog,
     UserPlus,
     Users,
-    X
+    X,
+    FileText,
+    Upload
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -97,6 +99,15 @@ interface LegalCase {
     legal_entities: LegalEntity[];
 }
 
+interface MediaItemSummary {
+    id: number;
+    name: string;
+    mime_type: string;
+    extension: string;
+    human_readable_size: string;
+    created_at: string;
+}
+
 interface Props {
     legalCase: LegalCase;
     events: any[];
@@ -105,9 +116,10 @@ interface Props {
         title: string;
         end_date: string;
     } | null;
+    mediaItems?: MediaItemSummary[];
 }
 
-export default function LegalCaseShow({ legalCase, events, nextImportantDate }: Props) {
+export default function LegalCaseShow({ legalCase, events, nextImportantDate, mediaItems = [] }: Props) {
     const [participantToRemove, setParticipantToRemove] = useState<{ id: number; type: string; name: string } | null>(null);
     const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -120,6 +132,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
     const [currentStatus, setCurrentStatus] = useState<string>('');
     const [showStatusHistory, setShowStatusHistory] = useState(false);
     const [partiesCollapsed, setPartiesCollapsed] = useState(true);
+    const [mediaCollapsed, setMediaCollapsed] = useState(true);
 
     // Estado para expandir/contraer títulos truncados
     const [expandedTitles, setExpandedTitles] = useState<{ [key: string]: boolean }>({});
@@ -591,6 +604,44 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
         }
     };
 
+    // Función para obtener el icono según el tipo de archivo
+    const getFileIcon = (mimeType: string) => {
+        if (mimeType.startsWith('image/')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-500">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                <circle cx="9" cy="9" r="2" />
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+            </svg>;
+        } else if (mimeType === 'application/pdf') {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-red-500">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+                <path d="M9 15v-1h6v1" />
+                <path d="M11 18v-6" />
+                <path d="M9 12v-1h6v1" />
+            </svg>;
+        } else if (mimeType.startsWith('video/')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-purple-500">
+                <path d="m10 7 5 3-5 3Z" />
+                <rect width="20" height="14" x="2" y="3" rx="2" />
+                <path d="M12 17v4" />
+                <path d="M8 21h8" />
+            </svg>;
+        } else if (mimeType.includes('word') || mimeType.includes('document')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-700">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>;
+        } else if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-green-600">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>;
+        } else {
+            return <FileText className="h-5 w-5 text-gray-500" />;
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detalle del Expediente: ${legalCase.code}`} />
@@ -1054,6 +1105,127 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate }: 
                                                     Añadir Participante
                                                 </Button>
                                             )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Tarjeta: Archivos Multimedia */}
+                        <div className="mb-6 overflow-hidden rounded-md border dark:border-zinc-700">
+                            <div
+                                className="flex cursor-pointer items-center justify-between bg-gray-100 px-4 py-2 font-medium select-none dark:bg-zinc-900"
+                                onClick={() => setMediaCollapsed((v) => !v)}
+                            >
+                                <div className="flex items-center">
+                                    <FileText className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                    <span className="font-medium text-gray-800 dark:text-gray-200">Archivos Multimedia</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            router.visit(route('legal-cases.media.create', legalCase.id));
+                                        }}
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-8 w-8 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-500"
+                                        title="Subir Archivo"
+                                    >
+                                        <Upload className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-8 w-8 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                        title={mediaCollapsed ? 'Mostrar archivos' : 'Ocultar archivos'}
+                                    >
+                                        {mediaCollapsed ? (
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                                                <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        ) : (
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z"
+                                                    clipRule="evenodd"
+                                                />
+                                                <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />
+                                            </svg>
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+                            {!mediaCollapsed && (
+                                <div className="p-4 dark:bg-zinc-900">
+                                    {mediaItems && mediaItems.length > 0 ? (
+                                        <div className="space-y-4">
+                                            <div className="overflow-hidden rounded-md border dark:border-zinc-700">
+                                                <div className="flex items-center justify-between bg-gray-50 px-4 py-2 font-medium dark:bg-zinc-900">
+                                                    <span className="dark:text-gray-200">Archivos Recientes</span>
+                                                    <Button
+                                                        onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                    >
+                                                        Ver todos los archivos
+                                                    </Button>
+                                                </div>
+                                                <div className="divide-y divide-gray-200 dark:divide-zinc-800 dark:bg-zinc-900">
+                                                    {mediaItems.slice(0, 5).map((item) => (
+                                                        <div key={item.id} className="flex flex-col justify-between px-4 py-3 sm:flex-row sm:items-center">
+                                                            <div className="flex items-center">
+                                                                {getFileIcon(item.mime_type)}
+                                                                <div className="ml-3">
+                                                                    <p className="font-medium">{item.name}</p>
+                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        {item.human_readable_size} • {formatDateSafe(item.created_at)}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="mt-2 flex justify-end sm:mt-0">
+                                                                <Button
+                                                                    onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))}
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                                >
+                                                                    Ver detalle
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-center">
+                                                <Button
+                                                    onClick={() => router.visit(route('legal-cases.media.create', legalCase.id))}
+                                                    className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                                                    size="sm"
+                                                >
+                                                    <Upload className="mr-2 h-4 w-4" />
+                                                    Subir Nuevo Archivo
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="rounded-md bg-gray-50 py-8 text-center dark:bg-zinc-800">
+                                            <p>No hay archivos multimedia asociados a este expediente.</p>
+                                            <Button
+                                                onClick={() => router.visit(route('legal-cases.media.create', legalCase.id))}
+                                                className="mt-4 bg-green-600 text-white hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                                                size="sm"
+                                            >
+                                                <Upload className="mr-2 h-4 w-4" />
+                                                Subir Archivo
+                                            </Button>
                                         </div>
                                     )}
                                 </div>

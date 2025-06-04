@@ -102,6 +102,18 @@ Route::resource('case-types', CaseTypeController::class);
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('statuses', StatusController::class);
+
+    // Rutas para archivos multimedia de casos legales
+    Route::prefix('legal-cases/{legalCase}/media')->name('legal-cases.media.')->group(function () {
+        Route::get('/', [App\Http\Controllers\LegalCaseMediaController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\LegalCaseMediaController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\LegalCaseMediaController::class, 'store'])->name('store');
+        Route::get('/{media}', [App\Http\Controllers\LegalCaseMediaController::class, 'show'])->name('show');
+        Route::get('/{media}/edit', [App\Http\Controllers\LegalCaseMediaController::class, 'edit'])->name('edit');
+        Route::put('/{media}', [App\Http\Controllers\LegalCaseMediaController::class, 'update'])->name('update');
+        Route::delete('/{media}', [App\Http\Controllers\LegalCaseMediaController::class, 'destroy'])->name('destroy');
+        Route::get('/{media}/download', [App\Http\Controllers\LegalCaseMediaController::class, 'download'])->name('download');
+    });
 });
 
 require __DIR__ . '/settings.php';
