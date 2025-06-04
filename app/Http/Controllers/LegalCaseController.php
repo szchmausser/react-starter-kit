@@ -303,7 +303,8 @@ final class LegalCaseController extends Controller
 
         $bytes /= pow(1024, $pow);
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        // Formato para español: separador decimal coma, miles con punto
+        return number_format($bytes, $precision, ',', '.') . ' ' . $units[$pow];
     }
 
     /**

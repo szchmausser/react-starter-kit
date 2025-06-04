@@ -160,6 +160,9 @@ final class LegalCaseMediaController extends Controller
             $media->file_url = $this->getCorrectUrl($media);
             $media->last_modified = $media->updated_at->format('d/m/Y, H:i');
 
+            // Calcular el tamaño legible para humanos
+            $media->human_readable_size = $this->getHumanReadableSize($media->size);
+
             // Renderizar vista Inertia siempre
             return Inertia::render('LegalCases/MediaShow', [
                 'mediaItem' => $media,
@@ -216,6 +219,9 @@ final class LegalCaseMediaController extends Controller
             $media->description = $media->getCustomProperty('description');
             $media->category = $media->getCustomProperty('category');
             $media->thumbnail = $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : null;
+
+            // Calcular el tamaño legible para humanos
+            $media->human_readable_size = $this->getHumanReadableSize($media->size);
 
             return Inertia::render('LegalCases/MediaEdit', [
                 'mediaItem' => $media,
@@ -679,7 +685,8 @@ final class LegalCaseMediaController extends Controller
 
         $bytes /= pow(1024, $pow);
 
-        return round($bytes, 2) . ' ' . $units[$pow];
+        // Formato para español: separador decimal coma, miles con punto
+        return number_format($bytes, 2, ',', '.') . ' ' . $units[$pow];
     }
 
     /**

@@ -232,6 +232,9 @@ class MediaLibraryController extends Controller
         $media->file_url = $this->getCorrectUrl($media);
         $media->last_modified = $media->updated_at->format('d/m/Y, H:i');
 
+        // Calcular el tamaño legible para humanos
+        $media->human_readable_size = $this->getHumanReadableSize($media->size);
+
         return Inertia::render('MediaLibrary/Show', [
             'mediaItem' => $media,
         ]);
@@ -734,7 +737,8 @@ class MediaLibraryController extends Controller
 
         $bytes /= pow(1024, $pow);
 
-        return round($bytes, 2) . ' ' . $units[$pow];
+        // Formato para español: separador decimal coma, miles con punto
+        return number_format($bytes, 2, ',', '.') . ' ' . $units[$pow];
     }
 
     /**
