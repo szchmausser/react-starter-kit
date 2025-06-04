@@ -28,9 +28,14 @@ final class LegalCaseMediaController extends Controller
 
             // Transformar los resultados para incluir información adicional
             $mediaItems = $mediaItems->map(function ($item) {
-                $item->type_name = $this->getTypeNameForMimeType($item->mime_type);
+                $extension = pathinfo($item->file_name, PATHINFO_EXTENSION);
+
+                // Intentar determinar el tipo por la extensión del archivo primero
+                $typeByExtension = $this->getTypeNameFromExtension($extension);
+                $item->type_name = $typeByExtension ?? $this->getTypeNameForMimeType($item->mime_type);
+
                 $item->type_icon = $this->getTypeIconForMimeType($item->mime_type);
-                $item->extension = pathinfo($item->file_name, PATHINFO_EXTENSION);
+                $item->extension = $extension;
                 $item->description = $item->getCustomProperty('description');
                 $item->category = $item->getCustomProperty('category');
 
@@ -111,7 +116,7 @@ final class LegalCaseMediaController extends Controller
             session()->flash('success', 'Archivo subido correctamente');
 
             // Redirigir usando Inertia::location para una navegación fluida
-            return Inertia::location(route('legal-cases.show', $legalCase->id));
+            return Inertia::location(route('legal-cases.media.index', $legalCase->id));
         } catch (\Exception $e) {
             Log::error('Error al subir archivo: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
@@ -138,9 +143,14 @@ final class LegalCaseMediaController extends Controller
             }
 
             // Añadir información adicional al objeto media
-            $media->type_name = $this->getTypeNameForMimeType($media->mime_type);
+            $extension = pathinfo($media->file_name, PATHINFO_EXTENSION);
+
+            // Intentar determinar el tipo por la extensión del archivo primero
+            $typeByExtension = $this->getTypeNameFromExtension($extension);
+            $media->type_name = $typeByExtension ?? $this->getTypeNameForMimeType($media->mime_type);
+
             $media->type_icon = $this->getTypeIconForMimeType($media->mime_type);
-            $media->extension = pathinfo($media->file_name, PATHINFO_EXTENSION);
+            $media->extension = $extension;
             $media->description = $media->getCustomProperty('description');
             $media->category = $media->getCustomProperty('category');
             $media->original_filename = $media->getCustomProperty('original_filename');
@@ -195,6 +205,14 @@ final class LegalCaseMediaController extends Controller
             }
 
             // Añadir propiedades personalizadas
+            $extension = pathinfo($media->file_name, PATHINFO_EXTENSION);
+
+            // Intentar determinar el tipo por la extensión del archivo primero
+            $typeByExtension = $this->getTypeNameFromExtension($extension);
+            $media->type_name = $typeByExtension ?? $this->getTypeNameForMimeType($media->mime_type);
+
+            $media->type_icon = $this->getTypeIconForMimeType($media->mime_type);
+            $media->extension = $extension;
             $media->description = $media->getCustomProperty('description');
             $media->category = $media->getCustomProperty('category');
             $media->thumbnail = $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : null;
@@ -283,14 +301,14 @@ final class LegalCaseMediaController extends Controller
                 session()->flash('success', 'Archivo actualizado correctamente');
 
                 // Redirigir usando Inertia::location para una navegación fluida
-                return Inertia::location(route('legal-cases.show', $legalCase->id));
+                return Inertia::location(route('legal-cases.media.index', $legalCase->id));
             }
 
             // Flash del mensaje de éxito
             session()->flash('success', 'Información actualizada correctamente');
 
             // Redirigir usando Inertia::location para una navegación fluida
-            return Inertia::location(route('legal-cases.show', $legalCase->id));
+            return Inertia::location(route('legal-cases.media.index', $legalCase->id));
         } catch (\Exception $e) {
             Log::error('Error al actualizar archivo multimedia: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
@@ -336,7 +354,7 @@ final class LegalCaseMediaController extends Controller
             session()->flash('success', 'Archivo eliminado correctamente');
 
             // Redirigir usando Inertia::location para una navegación fluida
-            return Inertia::location(route('legal-cases.show', $legalCase->id));
+            return Inertia::location(route('legal-cases.media.index', $legalCase->id));
         } catch (\Exception $e) {
             Log::error('Error al eliminar archivo multimedia: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
@@ -470,6 +488,82 @@ final class LegalCaseMediaController extends Controller
     }
 
     /**
+     * Obtiene un nombre descriptivo para el tipo de archivo según su extensión.
+     *
+     * @param string $extension
+     * @return string|null
+     */
+    private function getTypeNameFromExtension(string $extension): ?string
+    {
+        $extension = strtolower(trim($extension));
+
+        $extensionMap = [
+            // Imágenes
+            'png' => 'Imagen PNG',
+            'jpg' => 'Imagen JPEG',
+            'jpeg' => 'Imagen JPEG',
+            'gif' => 'Imagen GIF',
+            'bmp' => 'Imagen BMP',
+            'svg' => 'Imagen SVG',
+            'webp' => 'Imagen WEBP',
+            'tiff' => 'Imagen TIFF',
+            'tif' => 'Imagen TIFF',
+            'ico' => 'Icono',
+
+            // Documentos
+            'pdf' => 'Documento PDF',
+            'doc' => 'Documento Word',
+            'docx' => 'Documento Word',
+            'xls' => 'Hoja de cálculo Excel',
+            'xlsx' => 'Hoja de cálculo Excel',
+            'ppt' => 'Presentación PowerPoint',
+            'pptx' => 'Presentación PowerPoint',
+            'txt' => 'Archivo de texto',
+            'rtf' => 'Documento RTF',
+            'odt' => 'Documento OpenDocument',
+            'ods' => 'Hoja de cálculo OpenDocument',
+            'odp' => 'Presentación OpenDocument',
+
+            // Audio
+            'mp3' => 'Audio MP3',
+            'wav' => 'Audio WAV',
+            'ogg' => 'Audio OGG',
+            'flac' => 'Audio FLAC',
+            'aac' => 'Audio AAC',
+            'm4a' => 'Audio M4A',
+
+            // Video
+            'mp4' => 'Video MP4',
+            'avi' => 'Video AVI',
+            'mov' => 'Video MOV',
+            'wmv' => 'Video WMV',
+            'mkv' => 'Video MKV',
+            'flv' => 'Video FLV',
+            'webm' => 'Video WEBM',
+
+            // Comprimidos
+            'zip' => 'Archivo ZIP',
+            'rar' => 'Archivo RAR',
+            'tar' => 'Archivo TAR',
+            '7z' => 'Archivo 7Z',
+            'gz' => 'Archivo GZIP',
+
+            // Otros
+            'html' => 'Documento HTML',
+            'htm' => 'Documento HTML',
+            'css' => 'Hoja de estilos CSS',
+            'js' => 'Script JavaScript',
+            'json' => 'Archivo JSON',
+            'xml' => 'Archivo XML',
+            'sql' => 'Script SQL',
+            'csv' => 'Archivo CSV',
+            'md' => 'Archivo Markdown',
+        ];
+
+        return $extensionMap[$extension] ?? null;
+    }
+
+    /**
      * Obtiene un nombre descriptivo para el tipo de archivo según su MIME type.
      *
      * @param string $mimeType
@@ -477,6 +571,29 @@ final class LegalCaseMediaController extends Controller
      */
     private function getTypeNameForMimeType(string $mimeType): string
     {
+        // Si tenemos un MIME type vacío o inválido
+        if (empty($mimeType) || $mimeType === 'application/octet-stream') {
+            return 'Archivo Binario';
+        }
+
+        // Intentar determinar el tipo por extensión si está disponible en el MIME type
+        if (strpos($mimeType, '/') !== false) {
+            $parts = explode('/', $mimeType);
+            $subtype = $parts[1];
+
+            // Limpiar posibles parámetros adicionales
+            if (strpos($subtype, ';') !== false) {
+                $subtype = explode(';', $subtype)[0];
+            }
+
+            // Para casos como "image/jpeg" o "image/png" donde la extensión puede estar en el subtipo
+            $typeByExtension = $this->getTypeNameFromExtension($subtype);
+            if ($typeByExtension !== null) {
+                return $typeByExtension;
+            }
+        }
+
+        // Si no se pudo determinar por extensión, usar el MIME type
         if (strpos($mimeType, 'image/') === 0) {
             $type = str_replace('image/', '', $mimeType);
             return 'Imagen ' . strtoupper($type);
@@ -498,8 +615,21 @@ final class LegalCaseMediaController extends Controller
             return 'Archivo comprimido';
         } elseif ($mimeType === 'text/plain') {
             return 'Archivo de texto';
+        } elseif ($mimeType === 'text/html' || $mimeType === 'application/xhtml+xml') {
+            return 'Documento HTML';
+        } elseif ($mimeType === 'text/css') {
+            return 'Hoja de estilos CSS';
+        } elseif ($mimeType === 'application/javascript' || $mimeType === 'text/javascript') {
+            return 'Script JavaScript';
+        } elseif ($mimeType === 'application/json') {
+            return 'Archivo JSON';
+        } elseif ($mimeType === 'application/xml' || $mimeType === 'text/xml') {
+            return 'Archivo XML';
+        } elseif ($mimeType === 'text/csv') {
+            return 'Archivo CSV';
         }
 
+        // Si no coincide con ninguna de las anteriores, devolver un nombre genérico con el MIME type
         return 'Archivo ' . $mimeType;
     }
 

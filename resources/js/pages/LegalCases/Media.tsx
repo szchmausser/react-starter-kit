@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { type BreadcrumbItem } from '@/types';
 import { formatDateSafe } from '@/lib/utils';
-import { FileText, Download, Edit, Trash2, ArrowLeft, Grid, List, Upload } from 'lucide-react';
+import { FileText, Download, Edit, Trash2, ArrowLeft, Grid, List, Upload, Eye } from 'lucide-react';
 
 interface MediaItem {
     id: number;
@@ -100,6 +100,14 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                     <polyline points="14 2 14 8 20 8" />
                 </svg>
             );
+        } else if (mimeType.startsWith('audio/') || mimeType.includes('audio')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-indigo-500">
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                </svg>
+            );
         } else {
             return <FileText className="h-6 w-6 text-gray-500" />;
         }
@@ -148,12 +156,12 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                     <polyline points="14 2 14 8 20 8" />
                 </svg>
             );
-        } else if (mimeType.includes('audio')) {
+        } else if (mimeType.startsWith('audio/') || mimeType.includes('audio')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-pink-500">
-                    <path d="M17.5 22h.5a2 2 0 0 0 2-2V7.7a2 2 0 0 0-1.5-1.94l-9-1.7A2 2 0 0 0 7 6v14a2 2 0 0 0 2 2h.5" />
-                    <circle cx="14" cy="17" r="3" />
-                    <circle cx="10" cy="17" r="3" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-indigo-500">
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
                 </svg>
             );
         } else {
@@ -264,7 +272,7 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 </div>
                                                 <div className="col-span-3">
                                                     <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)]" title={mediaItem.mime_type}>
-                                                        {mediaItem.type_name || mediaItem.mime_type.split('/')[1]?.toUpperCase() || mediaItem.mime_type}
+                                                        {mediaItem.type_name || mediaItem.mime_type}
                                                     </span>
                                                 </div>
                                                 <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
@@ -274,6 +282,15 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                     {formatDate(mediaItem.created_at)}
                                                 </div>
                                                 <div className="col-span-1 flex justify-start space-x-1">
+                                                    <Button
+                                                        onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]))}
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        title="Ver detalles"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
                                                     <Button
                                                         onClick={() => window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank')}
                                                         variant="ghost"
@@ -320,7 +337,7 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                     <div className="flex-grow min-w-0">
                                                         <p className="font-medium truncate" title={mediaItem.name}>{mediaItem.name}</p>
                                                         <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)] mt-1" title={mediaItem.mime_type}>
-                                                            {mediaItem.type_name || mediaItem.mime_type.split('/')[1]?.toUpperCase() || mediaItem.mime_type}
+                                                            {mediaItem.type_name || mediaItem.mime_type}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -336,6 +353,18 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                         )}
                                                     </div>
                                                     <div className="flex space-x-1">
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]));
+                                                            }}
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            title="Ver detalles"
+                                                        >
+                                                            <Eye className="h-3 w-3" />
+                                                        </Button>
                                                         <Button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
@@ -409,13 +438,25 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                     </p>
                                                     <div className="mt-1">
                                                         <span className="inline-flex items-center rounded-full bg-blue-50 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)]" title={mediaItem.mime_type}>
-                                                            {mediaItem.type_name || mediaItem.mime_type.split('/')[1]?.toUpperCase() || mediaItem.mime_type}
+                                                            {mediaItem.type_name || mediaItem.mime_type}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex justify-center space-x-1 mt-2 sm:mt-4 w-full pt-1 sm:pt-2 border-t border-gray-100 dark:border-zinc-700">
+                                            <Button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]));
+                                                }}
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7 sm:h-8 sm:w-8"
+                                                title="Ver detalles"
+                                            >
+                                                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                                            </Button>
                                             <Button
                                                 onClick={(e) => {
                                                     e.stopPropagation();

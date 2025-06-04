@@ -113,12 +113,12 @@ export default function MediaCreate({ legalCase }: Props) {
                         <div className="mb-6 flex items-center justify-between">
                             <h1 className="text-xl font-bold">Subir Archivo - Expediente: {legalCase.code}</h1>
                             <Button
-                                onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
+                                onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
                                 variant="outline"
                                 size="sm"
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Volver al Expediente
+                                Volver a Archivos
                             </Button>
                         </div>
 
@@ -189,7 +189,7 @@ export default function MediaCreate({ legalCase }: Props) {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
+                                    onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
                                 >
                                     Cancelar
                                 </Button>

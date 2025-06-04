@@ -120,12 +120,12 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                             <h1 className="text-xl font-bold">Archivo: {mediaItem.name}</h1>
                             <div className="flex gap-2">
                                 <Button
-                                    onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
+                                    onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
                                     variant="outline"
                                     size="sm"
                                 >
                                     <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver al Expediente
+                                    Volver al Listado
                                 </Button>
                             </div>
                         </div>

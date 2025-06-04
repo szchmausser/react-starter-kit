@@ -16,6 +16,8 @@ interface MediaItem {
     mime_type: string;
     size: number;
     human_readable_size: string;
+    type_name: string;
+    type_icon: string;
     extension: string;
     description?: string;
     category?: string;
@@ -141,6 +143,14 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
                     <path d="M8 21h8" />
                 </svg>
             );
+        } else if (mediaItem.mime_type.startsWith('audio/') || mediaItem.mime_type.includes('audio')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-indigo-500">
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                </svg>
+            );
         } else {
             return <FileText className="h-16 w-16 text-gray-500" />;
         }
@@ -155,12 +165,12 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
                         <div className="mb-6 flex items-center justify-between">
                             <h1 className="text-xl font-bold">Editar Archivo - Expediente: {legalCase.code}</h1>
                             <Button
-                                onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
+                                onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
                                 variant="outline"
                                 size="sm"
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Volver al Expediente
+                                Volver a Archivos
                             </Button>
                         </div>
 
@@ -232,7 +242,7 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
+                                            onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
                                         >
                                             Cancelar
                                         </Button>
@@ -251,7 +261,7 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
                                         <div className="mt-4 text-center">
                                             <p className="font-medium">{mediaItem.file_name}</p>
                                             <p className="mt-1 text-sm text-gray-500">{mediaItem.human_readable_size}</p>
-                                            <p className="text-sm text-gray-500">{mediaItem.mime_type}</p>
+                                            <p className="text-sm text-gray-500">{mediaItem.type_name || mediaItem.mime_type}</p>
                                         </div>
                                     </div>
                                     <div className="mt-4 flex justify-center">
