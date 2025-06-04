@@ -36,7 +36,7 @@ interface Props {
 }
 
 export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
-    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -117,7 +117,7 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
     const getLargeFileIcon = (mimeType: string) => {
         if (mimeType.startsWith('image/')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-28 w-28 text-blue-500">
                     <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                     <circle cx="9" cy="9" r="2" />
                     <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
@@ -125,7 +125,7 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
             );
         } else if (mimeType === 'application/pdf') {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-28 w-28 text-red-500">
                     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                     <polyline points="14 2 14 8 20 8" />
                     <path d="M9 15v-1h6v1" />
@@ -135,7 +135,7 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
             );
         } else if (mimeType.startsWith('video/')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-purple-500">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-28 w-28 text-purple-500">
                     <path d="m10 7 5 3-5 3Z" />
                     <rect width="20" height="14" x="2" y="3" rx="2" />
                     <path d="M12 17v4" />
@@ -144,28 +144,28 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
             );
         } else if (mimeType.includes('word') || mimeType.includes('document')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-blue-700">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-28 w-28 text-blue-700">
                     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                     <polyline points="14 2 14 8 20 8" />
                 </svg>
             );
         } else if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-green-600">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-28 w-28 text-green-600">
                     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                     <polyline points="14 2 14 8 20 8" />
                 </svg>
             );
         } else if (mimeType.startsWith('audio/') || mimeType.includes('audio')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-indigo-500">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-28 w-28 text-indigo-500">
                     <path d="M9 18V5l12-2v13" />
                     <circle cx="6" cy="18" r="3" />
                     <circle cx="18" cy="16" r="3" />
                 </svg>
             );
         } else {
-            return <FileText className="h-16 w-16 text-gray-500" />;
+            return <FileText className="h-28 w-28 text-gray-500" />;
         }
     };
 
@@ -416,35 +416,35 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                 {mediaItems.map((mediaItem) => (
                                     <div
                                         key={mediaItem.id}
-                                        className="flex flex-col items-center justify-between p-3 sm:p-4 border border-gray-100 dark:border-zinc-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer min-h-[200px] h-full"
+                                        className="flex flex-col items-center justify-between p-3 sm:p-4 border border-gray-100 dark:border-zinc-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer min-h-[220px] h-full"
                                         onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]))}
                                     >
                                         <div className="flex flex-col items-center w-full flex-grow">
-                                            <div className="mb-2 sm:mb-3 flex items-center justify-center h-16 sm:h-24">
+                                            <div className="mb-0.5 flex items-center justify-center h-32 sm:h-40">
                                                 {getLargeFileIcon(mediaItem.mime_type)}
                                             </div>
                                             <div className="text-center w-full">
-                                                <div className="min-h-[3rem] sm:min-h-[3.5rem] max-h-[4rem] sm:max-h-[4.5rem] flex items-center justify-center overflow-hidden px-1">
-                                                    <p className="font-medium text-xs sm:text-sm px-1 break-words text-center hyphens-auto line-clamp-3" style={{ wordBreak: 'break-word', wordWrap: 'break-word' }} title={mediaItem.name}>
+                                                <div className="min-h-[2rem] max-h-[3rem] flex items-center justify-center overflow-hidden">
+                                                    <p className="font-medium text-xs sm:text-sm break-words text-center hyphens-auto line-clamp-2" style={{ wordBreak: 'break-word', wordWrap: 'break-word' }} title={mediaItem.name}>
                                                         {mediaItem.name}
                                                     </p>
                                                 </div>
-                                                <div className="mt-1 sm:mt-2 flex flex-col gap-0.5 sm:gap-1">
+                                                <div className="flex flex-wrap justify-center gap-x-2 gap-y-0.5 mt-0.5">
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
                                                         {mediaItem.human_readable_size}
                                                     </p>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
                                                         {formatDate(mediaItem.created_at)}
                                                     </p>
-                                                    <div className="mt-1">
-                                                        <span className="inline-flex items-center rounded-full bg-blue-50 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)]" title={mediaItem.mime_type}>
-                                                            {mediaItem.type_name || mediaItem.mime_type}
-                                                        </span>
-                                                    </div>
+                                                </div>
+                                                <div className="mt-0.5">
+                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)]" title={mediaItem.mime_type}>
+                                                        {mediaItem.type_name || mediaItem.mime_type}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex justify-center space-x-1 mt-2 sm:mt-4 w-full pt-1 sm:pt-2 border-t border-gray-100 dark:border-zinc-700">
+                                        <div className="flex justify-between w-full pt-1 mt-1 border-t border-gray-100 dark:border-zinc-700">
                                             <Button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -452,10 +452,10 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 }}
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-7 w-7 sm:h-8 sm:w-8"
+                                                className="h-8 w-8 sm:h-9 sm:w-9"
                                                 title="Ver detalles"
                                             >
-                                                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                                                <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </Button>
                                             <Button
                                                 onClick={(e) => {
@@ -464,10 +464,10 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 }}
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-7 w-7 sm:h-8 sm:w-8"
+                                                className="h-8 w-8 sm:h-9 sm:w-9"
                                                 title="Descargar"
                                             >
-                                                <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                                                <Download className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </Button>
                                             <Button
                                                 onClick={(e) => {
@@ -476,10 +476,10 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 }}
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-7 w-7 sm:h-8 sm:w-8"
+                                                className="h-8 w-8 sm:h-9 sm:w-9"
                                                 title="Editar"
                                             >
-                                                <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </Button>
                                             <Button
                                                 onClick={(e) => {
@@ -490,10 +490,10 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 }}
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-7 w-7 sm:h-8 sm:w-8 text-red-500 hover:text-red-700"
+                                                className="h-8 w-8 sm:h-9 sm:w-9 text-red-500 hover:text-red-700"
                                                 title="Eliminar"
                                             >
-                                                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                                                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </Button>
                                         </div>
                                     </div>

@@ -135,7 +135,6 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
     const [showStatusHistory, setShowStatusHistory] = useState(false);
     const [partiesCollapsed, setPartiesCollapsed] = useState(true);
     const [mediaCollapsed, setMediaCollapsed] = useState(true);
-    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
     // Estado para expandir/contraer títulos truncados
     const [expandedTitles, setExpandedTitles] = useState<{ [key: string]: boolean }>({});
@@ -1172,18 +1171,14 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                     <Button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setViewMode(viewMode === 'list' ? 'grid' : 'list');
+                                            router.visit(route('legal-cases.media.index', legalCase.id));
                                         }}
                                         size="icon"
                                         variant="ghost"
                                         className="h-8 w-8 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500"
-                                        title={viewMode === 'list' ? 'Ver como iconos' : 'Ver como lista'}
+                                        title="Ver todos los archivos"
                                     >
-                                        {viewMode === 'list' ? (
-                                            <Grid className="h-4 w-4" />
-                                        ) : (
-                                            <List className="h-4 w-4" />
-                                        )}
+                                        <Eye className="h-4 w-4" />
                                     </Button>
                                     <Button
                                         onClick={(e) => {
@@ -1232,67 +1227,33 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                             <div className="overflow-hidden rounded-md border dark:border-zinc-700">
                                                 <div className="flex items-center justify-between bg-gray-50 px-4 py-2 font-medium dark:bg-zinc-900">
                                                     <span className="dark:text-gray-200">Archivos Recientes</span>
-                                                    <Button
-                                                        onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                                    >
-                                                        Ver todos los archivos
-                                                    </Button>
                                                 </div>
 
-                                                {viewMode === 'list' ? (
-                                                    // Vista de lista
-                                                    <div className="divide-y divide-gray-200 dark:divide-zinc-800 dark:bg-zinc-900">
-                                                        {mediaItems.slice(0, 5).map((item) => (
-                                                            <div key={item.id} className="flex flex-col justify-between px-4 py-3 sm:flex-row sm:items-center">
-                                                                <div className="flex items-center">
-                                                                    {getFileIcon(item.mime_type)}
-                                                                    <div className="ml-3">
-                                                                        <p className="font-medium">{item.name}</p>
-                                                                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                                            {item.human_readable_size} • {formatDateSafe(item.created_at)}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="mt-2 flex justify-end sm:mt-0">
-                                                                    <Button
-                                                                        onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))}
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                                                    >
-                                                                        Ver detalle
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    // Vista de iconos
-                                                    <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 dark:bg-zinc-900">
-                                                        {mediaItems.slice(0, 5).map((item) => (
-                                                            <div
-                                                                key={item.id}
-                                                                className="flex flex-col items-center justify-center p-4 border border-gray-100 dark:border-zinc-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
-                                                                onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))}
-                                                            >
-                                                                <div className="mb-3">
-                                                                    {getLargeFileIcon(item.mime_type)}
-                                                                </div>
-                                                                <div className="text-center">
-                                                                    <p className="font-medium text-sm truncate w-full max-w-[120px]" title={item.name}>
-                                                                        {item.name}
-                                                                    </p>
-                                                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                                        {item.human_readable_size}
+                                                <div className="divide-y divide-gray-200 dark:divide-zinc-800 dark:bg-zinc-900">
+                                                    {mediaItems.slice(0, 5).map((item) => (
+                                                        <div key={item.id} className="flex flex-col justify-between px-4 py-3 sm:flex-row sm:items-center">
+                                                            <div className="flex items-center">
+                                                                {getFileIcon(item.mime_type)}
+                                                                <div className="ml-3">
+                                                                    <p className="font-medium">{item.name}</p>
+                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        {item.human_readable_size} • {formatDateSafe(item.created_at)}
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                            <div className="mt-2 flex justify-end sm:mt-0">
+                                                                <Button
+                                                                    onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))}
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                                >
+                                                                    Ver detalle
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                             <div className="flex justify-center">
                                                 <Button

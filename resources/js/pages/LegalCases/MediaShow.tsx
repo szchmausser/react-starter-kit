@@ -261,12 +261,13 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Archivo: ${mediaItem.name} - Expediente: ${legalCase.code}`} />
             <div className="p-4 sm:p-6 space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <h1 className="text-2xl font-semibold">{mediaItem.name}</h1>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         <Button
                             variant="outline"
                             onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
+                            className="w-full sm:w-auto justify-center"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Volver al listado
@@ -274,6 +275,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                         <Button
                             variant="outline"
                             onClick={() => router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]))}
+                            className="w-full sm:w-auto justify-center"
                         >
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
@@ -281,11 +283,16 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                         <Button
                             variant="outline"
                             onClick={() => window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank')}
+                            className="w-full sm:w-auto justify-center"
                         >
                             <Download className="mr-2 h-4 w-4" />
                             Descargar
                         </Button>
-                        <Button variant="destructive" onClick={deleteMedia}>
+                        <Button
+                            variant="destructive"
+                            onClick={deleteMedia}
+                            className="w-full sm:w-auto justify-center"
+                        >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Eliminar
                         </Button>
