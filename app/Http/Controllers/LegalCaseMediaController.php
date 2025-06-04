@@ -690,7 +690,8 @@ final class LegalCaseMediaController extends Controller
      */
     private function getCorrectUrl(Media $media): string
     {
-        // Construir la URL correcta basada en la estructura de carpetas observada
-        return url("/storage/media/{$media->collection_name}/{$media->file_name}");
+        // Usar directamente el método getUrl() del paquete Media Library
+        // que genera la URL correcta según la configuración del disco y la estructura de carpetas
+        return $media->getUrl();
     }
 }

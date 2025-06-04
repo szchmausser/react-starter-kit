@@ -2,10 +2,25 @@ import React from 'react';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { type BreadcrumbItem } from '@/types';
 import { formatDateSafe } from '@/lib/utils';
-import { ArrowLeft, Download, Edit, Trash2, FileText } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import {
+    ArrowLeft,
+    Download,
+    Edit,
+    Trash2,
+    FileText,
+    FileIcon,
+    ImageIcon,
+    VideoIcon,
+    MusicIcon,
+    FileSpreadsheetIcon,
+    PresentationIcon,
+    ArchiveIcon,
+    ChevronDown
+} from 'lucide-react';
 
 interface MediaItem {
     id: number;
@@ -62,183 +77,322 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
         },
     ];
 
-    // Determinar el icono según el tipo MIME
-    const getFileIcon = () => {
+    // Función para obtener el icono según el tipo de archivo
+    const getFileIcon = (size: 'sm' | 'lg' = 'lg') => {
+        const iconSize = size === 'lg' ? "h-24 w-24" : "h-6 w-6";
+
+        if (!mediaItem.type_icon) return <FileIcon className={`${iconSize} text-gray-500 dark:text-gray-400`} />;
+
+        switch (mediaItem.type_icon) {
+            case 'image':
+                return <ImageIcon className={`${iconSize} text-blue-500`} />;
+            case 'file-text':
+                return <FileText className={`${iconSize} text-red-500`} />;
+            case 'video':
+                return <VideoIcon className={`${iconSize} text-purple-500`} />;
+            case 'music':
+                return <MusicIcon className={`${iconSize} text-pink-500`} />;
+            case 'file-spreadsheet':
+                return <FileSpreadsheetIcon className={`${iconSize} text-green-500`} />;
+            case 'file-presentation':
+                return <PresentationIcon className={`${iconSize} text-orange-500`} />;
+            case 'file-archive':
+                return <ArchiveIcon className={`${iconSize} text-yellow-500`} />;
+            default:
+                return <FileText className={`${iconSize} text-gray-500 dark:text-gray-400`} />;
+        }
+    };
+
+    // Función para renderizar la vista previa según el tipo de archivo
+    const renderPreview = () => {
+        if (!mediaItem.mime_type) {
+            return (
+                <div className="flex flex-col items-center justify-center h-64 bg-gray-100 dark:bg-zinc-800 rounded-md">
+                    <span className="text-gray-500 dark:text-gray-400">No se puede mostrar una vista previa para este archivo</span>
+                </div>
+            );
+        }
+
         if (mediaItem.mime_type.startsWith('image/')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-24 w-24 text-blue-500">
-                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                    <circle cx="9" cy="9" r="2" />
-                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                </svg>
+                <div className="flex items-center justify-center">
+                    <img
+                        src={mediaItem.file_url}
+                        alt={mediaItem.name}
+                        className="max-h-[600px] object-contain rounded-md"
+                    />
+                </div>
             );
-        } else if (mediaItem.mime_type === 'application/pdf') {
+        }
+
+        // Lógica mejorada para video
+        if (mediaItem.mime_type.startsWith('video/')) {
+            // Usar directamente la URL del archivo sin verificaciones adicionales
+            const videoUrl = mediaItem.file_url;
+
+            // Determinar el tipo MIME correcto basado en la extensión si es necesario
+            let videoType = mediaItem.mime_type;
+            const ext = mediaItem.extension.toLowerCase();
+
+            // Mapa de extensiones a tipos MIME para asegurar compatibilidad
+            const mimeMap: Record<string, string> = {
+                'mp4': 'video/mp4',
+                'webm': 'video/webm',
+                'ogg': 'video/ogg',
+                'mov': 'video/quicktime',
+                'avi': 'video/x-msvideo',
+                'wmv': 'video/x-ms-wmv',
+                'flv': 'video/x-flv',
+                'mkv': 'video/x-matroska'
+            };
+
+            // Si tenemos una extensión conocida, usar el tipo MIME correspondiente
+            if (ext in mimeMap) {
+                videoType = mimeMap[ext];
+            }
+
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-24 w-24 text-red-500">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <path d="M9 15v-1h6v1" />
-                    <path d="M11 18v-6" />
-                    <path d="M9 12v-1h6v1" />
-                </svg>
+                <div className="flex items-center justify-center">
+                    <video
+                        controls
+                        className="max-h-[600px] max-w-full rounded-md"
+                        controlsList="nodownload"
+                        poster={mediaItem.thumbnail || undefined}
+                        preload="metadata"
+                    >
+                        {/* Usar múltiples elementos source para mayor compatibilidad */}
+                        <source src={videoUrl} type={videoType} />
+                        {ext === 'mp4' && <source src={videoUrl} type="video/mp4" />}
+                        {ext === 'webm' && <source src={videoUrl} type="video/webm" />}
+                        {ext === 'ogg' && <source src={videoUrl} type="video/ogg" />}
+                        Tu navegador no soporta la reproducción de videos.
+                        <a href={route('legal-cases.media.download', [legalCase.id, mediaItem.id])} target="_blank" rel="noopener noreferrer">
+                            Descargar video
+                        </a>
+                    </video>
+                </div>
             );
-        } else if (mediaItem.mime_type.startsWith('video/')) {
+        }
+
+        // Lógica mejorada para audio
+        if (mediaItem.mime_type.startsWith('audio/')) {
+            // Determinar el tipo MIME correcto basado en la extensión si es necesario
+            let audioType = mediaItem.mime_type;
+            const ext = mediaItem.extension.toLowerCase();
+
+            // Mapa de extensiones a tipos MIME para asegurar compatibilidad
+            const mimeMap: Record<string, string> = {
+                'mp3': 'audio/mpeg',
+                'wav': 'audio/wav',
+                'ogg': 'audio/ogg',
+                'flac': 'audio/flac',
+                'aac': 'audio/aac',
+                'm4a': 'audio/mp4'
+            };
+
+            // Si tenemos una extensión conocida, usar el tipo MIME correspondiente
+            if (ext in mimeMap) {
+                audioType = mimeMap[ext];
+            }
+
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-24 w-24 text-purple-500">
-                    <path d="m10 7 5 3-5 3Z" />
-                    <rect width="20" height="14" x="2" y="3" rx="2" />
-                    <path d="M12 17v4" />
-                    <path d="M8 21h8" />
-                </svg>
+                <div className="flex flex-col items-center justify-center py-8">
+                    <div className="text-5xl mb-6">{getFileIcon('lg')}</div>
+                    <h3 className="text-xl font-medium mb-4">{mediaItem.name}</h3>
+                    <audio
+                        controls
+                        className="w-full max-w-md"
+                        controlsList="nodownload"
+                        preload="metadata"
+                    >
+                        {/* Usar múltiples elementos source para mayor compatibilidad */}
+                        <source src={mediaItem.file_url} type={audioType} />
+                        {ext === 'mp3' && <source src={mediaItem.file_url} type="audio/mpeg" />}
+                        {ext === 'wav' && <source src={mediaItem.file_url} type="audio/wav" />}
+                        {ext === 'ogg' && <source src={mediaItem.file_url} type="audio/ogg" />}
+                        Tu navegador no soporta la reproducción de audio.
+                        <a href={route('legal-cases.media.download', [legalCase.id, mediaItem.id])} target="_blank" rel="noopener noreferrer">
+                            Descargar audio
+                        </a>
+                    </audio>
+                </div>
             );
-        } else if (mediaItem.mime_type.includes('word') || mediaItem.mime_type.includes('document')) {
+        }
+
+        if (mediaItem.mime_type === 'application/pdf' && mediaItem.file_url) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-24 w-24 text-blue-700">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                    <polyline points="14 2 14 8 20 8" />
-                </svg>
+                <div className="h-[600px] rounded-md overflow-hidden">
+                    <iframe
+                        src={mediaItem.file_url}
+                        className="w-full h-full"
+                        title={mediaItem.name}
+                    />
+                </div>
             );
-        } else if (mediaItem.mime_type.includes('excel') || mediaItem.mime_type.includes('spreadsheet')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-24 w-24 text-green-600">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                    <polyline points="14 2 14 8 20 8" />
-                </svg>
-            );
-        } else {
-            return <FileText className="h-24 w-24 text-gray-500" />;
+        }
+
+        // Para otros tipos de archivos, mostrar información sobre el archivo
+        return (
+            <div className="flex flex-col items-center justify-center h-64 bg-gray-100 dark:bg-zinc-800 rounded-md p-6 text-center">
+                <div className="text-5xl mb-4">{getFileIcon('lg')}</div>
+                <h3 className="text-xl font-medium">{mediaItem.file_name || mediaItem.name}</h3>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">{mediaItem.type_name || mediaItem.mime_type}</p>
+                <p className="text-gray-500 dark:text-gray-400">{mediaItem.human_readable_size}</p>
+                <div className="mt-4">
+                    <Button
+                        onClick={() => window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank')}
+                        variant="outline"
+                    >
+                        <Download className="mr-2 h-4 w-4" />
+                        Descargar para visualizar
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
+    const deleteMedia = () => {
+        if (confirm('¿Está seguro que desea eliminar este archivo?')) {
+            router.delete(route('legal-cases.media.destroy', [legalCase.id, mediaItem.id]));
         }
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Archivo: ${mediaItem.name} - Expediente: ${legalCase.code}`} />
-            <div className="p-4 sm:p-6">
-                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
-                    <div className="p-4 text-gray-900 sm:p-6 dark:text-gray-100">
-                        <div className="mb-6 flex items-center justify-between">
-                            <h1 className="text-xl font-bold">Archivo: {mediaItem.name}</h1>
-                            <div className="flex gap-2">
-                                <Button
-                                    onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
-                                    variant="outline"
-                                    size="sm"
-                                >
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver al Listado
-                                </Button>
-                            </div>
-                        </div>
+            <div className="p-4 sm:p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-semibold">{mediaItem.name}</h1>
+                    <div className="flex space-x-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Volver al listado
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]))}
+                        >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank')}
+                        >
+                            <Download className="mr-2 h-4 w-4" />
+                            Descargar
+                        </Button>
+                        <Button variant="destructive" onClick={deleteMedia}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                        </Button>
+                    </div>
+                </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Columna de la izquierda: Vista previa del archivo */}
-                            <div className="flex flex-col items-center space-y-4">
-                                {mediaItem.mime_type.startsWith('image/') && mediaItem.file_url ? (
-                                    <div className="w-full rounded-lg border border-gray-200 overflow-hidden dark:border-gray-700">
-                                        <img
-                                            src={mediaItem.file_url}
-                                            alt={mediaItem.name}
-                                            className="w-full object-contain max-h-[300px]"
-                                        />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Vista Previa</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {renderPreview()}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Información del Archivo</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+                                    <div>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</h3>
+                                        <p className="mt-1">{mediaItem.name}</p>
                                     </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center p-6">
-                                        {getFileIcon()}
-                                        <div className="mt-4 text-center">
-                                            <p className="font-medium">{mediaItem.file_name}</p>
-                                            <p className="mt-1 text-sm text-gray-500">{mediaItem.human_readable_size}</p>
+
+                                    <div>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo de archivo</h3>
+                                        <div className="flex items-center mt-1 space-x-2">
+                                            {getFileIcon('sm')}
+                                            <span>{mediaItem.type_name || mediaItem.mime_type}</span>
                                         </div>
                                     </div>
-                                )}
 
-                                <div className="flex space-x-2 w-full justify-center">
-                                    <Button
-                                        onClick={() => window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank')}
-                                        variant="outline"
-                                    >
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Descargar
-                                    </Button>
-                                    <Button
-                                        onClick={() => router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]))}
-                                        variant="outline"
-                                    >
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Editar
-                                    </Button>
-                                    <Button
-                                        onClick={() => {
-                                            if (confirm('¿Está seguro que desea eliminar este archivo?')) {
-                                                router.delete(route('legal-cases.media.destroy', [legalCase.id, mediaItem.id]), {
-                                                    onSuccess: () => {
-                                                        // El servidor ya se encarga de la redirección y los mensajes flash
-                                                        // No necesitamos hacer nada más aquí
-                                                    }
-                                                });
-                                            }
-                                        }}
-                                        variant="outline"
-                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Eliminar
-                                    </Button>
+                                    {mediaItem.description && (
+                                        <div className="col-span-1 sm:col-span-2">
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Descripción</h3>
+                                            <p className="mt-1">{mediaItem.description}</p>
+                                        </div>
+                                    )}
+
+                                    {mediaItem.category && (
+                                        <div>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Categoría</h3>
+                                            <Badge variant="outline" className="mt-1">{mediaItem.category}</Badge>
+                                        </div>
+                                    )}
+
+                                    <div>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tamaño</h3>
+                                        <p className="mt-1">{mediaItem.human_readable_size}</p>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Fecha de creación</h3>
+                                        <p className="mt-1">
+                                            {formatDateSafe(mediaItem.created_at)}
+                                        </p>
+                                    </div>
+
+                                    {mediaItem.last_modified && (
+                                        <div>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Última modificación</h3>
+                                            <p className="mt-1">{mediaItem.last_modified}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="col-span-1 sm:col-span-2 border-t pt-3 dark:border-zinc-700">
+                                        <details className="group">
+                                            <summary className="flex items-center font-medium cursor-pointer list-none text-sm text-gray-500 dark:text-gray-400">
+                                                <span>Información técnica</span>
+                                                <span className="transition group-open:rotate-180 ml-auto">
+                                                    <ChevronDown className="h-4 w-4" />
+                                                </span>
+                                            </summary>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 mt-3">
+                                                <div>
+                                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre del archivo</h3>
+                                                    <p className="mt-1 text-xs break-all">{mediaItem.file_name}</p>
+                                                </div>
+
+                                                {mediaItem.original_filename && mediaItem.original_filename !== mediaItem.file_name && (
+                                                    <div>
+                                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre original</h3>
+                                                        <p className="mt-1 text-xs break-all">{mediaItem.original_filename}</p>
+                                                    </div>
+                                                )}
+
+                                                <div>
+                                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">MIME Type</h3>
+                                                    <p className="mt-1 text-xs">{mediaItem.mime_type}</p>
+                                                </div>
+
+                                                <div>
+                                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Extensión</h3>
+                                                    <p className="mt-1 uppercase">{mediaItem.extension}</p>
+                                                </div>
+                                            </div>
+                                        </details>
+                                    </div>
                                 </div>
-                            </div>
-
-                            {/* Columna de la derecha: Detalles del archivo */}
-                            <div className="md:col-span-2">
-                                <div className="rounded-lg border border-gray-200 dark:border-gray-700">
-                                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 dark:bg-zinc-800 dark:border-gray-700">
-                                        <h2 className="font-medium">Información del Archivo</h2>
-                                    </div>
-                                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        <div className="grid grid-cols-3 px-4 py-3">
-                                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</div>
-                                            <div className="col-span-2 font-medium">{mediaItem.name}</div>
-                                        </div>
-                                        <div className="grid grid-cols-3 px-4 py-3">
-                                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre original</div>
-                                            <div className="col-span-2">{mediaItem.original_filename || mediaItem.file_name}</div>
-                                        </div>
-                                        {mediaItem.description && (
-                                            <div className="grid grid-cols-3 px-4 py-3">
-                                                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Descripción</div>
-                                                <div className="col-span-2">{mediaItem.description}</div>
-                                            </div>
-                                        )}
-                                        {mediaItem.category && (
-                                            <div className="grid grid-cols-3 px-4 py-3">
-                                                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Categoría</div>
-                                                <div className="col-span-2">{mediaItem.category}</div>
-                                            </div>
-                                        )}
-                                        <div className="grid grid-cols-3 px-4 py-3">
-                                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo</div>
-                                            <div className="col-span-2">
-                                                {mediaItem.type_name || mediaItem.mime_type}
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-3 px-4 py-3">
-                                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Extensión</div>
-                                            <div className="col-span-2 uppercase">{mediaItem.extension}</div>
-                                        </div>
-                                        <div className="grid grid-cols-3 px-4 py-3">
-                                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Tamaño</div>
-                                            <div className="col-span-2">{mediaItem.human_readable_size}</div>
-                                        </div>
-                                        <div className="grid grid-cols-3 px-4 py-3">
-                                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Fecha de subida</div>
-                                            <div className="col-span-2">{formatDateSafe(mediaItem.created_at)}</div>
-                                        </div>
-                                        <div className="grid grid-cols-3 px-4 py-3">
-                                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Última modificación</div>
-                                            <div className="col-span-2">{mediaItem.last_modified || formatDateSafe(mediaItem.updated_at)}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             </div>

@@ -75,17 +75,38 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
     const renderPreview = () => {
         if (!mediaItem.mime_type) {
             return (
-                <div className="flex items-center justify-center h-64 bg-gray-100 rounded-md">
+                <div className="flex items-center justify-center h-64 bg-gray-100 rounded-md dark:bg-zinc-800">
                     No se puede mostrar una vista previa para este archivo
                 </div>
             );
         }
 
+        // Asegurarse de que tenemos una URL válida para el archivo
+        // La URL debe apuntar a la estructura de carpetas con nombres de colección
+        const ensureCorrectUrl = () => {
+            if (!mediaItem.file_url) {
+                // Si no hay URL, intentar construirla basada en la colección
+                return `/storage/media/${mediaItem.collection_name}/${mediaItem.file_name}`;
+            }
+
+            // Si la URL ya existe pero no contiene el nombre de la colección, corregirla
+            if (mediaItem.file_url && mediaItem.collection_name && !mediaItem.file_url.includes(mediaItem.collection_name)) {
+                // Extraer el nombre del archivo de la URL existente
+                const fileName = mediaItem.file_url.split('/').pop();
+                // Construir la URL correcta con el nombre de la colección
+                return `/storage/media/${mediaItem.collection_name}/${fileName || mediaItem.file_name}`;
+            }
+
+            return mediaItem.file_url;
+        };
+
+        const fileUrl = ensureCorrectUrl();
+
         if (mediaItem.mime_type.startsWith('image/')) {
             return (
                 <div className="flex items-center justify-center">
                     <img
-                        src={mediaItem.file_url}
+                        src={fileUrl}
                         alt={mediaItem.name}
                         className="max-h-[600px] object-contain rounded-md"
                     />
@@ -93,16 +114,42 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
             );
         }
 
+        // Determinar el tipo MIME correcto basado en la extensión si es necesario
+        let videoType = mediaItem.mime_type;
+        const ext = mediaItem.extension?.toLowerCase() || '';
+
+        // Mapa de extensiones a tipos MIME para asegurar compatibilidad
+        const mimeMap: Record<string, string> = {
+            'mp4': 'video/mp4',
+            'webm': 'video/webm',
+            'ogg': 'video/ogg',
+            'mov': 'video/quicktime',
+            'avi': 'video/x-msvideo',
+            'wmv': 'video/x-ms-wmv',
+            'flv': 'video/x-flv',
+            'mkv': 'video/x-matroska'
+        };
+
         if (mediaItem.mime_type.startsWith('video/')) {
+            // Si tenemos una extensión conocida, usar el tipo MIME correspondiente
+            if (ext in mimeMap) {
+                videoType = mimeMap[ext];
+            }
+
             return (
                 <div className="flex items-center justify-center">
                     <video
-                        src={mediaItem.file_url}
                         controls
                         className="max-h-[600px] max-w-full rounded-md"
                         controlsList="nodownload"
                         poster={mediaItem.thumbnail || undefined}
+                        preload="metadata"
                     >
+                        {/* Usar múltiples elementos source para mayor compatibilidad */}
+                        <source src={fileUrl} type={videoType} />
+                        {ext === 'mp4' && <source src={fileUrl} type="video/mp4" />}
+                        {ext === 'webm' && <source src={fileUrl} type="video/webm" />}
+                        {ext === 'ogg' && <source src={fileUrl} type="video/ogg" />}
                         Tu navegador no soporta la reproducción de videos.
                         <a href={route('media-library.download', mediaItem.id)} target="_blank" rel="noopener noreferrer">
                             Descargar video
@@ -113,16 +160,39 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
         }
 
         if (mediaItem.mime_type.startsWith('audio/')) {
+            // Determinar el tipo MIME correcto basado en la extensión si es necesario
+            let audioType = mediaItem.mime_type;
+
+            // Mapa de extensiones a tipos MIME para asegurar compatibilidad
+            const audioMimeMap: Record<string, string> = {
+                'mp3': 'audio/mpeg',
+                'wav': 'audio/wav',
+                'ogg': 'audio/ogg',
+                'flac': 'audio/flac',
+                'aac': 'audio/aac',
+                'm4a': 'audio/mp4'
+            };
+
+            // Si tenemos una extensión conocida, usar el tipo MIME correspondiente
+            if (ext in audioMimeMap) {
+                audioType = audioMimeMap[ext];
+            }
+
             return (
                 <div className="flex flex-col items-center justify-center py-8">
                     <div className="text-5xl mb-6">{getTypeIcon()}</div>
                     <h3 className="text-xl font-medium mb-4">{mediaItem.name}</h3>
                     <audio
-                        src={mediaItem.file_url}
                         controls
                         className="w-full max-w-md"
                         controlsList="nodownload"
+                        preload="metadata"
                     >
+                        {/* Usar múltiples elementos source para mayor compatibilidad */}
+                        <source src={fileUrl} type={audioType} />
+                        {ext === 'mp3' && <source src={fileUrl} type="audio/mpeg" />}
+                        {ext === 'wav' && <source src={fileUrl} type="audio/wav" />}
+                        {ext === 'ogg' && <source src={fileUrl} type="audio/ogg" />}
                         Tu navegador no soporta la reproducción de audio.
                         <a href={route('media-library.download', mediaItem.id)} target="_blank" rel="noopener noreferrer">
                             Descargar audio
@@ -132,11 +202,11 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
             );
         }
 
-        if (mediaItem.mime_type === 'application/pdf' && mediaItem.file_url) {
+        if (mediaItem.mime_type === 'application/pdf' && fileUrl) {
             return (
                 <div className="h-[600px] rounded-md overflow-hidden">
                     <iframe
-                        src={mediaItem.file_url}
+                        src={fileUrl}
                         className="w-full h-full"
                         title={mediaItem.name}
                     />
@@ -146,11 +216,11 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
 
         // Para otros tipos de archivos, mostrar información sobre el archivo
         return (
-            <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-md p-6 text-center">
+            <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-md p-6 text-center dark:bg-zinc-800">
                 <div className="text-5xl mb-4">{getTypeIcon()}</div>
                 <h3 className="text-xl font-medium">{mediaItem.file_name || mediaItem.name}</h3>
-                <p className="text-gray-500 mt-2">{mediaItem.type_name || mediaItem.mime_type}</p>
-                <p className="text-gray-500">{mediaItem.human_readable_size}</p>
+                <p className="text-gray-500 mt-2 dark:text-gray-400">{mediaItem.type_name || mediaItem.mime_type}</p>
+                <p className="text-gray-500 dark:text-gray-400">{mediaItem.human_readable_size}</p>
                 <div className="mt-4">
                     <Button onClick={() => window.open(route('media-library.download', mediaItem.id), '_blank')}>
                         <DownloadIcon className="h-4 w-4 mr-2" />
@@ -215,12 +285,12 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Nombre</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</h3>
                                         <p className="mt-1">{mediaItem.name}</p>
                                     </div>
 
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Tipo de archivo</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo de archivo</h3>
                                         <div className="flex items-center mt-1 space-x-2">
                                             {getTypeIcon()}
                                             <span>{mediaItem.type_name || mediaItem.mime_type}</span>
@@ -229,30 +299,30 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
 
                                     {mediaItem.description && (
                                         <div className="col-span-1 sm:col-span-2">
-                                            <h3 className="text-sm font-medium text-gray-500">Descripción</h3>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Descripción</h3>
                                             <p className="mt-1">{mediaItem.description}</p>
                                         </div>
                                     )}
 
                                     {mediaItem.category && (
                                         <div>
-                                            <h3 className="text-sm font-medium text-gray-500">Categoría</h3>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Categoría</h3>
                                             <Badge variant="outline" className="mt-1">{mediaItem.category}</Badge>
                                         </div>
                                     )}
 
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Tamaño</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tamaño</h3>
                                         <p className="mt-1">{mediaItem.human_readable_size}</p>
                                     </div>
 
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Colección</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Colección</h3>
                                         <p className="mt-1 capitalize">{mediaItem.collection_name}</p>
                                     </div>
 
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500">Fecha de creación</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Fecha de creación</h3>
                                         <p className="mt-1">
                                             {new Date(mediaItem.created_at).toLocaleDateString('es-ES', {
                                                 day: '2-digit',
@@ -264,14 +334,14 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
 
                                     {mediaItem.last_modified && (
                                         <div>
-                                            <h3 className="text-sm font-medium text-gray-500">Última modificación</h3>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Última modificación</h3>
                                             <p className="mt-1">{mediaItem.last_modified}</p>
                                         </div>
                                     )}
 
-                                    <div className="col-span-1 sm:col-span-2 border-t pt-3">
+                                    <div className="col-span-1 sm:col-span-2 border-t pt-3 dark:border-zinc-700">
                                         <details className="group">
-                                            <summary className="flex items-center font-medium cursor-pointer list-none text-sm text-gray-500">
+                                            <summary className="flex items-center font-medium cursor-pointer list-none text-sm text-gray-500 dark:text-gray-400">
                                                 <span>Información técnica</span>
                                                 <span className="transition group-open:rotate-180 ml-auto">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6" /></svg>
@@ -279,37 +349,37 @@ export default function MediaShow({ mediaItem }: MediaShowProps) {
                                             </summary>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 mt-3">
                                                 <div>
-                                                    <h3 className="text-sm font-medium text-gray-500">Nombre del archivo</h3>
+                                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre del archivo</h3>
                                                     <p className="mt-1 text-xs break-all">{mediaItem.file_name}</p>
                                                 </div>
 
                                                 {mediaItem.original_filename && mediaItem.original_filename !== mediaItem.file_name && (
                                                     <div>
-                                                        <h3 className="text-sm font-medium text-gray-500">Nombre original</h3>
+                                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre original</h3>
                                                         <p className="mt-1 text-xs break-all">{mediaItem.original_filename}</p>
                                                     </div>
                                                 )}
 
                                                 <div>
-                                                    <h3 className="text-sm font-medium text-gray-500">MIME Type</h3>
+                                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">MIME Type</h3>
                                                     <p className="mt-1 text-xs">{mediaItem.mime_type}</p>
                                                 </div>
 
                                                 {mediaItem.extension && (
                                                     <div>
-                                                        <h3 className="text-sm font-medium text-gray-500">Extensión</h3>
+                                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Extensión</h3>
                                                         <p className="mt-1 uppercase">{mediaItem.extension}</p>
                                                     </div>
                                                 )}
 
                                                 <div>
-                                                    <h3 className="text-sm font-medium text-gray-500">Almacenamiento</h3>
+                                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Almacenamiento</h3>
                                                     <p className="mt-1">{mediaItem.disk}</p>
                                                 </div>
 
                                                 {mediaItem.uuid && (
                                                     <div>
-                                                        <h3 className="text-sm font-medium text-gray-500">UUID</h3>
+                                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">UUID</h3>
                                                         <p className="mt-1 text-xs break-all">{mediaItem.uuid}</p>
                                                     </div>
                                                 )}

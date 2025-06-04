@@ -25,6 +25,9 @@ class MediaLibraryController extends Controller
         try {
             $query = Media::query();
 
+            // Filtrar solo los archivos asociados al modelo MediaOwner
+            $query->where('model_type', MediaOwner::class);
+
             // Filtrar por colección si se proporciona y no es "_all"
             if ($request->filled('collection') && $request->input('collection') !== '_all') {
                 $query->where('collection_name', $request->input('collection'));
@@ -90,7 +93,10 @@ class MediaLibraryController extends Controller
             return Inertia::render('MediaLibrary/Index', [
                 'mediaItems' => $media,
                 'filters' => $request->only(['search', 'collection', 'date_type', 'start_date', 'end_date']),
-                'collections' => Media::select('collection_name')->distinct()->pluck('collection_name'),
+                'collections' => Media::select('collection_name')
+                    ->where('model_type', MediaOwner::class)
+                    ->distinct()
+                    ->pluck('collection_name'),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -207,6 +213,12 @@ class MediaLibraryController extends Controller
      */
     public function show(Media $media)
     {
+        // Verificar que el archivo pertenezca al modelo MediaOwner
+        if ($media->model_type !== MediaOwner::class) {
+            return redirect()->route('media-library.index')
+                ->with('error', 'No tienes acceso a este archivo.');
+        }
+
         // Añadir información adicional al objeto media
         $media->type_name = $this->getTypeNameForMimeType($media->mime_type);
         $media->type_icon = $this->getTypeIconForMimeType($media->mime_type);
@@ -233,6 +245,12 @@ class MediaLibraryController extends Controller
      */
     public function edit(Media $media)
     {
+        // Verificar que el archivo pertenezca al modelo MediaOwner
+        if ($media->model_type !== MediaOwner::class) {
+            return redirect()->route('media-library.index')
+                ->with('error', 'No tienes acceso a este archivo.');
+        }
+
         // Añadir propiedades personalizadas
         $media->description = $media->getCustomProperty('description');
         $media->category = $media->getCustomProperty('category');
@@ -252,6 +270,12 @@ class MediaLibraryController extends Controller
      */
     public function update(Request $request, Media $media)
     {
+        // Verificar que el archivo pertenezca al modelo MediaOwner
+        if ($media->model_type !== MediaOwner::class) {
+            return redirect()->route('media-library.index')
+                ->with('error', 'No tienes acceso a este archivo.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -383,6 +407,12 @@ class MediaLibraryController extends Controller
     public function destroy(Media $media)
     {
         try {
+            // Verificar que el archivo pertenezca al modelo MediaOwner
+            if ($media->model_type !== MediaOwner::class) {
+                return redirect()->route('media-library.index')
+                    ->with('error', 'No tienes acceso a este archivo.');
+            }
+
             // Obtener información del archivo antes de eliminarlo
             $diskName = $media->disk;
             $fileName = $media->file_name;
@@ -470,6 +500,12 @@ class MediaLibraryController extends Controller
      */
     public function download(Media $media)
     {
+        // Verificar que el archivo pertenezca al modelo MediaOwner
+        if ($media->model_type !== MediaOwner::class) {
+            return redirect()->route('media-library.index')
+                ->with('error', 'No tienes acceso a este archivo.');
+        }
+
         // Registrar información de depuración
         \Log::info('Intento de descarga de archivo', [
             'media_id' => $media->id,
@@ -709,7 +745,8 @@ class MediaLibraryController extends Controller
      */
     private function getCorrectUrl(Media $media): string
     {
-        // Construir la URL correcta basada en la estructura de carpetas observada
-        return url("/storage/media/{$media->collection_name}/{$media->file_name}");
+        // Usar directamente el método getUrl() del paquete Media Library
+        // que genera la URL correcta según la configuración del disco y la estructura de carpetas
+        return $media->getUrl();
     }
 }
