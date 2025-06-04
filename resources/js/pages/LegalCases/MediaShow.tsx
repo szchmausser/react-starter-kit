@@ -360,7 +360,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                                     {mediaItem.last_modified && (
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Última modificación</h3>
-                                            <p className="mt-1">{mediaItem.last_modified}</p>
+                                            <p className="mt-1">{formatDateSafe(mediaItem.last_modified)}</p>
                                         </div>
                                     )}
 

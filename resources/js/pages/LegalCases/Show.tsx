@@ -108,6 +108,7 @@ interface MediaItemSummary {
     extension: string;
     human_readable_size: string;
     created_at: string;
+    updated_at?: string;
 }
 
 interface Props {
@@ -1157,6 +1158,11 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                             )}
                         </div>
 
+                        {/* Cronología del expediente */}
+                        <div className="mb-6">
+                            <CaseEvents legalCase={legalCase} events={events} />
+                        </div>
+
                         {/* Tarjeta: Archivos Multimedia */}
                         <div className="mb-6 overflow-hidden rounded-md border dark:border-zinc-700">
                             <div
@@ -1236,9 +1242,20 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                                                 {getFileIcon(item.mime_type)}
                                                                 <div className="ml-3">
                                                                     <p className="font-medium">{item.name}</p>
-                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                                        {item.human_readable_size} • {formatDateSafe(item.created_at)}
-                                                                    </p>
+                                                                    <div className="flex flex-col text-xs text-gray-600 dark:text-gray-400">
+                                                                        <div className="flex items-center gap-1">
+                                                                            <span>{item.human_readable_size}</span>
+                                                                            <span className="mx-1">•</span>
+                                                                            <span className="whitespace-nowrap">
+                                                                                <span className="font-medium">Creado:</span> {formatDateSafe(item.created_at)}
+                                                                            </span>
+                                                                        </div>
+                                                                        {item.updated_at && item.updated_at !== item.created_at && (
+                                                                            <div className="text-gray-500 dark:text-gray-500">
+                                                                                <span className="font-medium">Actualizado:</span> {formatDateSafe(item.updated_at)}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div className="mt-2 flex justify-end sm:mt-0">
@@ -1282,9 +1299,6 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                 </div>
                             )}
                         </div>
-
-                        {/* Cronología del expediente */}
-                        <CaseEvents legalCase={legalCase} events={events} />
                     </div>
                 </div>
             </div>

@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { type BreadcrumbItem } from '@/types';
 import { formatDateSafe } from '@/lib/utils';
-import { FileText, Download, Edit, Trash2, ArrowLeft, Grid, List, Upload, Eye } from 'lucide-react';
+import { FileText, Download, Edit, Trash2, ArrowLeft, Grid, List, Upload, Eye, Filter, X, Search, Calendar } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface MediaItem {
     id: number;
@@ -37,6 +41,87 @@ interface Props {
 
 export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+    const [showFilters, setShowFilters] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [dateFilterType, setDateFilterType] = useState<'created' | 'updated'>('created');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [filteredItems, setFilteredItems] = useState<MediaItem[]>(mediaItems);
+
+    // Aplicar filtros cuando cambien los criterios
+    useEffect(() => {
+        applyFilters();
+    }, [searchTerm, dateFilterType, startDate, endDate]);
+
+    // Función para aplicar todos los filtros
+    const applyFilters = () => {
+        let filtered = [...mediaItems];
+
+        // Filtrar por término de búsqueda (nombre o descripción)
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(item =>
+                item.name.toLowerCase().includes(term) ||
+                (item.description && item.description.toLowerCase().includes(term))
+            );
+        }
+
+        // Filtrar por fechas
+        if (startDate || endDate) {
+            filtered = filtered.filter(item => {
+                // Asegurarse de que las fechas se interpretan correctamente
+                const dateField = dateFilterType === 'created' ? item.created_at : item.updated_at;
+                if (!dateField) return true;
+
+                // Extraer la fecha en formato YYYY-MM-DD sin ajustes de zona horaria
+                const itemDateStr = dateField.substring(0, 10);
+
+                if (startDate && endDate) {
+                    // Comparación directa de cadenas en formato YYYY-MM-DD
+                    return itemDateStr >= startDate && itemDateStr <= endDate;
+                } else if (startDate) {
+                    return itemDateStr >= startDate;
+                } else if (endDate) {
+                    return itemDateStr <= endDate;
+                }
+                return true;
+            });
+        }
+
+        setFilteredItems(filtered);
+    };
+
+    // Función para limpiar todos los filtros
+    const clearFilters = () => {
+        setSearchTerm('');
+        setDateFilterType('created');
+        setStartDate('');
+        setEndDate('');
+    };
+
+    // Función para formatear la fecha en formato YYYY-MM-DD para inputs de tipo date
+    const formatDateForInput = (dateString: string) => {
+        try {
+            // Extraer directamente los componentes de la fecha de la cadena
+            if (dateString.includes('-') && dateString.length >= 10) {
+                return dateString.substring(0, 10); // Devuelve YYYY-MM-DD sin procesar
+            }
+
+            // Si no tiene el formato esperado, intentar con Date
+            const date = new Date(dateString);
+            if (!isNaN(date.getTime())) {
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            return '';
+        } catch (error) {
+            console.error('Error al formatear fecha para input:', error);
+            return '';
+        }
+    };
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -171,11 +256,7 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
 
     // Función para formatear la fecha
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-        });
+        return formatDateSafe(dateString);
     };
 
     return (
@@ -184,54 +265,151 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
             <div className="p-4 sm:p-6">
                 <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
                     <div className="p-4 text-gray-900 sm:p-6 dark:text-gray-100">
-                        <div className="mb-4 flex items-center justify-between">
+                        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <h1 className="text-lg sm:text-xl font-bold truncate pr-2">Archivos Multimedia - <span className="hidden sm:inline">Expediente:</span> {legalCase.code}</h1>
-                            <div className="flex gap-2">
-                                <Button
-                                    onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex items-center gap-1 sm:gap-2"
-                                    title={viewMode === 'list' ? 'Ver como iconos' : 'Ver como lista'}
-                                >
-                                    {viewMode === 'list' ? (
-                                        <>
-                                            <Grid className="h-4 w-4" />
-                                            <span className="hidden sm:inline">Ver como iconos</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <List className="h-4 w-4" />
-                                            <span className="hidden sm:inline">Ver como lista</span>
-                                        </>
-                                    )}
-                                </Button>
-                                <Button
-                                    onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex items-center"
-                                    title="Volver al Expediente"
-                                >
-                                    <ArrowLeft className="h-4 w-4" />
-                                    <span className="hidden sm:inline ml-2">Volver al Expediente</span>
-                                </Button>
-                                <Button
-                                    onClick={() => router.visit(route('legal-cases.media.create', legalCase.id))}
-                                    variant="default"
-                                    size="sm"
-                                    className="flex items-center"
-                                    title="Subir Nuevo Archivo"
-                                >
-                                    <Upload className="h-4 w-4" />
-                                    <span className="hidden sm:inline ml-2">Subir</span>
-                                </Button>
+                            <div className="flex flex-wrap gap-2 justify-between sm:justify-end">
+                                <div className="flex gap-2">
+                                    <div className="relative w-full sm:w-auto">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                        <Input
+                                            type="text"
+                                            placeholder="Buscar archivos..."
+                                            className="pl-9 h-9 w-full sm:w-[200px] text-sm"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    <Button
+                                        onClick={() => setShowFilters(!showFilters)}
+                                        variant="outline"
+                                        size="sm"
+                                        className={`flex items-center gap-1 ${showFilters ? 'bg-gray-100 dark:bg-zinc-800' : ''}`}
+                                        title="Filtrar por fechas"
+                                    >
+                                        <Filter className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Filtros</span>
+                                    </Button>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex items-center gap-1 sm:gap-2"
+                                        title={viewMode === 'list' ? 'Ver como iconos' : 'Ver como lista'}
+                                    >
+                                        {viewMode === 'list' ? (
+                                            <>
+                                                <Grid className="h-4 w-4" />
+                                                <span className="hidden sm:inline">Ver como iconos</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <List className="h-4 w-4" />
+                                                <span className="hidden sm:inline">Ver como lista</span>
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        onClick={() => router.visit(route('legal-cases.show', legalCase.id))}
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex items-center"
+                                        title="Volver al Expediente"
+                                    >
+                                        <ArrowLeft className="h-4 w-4" />
+                                        <span className="hidden sm:inline ml-2">Volver al Expediente</span>
+                                    </Button>
+                                    <Button
+                                        onClick={() => router.visit(route('legal-cases.media.create', legalCase.id))}
+                                        variant="default"
+                                        size="sm"
+                                        className="flex items-center"
+                                        title="Subir Nuevo Archivo"
+                                    >
+                                        <Upload className="h-4 w-4" />
+                                        <span className="hidden sm:inline ml-2">Subir</span>
+                                    </Button>
+                                </div>
                             </div>
                         </div>
 
-                        {!mediaItems || mediaItems.length === 0 ? (
+                        {/* Panel de filtros */}
+                        <Collapsible open={showFilters} onOpenChange={setShowFilters}>
+                            <CollapsibleContent>
+                                <div className="mb-6 p-4 bg-gray-50 dark:bg-zinc-800 rounded-md border dark:border-zinc-700">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="font-medium flex items-center gap-2">
+                                            <Filter className="h-4 w-4" />
+                                            Filtrar por Fechas
+                                        </h3>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={clearFilters}
+                                            className="h-8 text-xs"
+                                        >
+                                            <X className="h-3 w-3 mr-1" />
+                                            Limpiar filtros
+                                        </Button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <div className="mb-2 text-sm font-medium">Tipo de fecha</div>
+                                            <RadioGroup
+                                                value={dateFilterType}
+                                                onValueChange={(value) => setDateFilterType(value as 'created' | 'updated')}
+                                                className="flex flex-col space-y-1"
+                                            >
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="created" id="created" />
+                                                    <Label htmlFor="created">Fecha de creación</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="updated" id="updated" />
+                                                    <Label htmlFor="updated">Fecha de actualización</Label>
+                                                </div>
+                                            </RadioGroup>
+                                        </div>
+
+                                        <div>
+                                            <div className="mb-2 text-sm font-medium">Fecha inicial</div>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                <Input
+                                                    type="date"
+                                                    className="pl-9"
+                                                    value={startDate}
+                                                    onChange={(e) => setStartDate(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div className="mb-2 text-sm font-medium">Fecha final</div>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                <Input
+                                                    type="date"
+                                                    className="pl-9"
+                                                    value={endDate}
+                                                    onChange={(e) => setEndDate(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+
+                        {!filteredItems || filteredItems.length === 0 ? (
                             <div className="rounded-md bg-gray-50 p-6 text-center dark:bg-zinc-800">
-                                <p className="text-gray-500 dark:text-gray-400">No hay archivos multimedia asociados a este expediente.</p>
+                                {mediaItems.length === 0 ? (
+                                    <p className="text-gray-500 dark:text-gray-400">No hay archivos multimedia asociados a este expediente.</p>
+                                ) : (
+                                    <p className="text-gray-500 dark:text-gray-400">No se encontraron archivos que coincidan con los criterios de búsqueda.</p>
+                                )}
                                 <Button
                                     onClick={() => router.visit(route('legal-cases.media.create', legalCase.id))}
                                     className="mt-4"
@@ -243,34 +421,31 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                             // Vista de lista
                             <div className="overflow-hidden rounded-md border dark:border-zinc-700">
                                 {/* Encabezado de tabla - solo visible en pantallas medianas y grandes */}
-                                <div className="bg-gray-50 px-4 py-3 font-medium hidden sm:block dark:bg-zinc-800">
-                                    <div className="grid grid-cols-12 gap-2">
-                                        <div className="col-span-4 text-sm text-gray-600 dark:text-gray-400">Nombre</div>
-                                        <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">Tipo</div>
-                                        <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">Tamaño</div>
-                                        <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">Fecha</div>
-                                        <div className="col-span-1 text-sm text-gray-600 dark:text-gray-400">Acciones</div>
-                                    </div>
+                                <div className="hidden lg:grid grid-cols-12 gap-4 items-center py-2 px-4 bg-gray-50 dark:bg-zinc-800 rounded-t-md">
+                                    <div className="col-span-5 text-sm text-gray-600 dark:text-gray-400">Nombre</div>
+                                    <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">Tipo</div>
+                                    <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">Tamaño</div>
+                                    <div className="col-span-3 text-sm text-gray-600 dark:text-gray-400">Fecha</div>
                                 </div>
                                 <div className="divide-y divide-gray-200 dark:divide-zinc-700 dark:bg-zinc-900">
-                                    {mediaItems.map((mediaItem) => (
+                                    {filteredItems.map((mediaItem) => (
                                         <div key={mediaItem.id} className="px-4 py-3">
-                                            {/* Vista para pantallas medianas y grandes */}
-                                            <div className="hidden sm:grid grid-cols-12 gap-2 items-center">
-                                                <div className="col-span-4 flex items-center">
-                                                    <div className="mr-3 flex-shrink-0">
-                                                        {getFileIcon(mediaItem.mime_type)}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="font-medium truncate" title={mediaItem.name}>{mediaItem.name}</p>
-                                                        {mediaItem.description && (
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title={mediaItem.description}>
-                                                                {mediaItem.description}
+                                            {/* Vista para pantallas grandes */}
+                                            <div className="hidden lg:grid grid-cols-12 gap-4 items-center">
+                                                <div className="col-span-5">
+                                                    <div className="flex items-center">
+                                                        <div className="mr-3 flex-shrink-0">
+                                                            {getFileIcon(mediaItem.mime_type)}
+                                                        </div>
+                                                        <div className="flex-grow min-w-0">
+                                                            <p className="font-medium truncate break-all line-clamp-1" title={mediaItem.name}>{mediaItem.name}</p>
+                                                            <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                                                                {mediaItem.description || mediaItem.file_name}
                                                             </p>
-                                                        )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className="col-span-3">
+                                                <div className="col-span-2">
                                                     <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)]" title={mediaItem.mime_type}>
                                                         {mediaItem.type_name || mediaItem.mime_type}
                                                     </span>
@@ -278,92 +453,59 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
                                                     {mediaItem.human_readable_size}
                                                 </div>
-                                                <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
-                                                    {formatDate(mediaItem.created_at)}
-                                                </div>
-                                                <div className="col-span-1 flex justify-start space-x-1">
-                                                    <Button
-                                                        onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]))}
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        title="Ver detalles"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        onClick={() => window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank')}
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        title="Descargar"
-                                                    >
-                                                        <Download className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        onClick={() => router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]))}
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        title="Editar"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        onClick={() => {
-                                                            if (confirm('¿Está seguro que desea eliminar este archivo?')) {
-                                                                router.delete(route('legal-cases.media.destroy', [legalCase.id, mediaItem.id]));
-                                                            }
-                                                        }}
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-red-500 hover:text-red-700"
-                                                        title="Eliminar"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                <div className="col-span-3 text-sm">
+                                                    <div className="flex flex-col">
+                                                        <div className="flex items-center text-gray-600 dark:text-gray-400">
+                                                            <span className="text-xs font-medium mr-1">Creado:</span>
+                                                            <span>{formatDate(mediaItem.created_at)}</span>
+                                                        </div>
+                                                        <div className="flex items-center text-gray-500 dark:text-gray-500 text-xs">
+                                                            <span className="font-medium mr-1">Actualizado:</span>
+                                                            <span>{formatDate(mediaItem.updated_at || mediaItem.created_at)}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {/* Vista para móviles - formato de tarjeta apilada */}
+                                            {/* Vista para móviles y pantallas pequeñas */}
                                             <div
-                                                className="sm:hidden flex flex-col cursor-pointer"
+                                                className="lg:hidden flex flex-col cursor-pointer"
                                                 onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]))}
                                             >
-                                                <div className="flex items-center mb-2">
+                                                <div className="flex items-center">
                                                     <div className="mr-3 flex-shrink-0">
                                                         {getFileIcon(mediaItem.mime_type)}
                                                     </div>
                                                     <div className="flex-grow min-w-0">
-                                                        <p className="font-medium truncate" title={mediaItem.name}>{mediaItem.name}</p>
-                                                        <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)] mt-1" title={mediaItem.mime_type}>
-                                                            {mediaItem.type_name || mediaItem.mime_type}
-                                                        </span>
+                                                        <p className="font-medium truncate break-all line-clamp-1" title={mediaItem.name}>{mediaItem.name}</p>
+                                                        <div className="flex flex-col mt-1">
+                                                            <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                                                                <span className="font-medium mr-1">Creado:</span>
+                                                                <span>{formatDate(mediaItem.created_at)}</span>
+                                                            </div>
+                                                            <div className="flex items-center text-xs text-gray-500 dark:text-gray-500">
+                                                                <span className="font-medium mr-1">Act:</span>
+                                                                <span>{formatDate(mediaItem.updated_at || mediaItem.created_at)}</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 ml-10 mb-2">
-                                                    <div>
-                                                        <p>{mediaItem.human_readable_size}</p>
-                                                        <p>{formatDate(mediaItem.created_at)}</p>
-                                                        {mediaItem.description && (
-                                                            <p className="truncate max-w-[180px]" title={mediaItem.description}>
-                                                                {mediaItem.description}
-                                                            </p>
-                                                        )}
+                                                <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100 dark:border-zinc-700">
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {mediaItem.human_readable_size}
                                                     </div>
-                                                    <div className="flex space-x-1">
+                                                    <div className="flex gap-1">
                                                         <Button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]));
+                                                                router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]));
                                                             }}
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-7 w-7"
-                                                            title="Ver detalles"
                                                         >
-                                                            <Eye className="h-3 w-3" />
+                                                            <Edit className="h-3.5 w-3.5" />
                                                         </Button>
                                                         <Button
                                                             onClick={(e) => {
@@ -373,21 +515,8 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-7 w-7"
-                                                            title="Descargar"
                                                         >
-                                                            <Download className="h-3 w-3" />
-                                                        </Button>
-                                                        <Button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]));
-                                                            }}
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-7 w-7"
-                                                            title="Editar"
-                                                        >
-                                                            <Edit className="h-3 w-3" />
+                                                            <Download className="h-3.5 w-3.5" />
                                                         </Button>
                                                         <Button
                                                             onClick={(e) => {
@@ -399,9 +528,8 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-7 w-7 text-red-500 hover:text-red-700"
-                                                            title="Eliminar"
                                                         >
-                                                            <Trash2 className="h-3 w-3" />
+                                                            <Trash2 className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -413,49 +541,46 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                         ) : (
                             // Vista de iconos
                             <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                                {mediaItems.map((mediaItem) => (
+                                {filteredItems.map((mediaItem) => (
                                     <div
                                         key={mediaItem.id}
                                         className="flex flex-col items-center justify-between p-3 sm:p-4 border border-gray-100 dark:border-zinc-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer min-h-[220px] h-full"
                                         onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]))}
                                     >
                                         <div className="flex flex-col items-center w-full flex-grow">
-                                            <div className="mb-0.5 flex items-center justify-center h-32 sm:h-40">
+                                            <div className="flex justify-center h-32 sm:h-40 items-center mb-0.5 sm:mb-2">
                                                 {getLargeFileIcon(mediaItem.mime_type)}
                                             </div>
-                                            <div className="text-center w-full">
-                                                <div className="min-h-[2rem] max-h-[3rem] flex items-center justify-center overflow-hidden">
-                                                    <p className="font-medium text-xs sm:text-sm break-words text-center hyphens-auto line-clamp-2" style={{ wordBreak: 'break-word', wordWrap: 'break-word' }} title={mediaItem.name}>
-                                                        {mediaItem.name}
-                                                    </p>
+                                            <h3 className="text-sm font-medium text-center line-clamp-2 max-h-10 overflow-hidden mb-1 w-full px-1">
+                                                <span className="break-all line-clamp-2" title={mediaItem.name}>{mediaItem.name}</span>
+                                            </h3>
+                                            <div className="flex flex-wrap justify-center gap-x-2 gap-y-0.5 mt-0.5">
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {mediaItem.human_readable_size}
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col items-center mt-1 text-center w-full">
+                                                <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                                                    <span className="font-medium mr-1">Creado:</span>
+                                                    <span>{formatDate(mediaItem.created_at)}</span>
                                                 </div>
-                                                <div className="flex flex-wrap justify-center gap-x-2 gap-y-0.5 mt-0.5">
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {mediaItem.human_readable_size}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {formatDate(mediaItem.created_at)}
-                                                    </p>
-                                                </div>
-                                                <div className="mt-0.5">
-                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 truncate max-w-[calc(100%-10px)]" title={mediaItem.mime_type}>
-                                                        {mediaItem.type_name || mediaItem.mime_type}
-                                                    </span>
+                                                <div className="flex items-center text-xs text-gray-500 dark:text-gray-500">
+                                                    <span className="font-medium mr-1">Act:</span>
+                                                    <span>{formatDate(mediaItem.updated_at || mediaItem.created_at)}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex justify-between w-full pt-1 mt-1 border-t border-gray-100 dark:border-zinc-700">
+                                        <div className="flex justify-center gap-1 mt-2 w-full border-t pt-2 dark:border-zinc-700">
                                             <Button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    router.visit(route('legal-cases.media.show', [legalCase.id, mediaItem.id]));
+                                                    router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]));
                                                 }}
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 sm:h-9 sm:w-9"
-                                                title="Ver detalles"
                                             >
-                                                <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </Button>
                                             <Button
                                                 onClick={(e) => {
@@ -465,21 +590,8 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 sm:h-9 sm:w-9"
-                                                title="Descargar"
                                             >
                                                 <Download className="h-4 w-4 sm:h-5 sm:w-5" />
-                                            </Button>
-                                            <Button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]));
-                                                }}
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 sm:h-9 sm:w-9"
-                                                title="Editar"
-                                            >
-                                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </Button>
                                             <Button
                                                 onClick={(e) => {
@@ -491,7 +603,6 @@ export default function LegalCaseMedia({ mediaItems, legalCase }: Props) {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 sm:h-9 sm:w-9 text-red-500 hover:text-red-700"
-                                                title="Eliminar"
                                             >
                                                 <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </Button>

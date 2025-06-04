@@ -292,17 +292,9 @@ export default function MediaLibraryIndex({ mediaItems, filters, collections }: 
                 const media = row.original;
                 return (
                     <div className="relative h-10 w-10 overflow-hidden rounded-md">
-                        {media.mime_type && media.mime_type.startsWith('image/') ? (
-                            <img
-                                src={media.thumbnail || media.file_url}
-                                alt={media.name}
-                                className="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-zinc-800">
-                                {getFileIcon(media)}
-                            </div>
-                        )}
+                        <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-zinc-800">
+                            {getFileIcon(media)}
+                        </div>
                     </div>
                 );
             },

@@ -116,60 +116,6 @@ export default function MediaCreate() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="md:col-span-2">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Información del Archivo</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Nombre</Label>
-                                        <Input
-                                            id="name"
-                                            type="text"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            className={errors.name ? 'border-red-500' : ''}
-                                            disabled={isUploading}
-                                        />
-                                        {errors.name && (
-                                            <p className="text-xs text-red-500">{errors.name}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="description">Descripción</Label>
-                                        <Textarea
-                                            id="description"
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                            rows={4}
-                                            className={errors.description ? 'border-red-500' : ''}
-                                            disabled={isUploading}
-                                        />
-                                        {errors.description && (
-                                            <p className="text-xs text-red-500">{errors.description}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="category">Categoría</Label>
-                                        <Input
-                                            id="category"
-                                            type="text"
-                                            value={category}
-                                            onChange={(e) => setCategory(e.target.value)}
-                                            className={errors.category ? 'border-red-500' : ''}
-                                            disabled={isUploading}
-                                        />
-                                        {errors.category && (
-                                            <p className="text-xs text-red-500">{errors.category}</p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-
                         <div>
                             <Card>
                                 <CardHeader>
@@ -229,6 +175,60 @@ export default function MediaCreate() {
                                         </div>
                                         {errors.file && (
                                             <p className="text-xs text-red-500">{errors.file}</p>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Información del Archivo</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Nombre</Label>
+                                        <Input
+                                            id="name"
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            className={errors.name ? 'border-red-500' : ''}
+                                            disabled={isUploading}
+                                        />
+                                        {errors.name && (
+                                            <p className="text-xs text-red-500">{errors.name}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="description">Descripción</Label>
+                                        <Textarea
+                                            id="description"
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            rows={4}
+                                            className={errors.description ? 'border-red-500' : ''}
+                                            disabled={isUploading}
+                                        />
+                                        {errors.description && (
+                                            <p className="text-xs text-red-500">{errors.description}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="category">Categoría</Label>
+                                        <Input
+                                            id="category"
+                                            type="text"
+                                            value={category}
+                                            onChange={(e) => setCategory(e.target.value)}
+                                            className={errors.category ? 'border-red-500' : ''}
+                                            disabled={isUploading}
+                                        />
+                                        {errors.category && (
+                                            <p className="text-xs text-red-500">{errors.category}</p>
                                         )}
                                     </div>
                                 </CardContent>
