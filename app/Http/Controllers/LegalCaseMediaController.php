@@ -24,7 +24,7 @@ final class LegalCaseMediaController extends Controller
     {
         try {
             // Obtener todos los archivos multimedia asociados al caso legal
-            $mediaItems = $legalCase->getMedia();
+            $mediaItems = $legalCase->getMedia('*');
 
             // Transformar los resultados para incluir información adicional
             $mediaItems = $mediaItems->map(function ($item) {

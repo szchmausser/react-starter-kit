@@ -35,7 +35,9 @@ import {
     Users,
     X,
     FileText,
-    Upload
+    Upload,
+    List,
+    Grid
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -133,6 +135,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
     const [showStatusHistory, setShowStatusHistory] = useState(false);
     const [partiesCollapsed, setPartiesCollapsed] = useState(true);
     const [mediaCollapsed, setMediaCollapsed] = useState(true);
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
     // Estado para expandir/contraer títulos truncados
     const [expandedTitles, setExpandedTitles] = useState<{ [key: string]: boolean }>({});
@@ -642,6 +645,50 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
         }
     };
 
+    // Función para obtener un icono más grande para la vista de cuadrícula
+    const getLargeFileIcon = (mimeType: string) => {
+        if (mimeType.startsWith('image/')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-blue-500">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                <circle cx="9" cy="9" r="2" />
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+            </svg>;
+        } else if (mimeType === 'application/pdf') {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-red-500">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+                <path d="M9 15v-1h6v1" />
+                <path d="M11 18v-6" />
+                <path d="M9 12v-1h6v1" />
+            </svg>;
+        } else if (mimeType.startsWith('video/')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-purple-500">
+                <path d="m10 7 5 3-5 3Z" />
+                <rect width="20" height="14" x="2" y="3" rx="2" />
+                <path d="M12 17v4" />
+                <path d="M8 21h8" />
+            </svg>;
+        } else if (mimeType.includes('word') || mimeType.includes('document')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-blue-700">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>;
+        } else if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-green-600">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>;
+        } else if (mimeType.includes('audio')) {
+            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-pink-500">
+                <path d="M17.5 22h.5a2 2 0 0 0 2-2V7.7a2 2 0 0 0-1.5-1.94l-9-1.7A2 2 0 0 0 7 6v14a2 2 0 0 0 2 2h.5" />
+                <circle cx="14" cy="17" r="3" />
+                <circle cx="10" cy="17" r="3" />
+            </svg>;
+        } else {
+            return <FileText className="h-16 w-16 text-gray-500" />;
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detalle del Expediente: ${legalCase.code}`} />
@@ -1125,6 +1172,22 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                     <Button
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            setViewMode(viewMode === 'list' ? 'grid' : 'list');
+                                        }}
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-8 w-8 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500"
+                                        title={viewMode === 'list' ? 'Ver como iconos' : 'Ver como lista'}
+                                    >
+                                        {viewMode === 'list' ? (
+                                            <Grid className="h-4 w-4" />
+                                        ) : (
+                                            <List className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                    <Button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             router.visit(route('legal-cases.media.create', legalCase.id));
                                         }}
                                         size="icon"
@@ -1178,31 +1241,58 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                                         Ver todos los archivos
                                                     </Button>
                                                 </div>
-                                                <div className="divide-y divide-gray-200 dark:divide-zinc-800 dark:bg-zinc-900">
-                                                    {mediaItems.slice(0, 5).map((item) => (
-                                                        <div key={item.id} className="flex flex-col justify-between px-4 py-3 sm:flex-row sm:items-center">
-                                                            <div className="flex items-center">
-                                                                {getFileIcon(item.mime_type)}
-                                                                <div className="ml-3">
-                                                                    <p className="font-medium">{item.name}</p>
-                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                                        {item.human_readable_size} • {formatDateSafe(item.created_at)}
+
+                                                {viewMode === 'list' ? (
+                                                    // Vista de lista
+                                                    <div className="divide-y divide-gray-200 dark:divide-zinc-800 dark:bg-zinc-900">
+                                                        {mediaItems.slice(0, 5).map((item) => (
+                                                            <div key={item.id} className="flex flex-col justify-between px-4 py-3 sm:flex-row sm:items-center">
+                                                                <div className="flex items-center">
+                                                                    {getFileIcon(item.mime_type)}
+                                                                    <div className="ml-3">
+                                                                        <p className="font-medium">{item.name}</p>
+                                                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                                            {item.human_readable_size} • {formatDateSafe(item.created_at)}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="mt-2 flex justify-end sm:mt-0">
+                                                                    <Button
+                                                                        onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))}
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                                    >
+                                                                        Ver detalle
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    // Vista de iconos
+                                                    <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 dark:bg-zinc-900">
+                                                        {mediaItems.slice(0, 5).map((item) => (
+                                                            <div
+                                                                key={item.id}
+                                                                className="flex flex-col items-center justify-center p-4 border border-gray-100 dark:border-zinc-800 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
+                                                                onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))}
+                                                            >
+                                                                <div className="mb-3">
+                                                                    {getLargeFileIcon(item.mime_type)}
+                                                                </div>
+                                                                <div className="text-center">
+                                                                    <p className="font-medium text-sm truncate w-full max-w-[120px]" title={item.name}>
+                                                                        {item.name}
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                                        {item.human_readable_size}
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <div className="mt-2 flex justify-end sm:mt-0">
-                                                                <Button
-                                                                    onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))}
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                                                >
-                                                                    Ver detalle
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="flex justify-center">
                                                 <Button
