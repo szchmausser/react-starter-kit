@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LegalCase;
 use App\Models\CaseType;
+use App\Models\StatusList;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Http\RedirectResponse;
@@ -401,8 +402,27 @@ final class LegalCaseController extends Controller
             'status' => 'required|string|max:255',
             'reason' => 'nullable|string|max:1000',
         ]);
+
+        $statusName = $request->input('status');
+        $reason = $request->input('reason');
+
+        // Verificar si el estado ya existe en la tabla status_lists
+        $statusExists = StatusList::where('name', $statusName)->exists();
+
+        // Si el estado no existe, crearlo en la tabla status_lists
+        if (!$statusExists) {
+            StatusList::create([
+                'name' => $statusName,
+                'description' => 'Creado automáticamente desde la interfaz de expedientes',
+            ]);
+
+            Log::info("Se ha creado un nuevo estado en status_lists: {$statusName}");
+        }
+
+        // Asignar el estado al expediente usando el paquete spatie/laravel-model-status
         $legalCase = LegalCase::findOrFail($id);
-        $legalCase->setStatus($request->input('status'), $request->input('reason'));
+        $legalCase->setStatus($statusName, $reason);
+
         return response()->json(['success' => true]);
     }
 
@@ -412,7 +432,7 @@ final class LegalCaseController extends Controller
     public function availableStatuses()
     {
         // Obtener los nombres de los estatus desde la nueva tabla status_lists
-        $statuses = \App\Models\StatusList::orderBy('name')->pluck('name');
+        $statuses = StatusList::orderBy('name')->pluck('name');
         return response()->json($statuses);
     }
 

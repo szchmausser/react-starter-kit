@@ -528,11 +528,17 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
         })
             .then((res) => res.json())
             .then(() => {
+                // Si estamos creando un nuevo estado, añadirlo a la lista de estados disponibles
+                if (creatingStatus && statusToSet && !availableStatuses.includes(statusToSet)) {
+                    setAvailableStatuses(prevStatuses => [...prevStatuses, statusToSet].sort());
+                }
+
                 setStatusDialogOpen(false);
                 setStatusReason('');
                 setNewStatus('');
                 setCreatingStatus(false);
                 setSelectedStatus('placeholder');
+
                 // Refrescar historial y estatus actual
                 fetch(route('legal-cases.statuses', legalCase.id))
                     .then((res) => res.json())
@@ -541,6 +547,10 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                         setCurrentStatus(data[0]?.name || '');
                     });
                 toast.success('Estatus actualizado');
+            })
+            .catch(error => {
+                console.error('Error al actualizar el estatus:', error);
+                toast.error('Error al actualizar el estatus');
             });
     };
 
@@ -1305,7 +1315,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
 
             {/* Diálogo de confirmación para eliminar participante */}
             <AlertDialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent className="bg-white dark:bg-zinc-900">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Eliminar Participante</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -1324,7 +1334,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
 
             {/* Modal de cambio de estatus */}
             <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
-                <DialogContent>
+                <DialogContent className="bg-white dark:bg-zinc-900">
                     <DialogHeader>
                         <DialogTitle>Cambiar Estatus del Expediente</DialogTitle>
                         <div className="my-3 flex justify-center">
@@ -1361,8 +1371,23 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                             </>
                         ) : (
                             <div>
-                                <Input placeholder="Nuevo estatus" value={newStatus} onChange={(e) => setNewStatus(e.target.value)} />
-                                <Button variant="link" onClick={() => setCreatingStatus(false)} className="p-0 text-xs">
+                                <Input
+                                    id="new-status-input"
+                                    placeholder="Nuevo estatus"
+                                    value={newStatus}
+                                    onChange={(e) => setNewStatus(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && newStatus.trim()) {
+                                            handleStatusChange();
+                                        }
+                                    }}
+                                    className="w-full border-gray-300 dark:border-gray-600 dark:bg-zinc-800"
+                                    autoFocus
+                                />
+                                <Button variant="link" onClick={() => {
+                                    setCreatingStatus(false);
+                                    setNewStatus('');
+                                }} className="p-0 text-xs">
                                     Seleccionar existente
                                 </Button>
                             </div>
@@ -1410,7 +1435,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
 
             {/* Modal para agregar etiquetas */}
             <Dialog open={tagDialogOpen} onOpenChange={setTagDialogOpen}>
-                <DialogContent>
+                <DialogContent className="bg-white dark:bg-zinc-900">
                     <DialogHeader>
                         <DialogTitle>Agregar Etiqueta al Expediente</DialogTitle>
                         <DialogDescription>Selecciona una etiqueta existente o crea una nueva para agregar a este expediente.</DialogDescription>
@@ -1511,7 +1536,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
 
             {/* Diálogo de confirmación para eliminar etiqueta */}
             <AlertDialog open={isRemoveTagDialogOpen} onOpenChange={setIsRemoveTagDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent className="bg-white dark:bg-zinc-900">
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Eliminar etiqueta?</AlertDialogTitle>
                         <AlertDialogDescription>
