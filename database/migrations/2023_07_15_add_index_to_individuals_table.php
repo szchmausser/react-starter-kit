@@ -10,11 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('individuals', function (Blueprint $table) {
-            // Añadir índices para mejorar el rendimiento de las búsquedas por documento de identidad
-            $table->index('national_id');
-            $table->index('passport');
-        });
+        // No ejecutar esta migración si estamos usando SQLite
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            Schema::table('individuals', function (Blueprint $table) {
+                // Añadir índices para mejorar el rendimiento de las búsquedas por documento de identidad
+                $table->index('national_id');
+                $table->index('passport');
+            });
+        }
     }
 
     /**
@@ -22,10 +25,13 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('individuals', function (Blueprint $table) {
-            // Eliminar los índices
-            $table->dropIndex(['national_id']);
-            $table->dropIndex(['passport']);
-        });
+        // No ejecutar esta migración si estamos usando SQLite
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            Schema::table('individuals', function (Blueprint $table) {
+                // Eliminar los índices
+                $table->dropIndex(['national_id']);
+                $table->dropIndex(['passport']);
+            });
+        }
     }
 };

@@ -10,11 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('legal_entities', function (Blueprint $table) {
-            // Añadir índices para mejorar el rendimiento de las búsquedas por RIF y razón social
-            $table->index('rif');
-            $table->index('business_name');
-        });
+        // No ejecutar esta migración si estamos usando SQLite
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            Schema::table('legal_entities', function (Blueprint $table) {
+                // Añadir índices para mejorar el rendimiento de las búsquedas por RIF y razón social
+                $table->index('rif');
+                $table->index('business_name');
+            });
+        }
     }
 
     /**
@@ -22,10 +25,13 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('legal_entities', function (Blueprint $table) {
-            // Eliminar los índices
-            $table->dropIndex(['rif']);
-            $table->dropIndex(['business_name']);
-        });
+        // No ejecutar esta migración si estamos usando SQLite
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            Schema::table('legal_entities', function (Blueprint $table) {
+                // Eliminar los índices
+                $table->dropIndex(['rif']);
+                $table->dropIndex(['business_name']);
+            });
+        }
     }
 };

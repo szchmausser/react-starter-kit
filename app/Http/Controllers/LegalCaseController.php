@@ -203,13 +203,43 @@ final class LegalCaseController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:255|unique:legal_cases',
-            'entry_date' => 'required|date',
-            'case_type_id' => 'required|exists:case_types,id',
-        ]);
+        // Verificar si se está creando un nuevo tipo de caso
+        // Esto ocurre cuando el campo new_case_type tiene valor
+        $createNewCaseType = $request->filled('new_case_type') && trim($request->input('new_case_type')) !== '';
 
-        LegalCase::create($validated);
+        // Validación condicional según lo que se esté creando
+        if ($createNewCaseType) {
+            $validated = $request->validate([
+                'code' => 'required|string|max:255|unique:legal_cases',
+                'entry_date' => 'required|date',
+                'new_case_type' => 'required|string|max:255',
+            ]);
+
+            // Crear el nuevo tipo de caso
+            $caseType = CaseType::create([
+                'name' => $validated['new_case_type']
+            ]);
+
+            // Crear el expediente con el nuevo tipo de caso
+            $legalCase = LegalCase::create([
+                'code' => $validated['code'],
+                'entry_date' => $validated['entry_date'],
+                'case_type_id' => $caseType->id,
+            ]);
+        } else {
+            $validated = $request->validate([
+                'code' => 'required|string|max:255|unique:legal_cases',
+                'entry_date' => 'required|date',
+                'case_type_id' => 'required|exists:case_types,id',
+            ]);
+
+            // Crear el expediente con el tipo de caso existente
+            $legalCase = LegalCase::create([
+                'code' => $validated['code'],
+                'entry_date' => $validated['entry_date'],
+                'case_type_id' => $validated['case_type_id'],
+            ]);
+        }
 
         return Redirect::route('legal-cases.index')
             ->with('success', 'Expediente creado exitosamente.');
