@@ -1330,7 +1330,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                         <div className="my-3 flex justify-center">
                             <div className="flex items-center justify-center rounded-md border border-gray-200 bg-gray-100 px-6 py-3 dark:border-zinc-700 dark:bg-zinc-800">
                                 <span className="text-center text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
-                                    {currentStatus || (legalCase.closing_date ? 'CERRADO' : 'ACTIVO')}
+                                    {currentStatus ? currentStatus : legalCase.closing_date ? 'CERRADO' : 'NO DEFINIDO'}
                                 </span>
                             </div>
                         </div>
