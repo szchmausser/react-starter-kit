@@ -14,6 +14,8 @@ use App\Http\Controllers\StatusListController;
 use App\Http\Controllers\CaseTypeController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\MediaLibraryController;
+use App\Http\Controllers\LegalCaseMediaController;
+use App\Http\Controllers\CaseImportantDateController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -81,11 +83,11 @@ Route::put('/legal-cases/{legalCase}/events/{event}', [CaseEventController::clas
 Route::delete('/legal-cases/{legalCase}/events/{event}', [CaseEventController::class, 'destroy'])->name('case-events.destroy');
 
 // Gestión de fechas importantes de expedientes
-Route::get('/legal-cases/{legalCase}/important-dates', [\App\Http\Controllers\CaseImportantDateController::class, 'index'])->name('legal-cases.important-dates.index');
-Route::post('/legal-cases/{legalCase}/important-dates', [\App\Http\Controllers\CaseImportantDateController::class, 'store'])->name('legal-cases.important-dates.store');
-Route::patch('/legal-cases/{legalCase}/important-dates/{importantDate}/set-expired', [\App\Http\Controllers\CaseImportantDateController::class, 'setExpired'])->name('legal-cases.important-dates.set-expired');
-Route::put('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\Http\Controllers\CaseImportantDateController::class, 'update'])->name('legal-cases.important-dates.update');
-Route::delete('/legal-cases/{legalCase}/important-dates/{importantDate}', [\App\Http\Controllers\CaseImportantDateController::class, 'destroy'])->name('legal-cases.important-dates.destroy');
+Route::get('/legal-cases/{legalCase}/important-dates', [CaseImportantDateController::class, 'index'])->name('legal-cases.important-dates.index');
+Route::post('/legal-cases/{legalCase}/important-dates', [CaseImportantDateController::class, 'store'])->name('legal-cases.important-dates.store');
+Route::patch('/legal-cases/{legalCase}/important-dates/{importantDate}/set-expired', [CaseImportantDateController::class, 'setExpired'])->name('legal-cases.important-dates.set-expired');
+Route::put('/legal-cases/{legalCase}/important-dates/{importantDate}', [CaseImportantDateController::class, 'update'])->name('legal-cases.important-dates.update');
+Route::delete('/legal-cases/{legalCase}/important-dates/{importantDate}', [CaseImportantDateController::class, 'destroy'])->name('legal-cases.important-dates.destroy');
 
 // Gestión de etiquetas de expedientes
 Route::get('/api/legal-cases/all-tags', [LegalCaseController::class, 'getAllTags'])->name('legal-cases.all-tags');
@@ -105,14 +107,14 @@ Route::middleware(['auth'])->group(function () {
 
     // Rutas para archivos multimedia de casos legales
     Route::prefix('legal-cases/{legalCase}/media')->name('legal-cases.media.')->group(function () {
-        Route::get('/', [App\Http\Controllers\LegalCaseMediaController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\LegalCaseMediaController::class, 'create'])->name('create');
-        Route::post('/', [App\Http\Controllers\LegalCaseMediaController::class, 'store'])->name('store');
-        Route::get('/{media}', [App\Http\Controllers\LegalCaseMediaController::class, 'show'])->name('show');
-        Route::get('/{media}/edit', [App\Http\Controllers\LegalCaseMediaController::class, 'edit'])->name('edit');
-        Route::put('/{media}', [App\Http\Controllers\LegalCaseMediaController::class, 'update'])->name('update');
-        Route::delete('/{media}', [App\Http\Controllers\LegalCaseMediaController::class, 'destroy'])->name('destroy');
-        Route::get('/{media}/download', [App\Http\Controllers\LegalCaseMediaController::class, 'download'])->name('download');
+        Route::get('/', [LegalCaseMediaController::class, 'index'])->name('index');
+        Route::get('/create', [LegalCaseMediaController::class, 'create'])->name('create');
+        Route::post('/', [LegalCaseMediaController::class, 'store'])->name('store');
+        Route::get('/{media}', [LegalCaseMediaController::class, 'show'])->name('show');
+        Route::get('/{media}/edit', [LegalCaseMediaController::class, 'edit'])->name('edit');
+        Route::put('/{media}', [LegalCaseMediaController::class, 'update'])->name('update');
+        Route::delete('/{media}', [LegalCaseMediaController::class, 'destroy'])->name('destroy');
+        Route::get('/{media}/download', [LegalCaseMediaController::class, 'download'])->name('download');
     });
 });
 
