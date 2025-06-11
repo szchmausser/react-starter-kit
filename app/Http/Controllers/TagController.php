@@ -70,12 +70,20 @@ class TagController extends Controller
 
     public function edit(Tag $tag): Response
     {
+        // Obtener tipos únicos de etiquetas existentes
+        $existingTypes = Tag::whereNotNull('type')
+            ->distinct()
+            ->pluck('type')
+            ->filter()
+            ->values();
+
         return Inertia::render('Tags/Edit', [
             'tag' => [
                 'id' => $tag->id,
                 'name' => $tag->name,
                 'type' => $tag->type,
             ],
+            'existingTypes' => $existingTypes,
         ]);
     }
 
