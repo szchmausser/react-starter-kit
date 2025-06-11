@@ -1,12 +1,13 @@
-import { Head, useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
-import { toast } from 'sonner';
-import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch'; // Importar Switch
+import AppLayout from '@/layouts/app-layout';
+import { Head, router, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface Props {
     existingTypes: string[];
@@ -17,17 +18,41 @@ const Page = ({ existingTypes }: Props) => {
         name: '',
         type: '',
     });
-    
-    // Estado para controlar si se está creando un nuevo tipo
-    const [creatingType, setCreatingType] = useState(false);
+
+    const [newTagType, setNewTagType] = useState('');
+    const [selectedTagType, setSelectedTagType] = useState('');
+    const [showNewTypeInput, setShowNewTypeInput] = useState(false);
+
+    // Efecto para sincronizar los estados locales con los datos del formulario
+    useEffect(() => {
+        if (selectedTagType) {
+            setData('type', selectedTagType);
+            setNewTagType('');
+            setShowNewTypeInput(false);
+        }
+    }, [selectedTagType]);
+
+    useEffect(() => {
+        if (newTagType) {
+            setData('type', newTagType);
+            setSelectedTagType('');
+        }
+    }, [newTagType]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // La lógica de setData en los useEffects y handlers ya asegura que data.type
+        // tenga el valor correcto (nuevo tipo, tipo seleccionado o cadena vacía).
+        // No es necesario un control condicional aquí, ya que el backend maneja 'nullable'.
+
         post(route('tags.store'), {
             onSuccess: () => {
                 toast.success('Etiqueta creada exitosamente');
                 reset();
-                setCreatingType(false);
+                setNewTagType('');
+                setSelectedTagType('');
+                setShowNewTypeInput(false);
             },
             onError: () => {
                 toast.error('Error al crear la etiqueta');
@@ -36,125 +61,104 @@ const Page = ({ existingTypes }: Props) => {
         });
     };
 
-    const handleTypeChange = (value: string) => {
-        // Si el valor es "none", establecer un string vacío en el campo type
-        setData('type', value === 'none' ? '' : value);
+    const handleSelectTypeChange = (value: string) => {
+        setSelectedTagType(value === 'none' ? '' : value);
+    };
+
+    const handleNewTypeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setNewTagType(value);
+        if (value.trim() !== '') {
+            setSelectedTagType('');
+        }
     };
 
     return (
-        <>
+        <AppLayout>
             <Head title="Crear Etiqueta" />
 
-            <div className="container mx-auto py-6">
-                <div className="max-w-2xl mx-auto">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle>Crear Nueva Etiqueta</CardTitle>
-                                <Button 
-                                    variant="ghost" 
-                                    onClick={() => router.visit(route('tags.index'))}
-                                >
-                                    Volver al listado
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Nombre *</Label>
-                                        <Input
-                                            id="name"
-                                            value={data.name}
-                                            onChange={e => setData('name', e.target.value)}
-                                            placeholder="Ej: Importante, Urgente, Pendiente"
-                                            required
-                                        />
-                                        {errors.name && (
-                                            <p className="text-sm text-red-500">{errors.name}</p>
-                                        )}
-                                    </div>
+            <div className="p-4 sm:p-6">
+                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
+                    <div className="p-6 text-gray-900 dark:text-gray-100">
+                        <h2 className="mb-4 text-xl font-semibold">Crear Nueva Etiqueta</h2>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="type">Tipo (opcional)</Label>
-                                        
-                                        {!creatingType ? (
-                                            <>
-                                                <Select
-                                                    value={data.type || 'none'}
-                                                    onValueChange={handleTypeChange}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Seleccione un tipo" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="none">Sin tipo</SelectItem>
-                                                        {existingTypes.map((type) => (
-                                                            <SelectItem key={type} value={type}>
-                                                                {type}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <Button 
-                                                    variant="link" 
-                                                    onClick={() => setCreatingType(true)} 
-                                                    className="p-0 h-auto text-xs"
-                                                    type="button"
-                                                >
-                                                    + Crear nuevo tipo
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                <Input
-                                                    id="type"
-                                                    value={data.type}
-                                                    onChange={e => setData('type', e.target.value)}
-                                                    placeholder="Ej: prioridad, estado, categoría"
-                                                />
-                                                <Button 
-                                                    variant="link" 
-                                                    onClick={() => setCreatingType(false)} 
-                                                    className="p-0 h-auto text-xs"
-                                                    type="button"
-                                                >
-                                                    Seleccionar tipo existente
-                                                </Button>
-                                            </div>
-                                        )}
-                                        
-                                        <p className="text-xs text-muted-foreground">
-                                            El tipo ayuda a agrupar etiquetas similares
-                                        </p>
-                                        {errors.type && (
-                                            <p className="text-sm text-red-500">{errors.type}</p>
-                                        )}
-                                    </div>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nombre *</Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        placeholder="Ej: Importante, Urgente, Pendiente"
+                                        required
+                                    />
+                                    {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                                 </div>
 
-                                <CardFooter className="px-0 pb-0 flex justify-end gap-2">
-                                    <Button 
-                                        type="button" 
-                                        variant="outline" 
-                                        onClick={() => router.visit(route('tags.index'))}
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button type="submit" disabled={processing}>
-                                        {processing ? 'Guardando...' : 'Guardar etiqueta'}
-                                    </Button>
-                                </CardFooter>
-                            </form>
-                        </CardContent>
-                    </Card>
+                                <div className="space-y-2">
+                                    <Label htmlFor="type">Tipo (opcional)</Label>
+
+                                    <Select value={selectedTagType || 'none'} onValueChange={handleSelectTypeChange} disabled={showNewTypeInput}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccione un tipo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">Sin tipo</SelectItem>
+                                            {existingTypes.map((type) => (
+                                                <SelectItem key={type} value={type}>
+                                                    {type}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+
+                                    <div className="mt-4 flex items-center space-x-2">
+                                        <Switch
+                                            id="create-new-tag-type"
+                                            checked={showNewTypeInput}
+                                            onCheckedChange={(checked) => {
+                                                setShowNewTypeInput(checked);
+                                                if (checked) {
+                                                    setSelectedTagType('');
+                                                } else {
+                                                    setNewTagType('');
+                                                }
+                                            }}
+                                        />
+                                        <Label htmlFor="create-new-tag-type">Crear un nuevo tipo de etiqueta</Label>
+                                    </div>
+
+                                    {showNewTypeInput && (
+                                        <div className="space-y-2">
+                                            <Input
+                                                id="new_type"
+                                                value={newTagType}
+                                                onChange={handleNewTypeInputChange}
+                                                placeholder="Ej: prioridad, estado, categoría"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <p className="text-muted-foreground text-xs">El tipo ayuda a agrupar etiquetas similares</p>
+                                    {errors.type && <p className="text-sm text-red-500">{errors.type}</p>}
+                                </div>
+                            </div>
+
+                            <CardFooter className="flex justify-end gap-2 px-0 pb-0">
+                                <Button type="button" variant="outline" onClick={() => router.visit(route('tags.index'))}>
+                                    Cancelar
+                                </Button>
+                                <Button type="submit" disabled={processing}>
+                                    {processing ? 'Guardando...' : 'Guardar etiqueta'}
+                                </Button>
+                            </CardFooter>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 };
-
-Page.layout = (page: React.ReactNode) => <AppSidebarLayout>{page}</AppSidebarLayout>;
 
 export default Page;

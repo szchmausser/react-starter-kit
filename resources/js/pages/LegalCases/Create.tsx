@@ -1,12 +1,13 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
-import { type CaseType, type PageProps } from '@/types';
-import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch'; // Importar Switch
+import AppLayout from '@/layouts/app-layout';
+import { type CaseType, type PageProps } from '@/types';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 interface Props extends PageProps {
     caseTypes: CaseType[];
@@ -16,6 +17,7 @@ export default function Create() {
     const { caseTypes } = usePage<Props>().props;
     const [newCaseType, setNewCaseType] = useState('');
     const [selectedCaseTypeId, setSelectedCaseTypeId] = useState('');
+    const [showNewCaseTypeInput, setShowNewCaseTypeInput] = useState(false); // Nuevo estado para controlar la visibilidad
 
     const { data, setData, post, processing, errors, reset } = useForm({
         code: '',
@@ -30,6 +32,7 @@ export default function Create() {
         if (selectedCaseTypeId) {
             setData('case_type_id', selectedCaseTypeId);
             setData('new_case_type', '');
+            setShowNewCaseTypeInput(false); // Desactivar el campo de nuevo tipo si se selecciona uno existente
         }
     }, [selectedCaseTypeId]);
 
@@ -39,6 +42,7 @@ export default function Create() {
         if (newCaseType) {
             setData('new_case_type', newCaseType);
             setData('case_type_id', '');
+            // No cambiar showNewCaseTypeInput aquí, ya que el switch lo controla
         }
     }, [newCaseType]);
 
@@ -46,14 +50,19 @@ export default function Create() {
         e.preventDefault();
 
         // Verificar qué opción está usando el usuario
-        if (newCaseType.trim() !== '') {
-            // Si hay un nuevo tipo de caso, asegurarse de que case_type_id esté vacío
+        if (showNewCaseTypeInput && newCaseType.trim() !== '') {
+            // Si el switch está activado y hay un nuevo tipo
             setData('case_type_id', '');
             setData('new_case_type', newCaseType.trim());
         } else if (selectedCaseTypeId) {
-            // Si hay un tipo seleccionado, asegurarse de que new_case_type esté vacío
+            // Si hay un tipo seleccionado
             setData('new_case_type', '');
             setData('case_type_id', selectedCaseTypeId);
+        } else {
+            // Si ninguna opción es válida, no enviar el formulario o mostrar un error
+            // Esto ya debería ser manejado por la validación de Inertia/Laravel
+            console.warn('No se ha seleccionado ni creado un tipo de caso.');
+            return;
         }
 
         // Pequeño retraso para asegurar que los datos se actualicen antes de enviar
@@ -70,6 +79,7 @@ export default function Create() {
         // Limpiar el campo de nuevo tipo cuando se selecciona uno existente
         if (value) {
             setNewCaseType('');
+            setShowNewCaseTypeInput(false); // Asegurarse de que el switch esté desactivado
         }
     };
 
@@ -87,10 +97,10 @@ export default function Create() {
         <AppLayout>
             <Head title="Crear Expediente Legal" />
 
-            <div className="py-8 px-4 sm:px-6 lg:px-8 mx-auto max-w-3xl">
-                <div className="bg-white dark:bg-zinc-800 shadow overflow-hidden sm:rounded-lg">
-                    <div className="p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Crear Expediente Legal</h2>
+            <div className="p-4 sm:p-6">
+                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
+                    <div className="p-6 text-gray-900 dark:text-gray-100">
+                        <h2 className="mb-4 text-xl font-semibold">Crear Nuevo Expediente</h2>
 
                         <form onSubmit={submit} className="space-y-6">
                             <div>
@@ -101,7 +111,7 @@ export default function Create() {
                                     <Input
                                         id="code"
                                         type="text"
-                                        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 rounded-md"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600"
                                         value={data.code}
                                         onChange={(e) => setData('code', e.target.value)}
                                         required
@@ -120,7 +130,7 @@ export default function Create() {
                                     <Input
                                         id="entry_date"
                                         type="date"
-                                        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 rounded-md"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600"
                                         value={data.entry_date}
                                         onChange={(e) => setData('entry_date', e.target.value)}
                                         required
@@ -138,6 +148,7 @@ export default function Create() {
                                     <Select
                                         value={selectedCaseTypeId}
                                         onValueChange={handleCaseTypeChange}
+                                        disabled={showNewCaseTypeInput} // Deshabilitar si el switch está activado
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Seleccione un tipo de caso" />
@@ -151,51 +162,44 @@ export default function Create() {
                                         </SelectContent>
                                     </Select>
 
-                                    <div>
-                                        <div className="flex items-center mb-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                                            </svg>
-                                            <span className="text-sm text-gray-600 dark:text-gray-400">Crear un tipo de caso</span>
-                                        </div>
-                                        <Input
-                                            placeholder="Nombre del nuevo tipo de caso"
-                                            value={newCaseType}
-                                            onChange={handleNewCaseTypeChange}
-                                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800"
+                                    <div className="mt-4 flex items-center space-x-2">
+                                        <Switch
+                                            id="create-new-case-type"
+                                            checked={showNewCaseTypeInput}
+                                            onCheckedChange={(checked) => {
+                                                setShowNewCaseTypeInput(checked);
+                                                if (checked) {
+                                                    setSelectedCaseTypeId(''); // Limpiar la selección si se activa el switch
+                                                } else {
+                                                    setNewCaseType(''); // Limpiar el campo de nuevo tipo si se desactiva el switch
+                                                }
+                                            }}
                                         />
+                                        <Label htmlFor="create-new-case-type">Crear un nuevo tipo de caso</Label>
                                     </div>
+
+                                    {showNewCaseTypeInput && (
+                                        <div>
+                                            <Input
+                                                placeholder="Nombre del nuevo tipo de caso"
+                                                value={newCaseType}
+                                                onChange={handleNewCaseTypeChange}
+                                                className="block w-full rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-zinc-800"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <InputError message={errors.case_type_id || errors.new_case_type} className="mt-2" />
-
-                                {/* Mensaje de ayuda para el usuario */}
-                                {selectedCaseTypeId && newCaseType && (
-                                    <p className="text-amber-500 dark:text-amber-400 text-xs mt-1">
-                                        Atención: Has seleccionado un tipo de caso existente y también has ingresado un nuevo tipo.
-                                        Se utilizará el nuevo tipo que has ingresado.
-                                    </p>
-                                )}
                             </div>
 
-                            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <div className="flex justify-end">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => window.history.back()}
-                                        className="mr-3 px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700"
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-zinc-800"
-                                    >
-                                        {processing ? 'Guardando...' : 'Guardar Expediente'}
-                                    </Button>
-                                </div>
+                            <div className="flex justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                                    Cancelar
+                                </Button>
+                                <Button type="submit" disabled={processing}>
+                                    Crear Expediente
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -203,4 +207,4 @@ export default function Create() {
             </div>
         </AppLayout>
     );
-} 
+}

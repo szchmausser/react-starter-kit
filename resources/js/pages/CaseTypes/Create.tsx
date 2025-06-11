@@ -1,10 +1,10 @@
-import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import InputError from '@/components/input-error';
+import AppLayout from '@/layouts/app-layout';
+import { Head, useForm } from '@inertiajs/react';
 
 export default function Create() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -24,9 +24,9 @@ export default function Create() {
             <Head title="Crear Tipo de Caso" />
 
             <div className="p-4 sm:p-6">
-                <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
+                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
                     <div className="p-6 text-gray-900 dark:text-gray-100">
-                        <h2 className="text-xl font-semibold mb-4">Crear Nuevo Tipo de Caso</h2>
+                        <h2 className="mb-4 text-xl font-semibold">Crear Nuevo Tipo de Caso</h2>
 
                         <form onSubmit={submit} className="mt-6 space-y-6">
                             <div>
@@ -54,8 +54,13 @@ export default function Create() {
                                 <InputError message={errors.description} className="mt-2" />
                             </div>
 
-                            <div className="flex items-center gap-4">
-                                <Button type="submit" disabled={processing}>Guardar</Button>
+                            <div className="flex justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                                    Cancelar
+                                </Button>
+                                <Button type="submit" disabled={processing}>
+                                    Crear Tipo de Caso
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -63,4 +68,4 @@ export default function Create() {
             </div>
         </AppLayout>
     );
-} 
+}
