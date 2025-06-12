@@ -1,5 +1,4 @@
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
-import { ComponentProps } from 'react';
 
 // Tipos base
 export interface PageProps extends InertiaPageProps {

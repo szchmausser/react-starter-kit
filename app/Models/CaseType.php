@@ -20,4 +20,4 @@ class CaseType extends Model
     {
         return $this->hasMany(LegalCase::class);
     }
-} 
+}

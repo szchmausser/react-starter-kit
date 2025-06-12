@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\StatusList;
+use Illuminate\Database\Seeder;
 
 final class StatusListSeeder extends Seeder
 {
@@ -27,13 +27,13 @@ final class StatusListSeeder extends Seeder
             'Terminados',
             'Terminados Por Remitir Al Archivo Judicial',
         ];
-        
+
         foreach ($statuses as $status) {
             StatusList::firstOrCreate([
-                'name' => $status
+                'name' => $status,
             ], [
-                'description' => 'Estatus de ejemplo inicial'
+                'description' => 'Estatus de ejemplo inicial',
             ]);
         }
     }
-} 
+}

@@ -30,13 +30,9 @@ const LaravelPagination: React.FC<LaravelPaginationProps> = ({ links, onPageChan
             </div>
         );
     }
-    
+
     // Filtrar los links para excluir los de "previous" y "next" si queremos mostrar solo números
-    const pageLinks = links.filter(link => 
-        link.label !== "&laquo; Previous" && 
-        link.label !== "Next &raquo;" && 
-        link.url !== null
-    );
+    const pageLinks = links.filter((link) => link.label !== '&laquo; Previous' && link.label !== 'Next &raquo;' && link.url !== null);
 
     // Función para decodificar entidades HTML en las etiquetas
     const decodeHtmlEntities = (text: string): string => {
@@ -48,7 +44,7 @@ const LaravelPagination: React.FC<LaravelPaginationProps> = ({ links, onPageChan
 
     // Función auxiliar para obtener un enlace y verificar si es nulo
     const getLinkByLabel = (label: string) => {
-        return links.find(link => link.label === label);
+        return links.find((link) => link.label === label);
     };
 
     // Controles de paginación simple para la mayoría de casos de uso
@@ -59,10 +55,10 @@ const LaravelPagination: React.FC<LaravelPaginationProps> = ({ links, onPageChan
                 variant="outline"
                 size="icon"
                 onClick={() => {
-                    const firstLink = getLinkByLabel("1");
+                    const firstLink = getLinkByLabel('1');
                     if (firstLink?.url) onPageChange(firstLink.url);
                 }}
-                disabled={!getLinkByLabel("1")?.url || getLinkByLabel("1")?.active}
+                disabled={!getLinkByLabel('1')?.url || getLinkByLabel('1')?.active}
                 className="h-8 w-8"
             >
                 <ChevronsLeft className="h-4 w-4" />
@@ -73,54 +69,47 @@ const LaravelPagination: React.FC<LaravelPaginationProps> = ({ links, onPageChan
                 variant="outline"
                 size="icon"
                 onClick={() => {
-                    const prevLink = getLinkByLabel("&laquo; Previous");
+                    const prevLink = getLinkByLabel('&laquo; Previous');
                     if (prevLink?.url) onPageChange(prevLink.url);
                 }}
-                disabled={!getLinkByLabel("&laquo; Previous")?.url}
+                disabled={!getLinkByLabel('&laquo; Previous')?.url}
                 className="h-8 w-8"
             >
                 <ChevronLeft className="h-4 w-4" />
             </Button>
 
             {/* Números de página */}
-            {links.filter(link => 
-                link.label !== "&laquo; Previous" && 
-                link.label !== "Next &raquo;"
-            ).map((link, i) => {
-                // Omitir los botones que no tienen URL (no son clicables)
-                if (!link.url && link.label.includes("...")) {
+            {links
+                .filter((link) => link.label !== '&laquo; Previous' && link.label !== 'Next &raquo;')
+                .map((link, i) => {
+                    // Omitir los botones que no tienen URL (no son clicables)
+                    if (!link.url && link.label.includes('...')) {
+                        return (
+                            <span key={i} className="px-2 text-gray-500">
+                                ...
+                            </span>
+                        );
+                    }
+
                     return (
-                        <span key={i} className="px-2 text-gray-500">...</span>
+                        <Button
+                            key={i}
+                            variant={link.active ? 'default' : 'outline'}
+                            size="icon"
+                            onClick={() => {
+                                if (link.url) onPageChange(link.url);
+                            }}
+                            disabled={!link.url || link.active}
+                            className={`h-8 w-8 ${link.active ? 'font-bold' : ''}`}
+                        >
+                            {decodeHtmlEntities(link.label)}
+                        </Button>
                     );
-                }
-                
-                return (
-                    <Button
-                        key={i}
-                        variant={link.active ? "default" : "outline"}
-                        size="icon"
-                        onClick={() => {
-                            if (link.url) onPageChange(link.url);
-                        }}
-                        disabled={!link.url || link.active}
-                        className={`h-8 w-8 ${link.active ? 'font-bold' : ''}`}
-                    >
-                        {decodeHtmlEntities(link.label)}
-                    </Button>
-                );
-            })}
+                })}
 
             {/* Si no hay números de página, mostrar al menos el actual */}
-            {links.filter(link => 
-                link.label !== "&laquo; Previous" && 
-                link.label !== "Next &raquo;"
-            ).length === 0 && (
-                <Button
-                    variant="default"
-                    size="icon"
-                    disabled
-                    className="h-8 w-8 font-bold"
-                >
+            {links.filter((link) => link.label !== '&laquo; Previous' && link.label !== 'Next &raquo;').length === 0 && (
+                <Button variant="default" size="icon" disabled className="h-8 w-8 font-bold">
                     1
                 </Button>
             )}
@@ -130,10 +119,10 @@ const LaravelPagination: React.FC<LaravelPaginationProps> = ({ links, onPageChan
                 variant="outline"
                 size="icon"
                 onClick={() => {
-                    const nextLink = getLinkByLabel("Next &raquo;");
+                    const nextLink = getLinkByLabel('Next &raquo;');
                     if (nextLink?.url) onPageChange(nextLink.url);
                 }}
-                disabled={!getLinkByLabel("Next &raquo;")?.url}
+                disabled={!getLinkByLabel('Next &raquo;')?.url}
                 className="h-8 w-8"
             >
                 <ChevronRight className="h-4 w-4" />
@@ -145,12 +134,12 @@ const LaravelPagination: React.FC<LaravelPaginationProps> = ({ links, onPageChan
                 size="icon"
                 onClick={() => {
                     const lastPageLink = links
-                        .filter(link => /^\d+$/.test(link.label) && link.url)
+                        .filter((link) => /^\d+$/.test(link.label) && link.url)
                         .sort((a, b) => parseInt(b.label) - parseInt(a.label))[0];
-                    
+
                     if (lastPageLink?.url) onPageChange(lastPageLink.url);
                 }}
-                disabled={!links.find(link => /^\d+$/.test(link.label) && !link.active && link.url)}
+                disabled={!links.find((link) => /^\d+$/.test(link.label) && !link.active && link.url)}
                 className="h-8 w-8"
             >
                 <ChevronsRight className="h-4 w-4" />
@@ -159,4 +148,4 @@ const LaravelPagination: React.FC<LaravelPaginationProps> = ({ links, onPageChan
     );
 };
 
-export default LaravelPagination; 
+export default LaravelPagination;

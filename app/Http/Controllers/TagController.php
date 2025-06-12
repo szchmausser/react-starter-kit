@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Spatie\Tags\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Log;
+use Spatie\Tags\Tag;
 
 class TagController extends Controller
 {
@@ -48,7 +48,7 @@ class TagController extends Controller
             ->values();
 
         return Inertia::render('Tags/Create', [
-            'existingTypes' => $existingTypes
+            'existingTypes' => $existingTypes,
         ]);
     }
 
@@ -170,7 +170,7 @@ class TagController extends Controller
                 ->with('info', 'Esta operación solo está disponible mediante AJAX.');
 
         } catch (\Exception $e) {
-            Log::error("Error al obtener relaciones para la etiqueta {$id}: " . $e->getMessage());
+            Log::error("Error al obtener relaciones para la etiqueta {$id}: ".$e->getMessage());
             Log::error($e->getTraceAsString());
 
             if (request()->ajax() || request()->wantsJson()) {
@@ -187,21 +187,18 @@ class TagController extends Controller
 
     /**
      * Verifica si un modelo utiliza el trait HasTags
-     *
-     * @param string $modelClass
-     * @return bool
      */
     private function modelUsesHasTags(string $modelClass): bool
     {
         $traits = class_uses_recursive($modelClass);
+
         return in_array(\Spatie\Tags\HasTags::class, $traits);
     }
 
     /**
      * Transforma una colección de modelos a un formato estándar para mostrar
      *
-     * @param \Illuminate\Database\Eloquent\Collection $models
-     * @return array
+     * @param  \Illuminate\Database\Eloquent\Collection  $models
      */
     private function transformModelsToArray($models): array
     {
@@ -221,7 +218,7 @@ class TagController extends Controller
             // Añadir título según el tipo de modelo
             if ($model instanceof \App\Models\LegalCase) {
                 // Para expedientes legales
-                $item['title'] = "Expediente " . ($model->code ? $model->code : "EXP-{$model->id}");
+                $item['title'] = 'Expediente '.($model->code ? $model->code : "EXP-{$model->id}");
 
             } elseif ($model instanceof \App\Models\Individual) {
                 // Para personas (individuos)
@@ -230,34 +227,40 @@ class TagController extends Controller
 
                 // Añadir información adicional
                 $info = [];
-                if (!empty($model->national_id))
+                if (! empty($model->national_id)) {
                     $info[] = "CI: {$model->national_id}";
-                if (!empty($model->email_1))
+                }
+                if (! empty($model->email_1)) {
                     $info[] = $model->email_1;
-                if (!empty($model->phone_number_1))
+                }
+                if (! empty($model->phone_number_1)) {
                     $info[] = $model->phone_number_1;
+                }
 
-                if (!empty($info)) {
+                if (! empty($info)) {
                     $item['description'] = implode(' | ', $info);
                 }
 
             } elseif ($model instanceof \App\Models\LegalEntity) {
                 // Para entidades legales
                 $item['title'] = $model->business_name ?: "Entidad #{$model->id}";
-                if (!empty($model->trade_name)) {
+                if (! empty($model->trade_name)) {
                     $item['title'] .= " ({$model->trade_name})";
                 }
 
                 // Añadir información adicional
                 $info = [];
-                if (!empty($model->rif))
+                if (! empty($model->rif)) {
                     $info[] = "RIF: {$model->rif}";
-                if (!empty($model->email_1))
+                }
+                if (! empty($model->email_1)) {
                     $info[] = $model->email_1;
-                if (!empty($model->phone_number_1))
+                }
+                if (! empty($model->phone_number_1)) {
                     $info[] = $model->phone_number_1;
+                }
 
-                if (!empty($info)) {
+                if (! empty($info)) {
                     $item['description'] = implode(' | ', $info);
                 }
 

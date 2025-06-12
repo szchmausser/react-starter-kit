@@ -1,21 +1,9 @@
-import { useState } from 'react';
-import { Link } from '@inertiajs/react';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter
-} from '@/components/ui/dialog';
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger
-} from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Loader2, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link } from '@inertiajs/react';
+import { Eye, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 // Estructura de los tipos relacionados a una etiqueta
 interface RelatedItem {
@@ -64,10 +52,10 @@ const getTagName = (tag: { name: string | Record<string, string> } | null) => {
 const getModelDetailRoute = (modelType: string, id: number): string => {
     // Mapeo de tipos de modelo a nombres de rutas
     const routeMapping: Record<string, string> = {
-        'Expedientes': 'legal-cases.show',
-        'Archivos': 'files.show',
-        'Personas': 'individuals.show',
-        'Entidades': 'legal-entities.show',
+        Expedientes: 'legal-cases.show',
+        Archivos: 'files.show',
+        Personas: 'individuals.show',
+        Entidades: 'legal-entities.show',
         // Añadir más modelos según se implementen
     };
 
@@ -91,24 +79,18 @@ const getModelDetailRoute = (modelType: string, id: number): string => {
  */
 const getShortModelName = (modelType: string): string => {
     const shortNames: Record<string, string> = {
-        'Expedientes': 'Exp.',
-        'Personas': 'Pers.',
-        'Entidades': 'Ent.',
-        'Archivos': 'Arch.',
-        'Documentos': 'Docs.',
-        'Tareas': 'Tareas',
+        Expedientes: 'Exp.',
+        Personas: 'Pers.',
+        Entidades: 'Ent.',
+        Archivos: 'Arch.',
+        Documentos: 'Docs.',
+        Tareas: 'Tareas',
     };
 
     return shortNames[modelType] || modelType;
 };
 
-export function TagRelationsModal({
-    isOpen,
-    onClose,
-    tag,
-    relations,
-    isLoading
-}: TagRelationsModalProps) {
+export function TagRelationsModal({ isOpen, onClose, tag, relations, isLoading }: TagRelationsModalProps) {
     // Estado para el tab activo
     const [activeTab, setActiveTab] = useState<string>('');
 
@@ -119,33 +101,31 @@ export function TagRelationsModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col w-[95vw]">
+            <DialogContent className="flex max-h-[80vh] w-[95vw] flex-col overflow-hidden sm:max-w-[600px]">
                 <DialogHeader className="text-center sm:text-left">
-                    <DialogTitle className="text-lg sm:text-xl flex flex-col sm:flex-row sm:items-center gap-1">
+                    <DialogTitle className="flex flex-col gap-1 text-lg sm:flex-row sm:items-center sm:text-xl">
                         <span className="truncate">Relaciones de etiqueta:</span>
                         <span className="font-semibold">{getTagName(tag)}</span>
                     </DialogTitle>
-                    <DialogDescription className="text-sm">
-                        Elementos que utilizan esta etiqueta en el sistema
-                    </DialogDescription>
+                    <DialogDescription className="text-sm">Elementos que utilizan esta etiqueta en el sistema</DialogDescription>
                 </DialogHeader>
 
                 <div className="flex-1 overflow-hidden">
                     {isLoading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <span className="ml-2 text-sm text-muted-foreground">Cargando relaciones...</span>
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="text-primary h-8 w-8 animate-spin" />
+                            <span className="text-muted-foreground ml-2 text-sm">Cargando relaciones...</span>
                         </div>
                     ) : relations && Object.keys(relations).length > 0 ? (
-                        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full w-full flex-col">
                             {/* TabsList con scroll horizontal en móviles cuando hay muchas pestañas */}
-                            <div className="overflow-x-auto pb-1 -mx-1 px-1">
-                                <TabsList className="flex sm:inline-flex w-auto min-w-full sm:min-w-0">
-                                    {Object.keys(relations).map(modelType => (
+                            <div className="-mx-1 overflow-x-auto px-1 pb-1">
+                                <TabsList className="flex w-auto min-w-full sm:inline-flex sm:min-w-0">
+                                    {Object.keys(relations).map((modelType) => (
                                         <TabsTrigger
                                             key={modelType}
                                             value={modelType}
-                                            className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5"
+                                            className="px-2 py-1.5 text-xs whitespace-nowrap sm:px-3 sm:text-sm"
                                         >
                                             <span className="sm:hidden">{getShortModelName(modelType)}</span>
                                             <span className="hidden sm:inline">{modelType}</span>
@@ -165,7 +145,7 @@ export function TagRelationsModal({
                                     >
                                         {items.length > 0 ? (
                                             <div className="space-y-2">
-                                                {items.map(item => {
+                                                {items.map((item) => {
                                                     const detailRoute = getModelDetailRoute(modelType, item.id);
 
                                                     // Obtener un texto de identificación según el tipo de modelo
@@ -183,16 +163,21 @@ export function TagRelationsModal({
                                                     }
 
                                                     return (
-                                                        <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors gap-2">
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="font-medium truncate">{item.title || item.name || itemIdentifier}</div>
+                                                        <div
+                                                            key={item.id}
+                                                            className="flex flex-col gap-2 rounded-md border p-3 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between dark:hover:bg-zinc-800"
+                                                        >
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="truncate font-medium">
+                                                                    {item.title || item.name || itemIdentifier}
+                                                                </div>
                                                                 {item.description && (
-                                                                    <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+                                                                    <div className="line-clamp-1 text-sm text-gray-500 dark:text-gray-400">
                                                                         {item.description}
                                                                     </div>
                                                                 )}
                                                                 {item.created_at && (
-                                                                    <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                                    <div className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                                                                         Creado: {new Date(item.created_at).toLocaleDateString()}
                                                                     </div>
                                                                 )}
@@ -200,13 +185,18 @@ export function TagRelationsModal({
                                                             {detailRoute !== '#' ? (
                                                                 <Link href={detailRoute} className="self-end sm:self-center">
                                                                     <Button variant="outline" size="sm" className="whitespace-nowrap">
-                                                                        <Eye className="h-4 w-4 mr-1" />
+                                                                        <Eye className="mr-1 h-4 w-4" />
                                                                         Ver detalles
                                                                     </Button>
                                                                 </Link>
                                                             ) : (
-                                                                <Button variant="outline" size="sm" disabled className="self-end sm:self-center whitespace-nowrap">
-                                                                    <Eye className="h-4 w-4 mr-1" />
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    disabled
+                                                                    className="self-end whitespace-nowrap sm:self-center"
+                                                                >
+                                                                    <Eye className="mr-1 h-4 w-4" />
                                                                     Ver detalles
                                                                 </Button>
                                                             )}
@@ -215,7 +205,7 @@ export function TagRelationsModal({
                                                 })}
                                             </div>
                                         ) : (
-                                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                            <div className="py-8 text-center text-gray-500 dark:text-gray-400">
                                                 No hay elementos de tipo {modelType} relacionados con esta etiqueta.
                                             </div>
                                         )}
@@ -224,7 +214,7 @@ export function TagRelationsModal({
                             </div>
                         </Tabs>
                     ) : (
-                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        <div className="py-12 text-center text-gray-500 dark:text-gray-400">
                             No se encontraron elementos relacionados con esta etiqueta.
                             <p className="mt-2 text-sm">
                                 Esta etiqueta no está siendo utilizada actualmente por ningún expediente u otro elemento en el sistema.
@@ -241,4 +231,4 @@ export function TagRelationsModal({
             </DialogContent>
         </Dialog>
     );
-} 
+}

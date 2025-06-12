@@ -1,21 +1,21 @@
 <?php
 
+use App\Http\Controllers\CaseEventController;
+use App\Http\Controllers\CaseImportantDateController;
+use App\Http\Controllers\CaseParticipantController;
+use App\Http\Controllers\CaseTypeController;
 use App\Http\Controllers\IndividualController;
 use App\Http\Controllers\LegalCaseController;
+use App\Http\Controllers\LegalCaseMediaController;
 use App\Http\Controllers\LegalEntityController;
+use App\Http\Controllers\MediaLibraryController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\CaseParticipantController;
-use App\Http\Controllers\CaseEventController;
-use App\Http\Controllers\TodoListController;
-use App\Http\Controllers\TodoController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StatusListController;
-use App\Http\Controllers\CaseTypeController;
 use App\Http\Controllers\TagController;
-use App\Http\Controllers\MediaLibraryController;
-use App\Http\Controllers\LegalCaseMediaController;
-use App\Http\Controllers\CaseImportantDateController;
+use App\Http\Controllers\TodoController;
+use App\Http\Controllers\TodoListController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -118,5 +118,5 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

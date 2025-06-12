@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LegalCase;
 use App\Models\CaseImportantDate;
+use App\Models\LegalCase;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class CaseImportantDateController extends Controller
 {
@@ -89,6 +89,7 @@ class CaseImportantDateController extends Controller
         ]);
         $importantDate->is_expired = $request->input('is_expired');
         $importantDate->save();
+
         return redirect()->back()->with('success', 'Estado de vencimiento actualizado');
     }
-} 
+}

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('case_types')) {
+        if (! Schema::hasTable('case_types')) {
             Schema::create('case_types', function (Blueprint $table) {
                 $table->id();
                 $table->string('name', 100);

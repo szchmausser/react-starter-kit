@@ -18,19 +18,19 @@ class CaseParticipantController extends Controller
     public function addForm($caseId)
     {
         $legalCase = LegalCase::findOrFail($caseId);
-        
+
         $rolesDisponibles = [
             'Juez',
             'Solicitante',
             'Demandado',
             'Abogado de Solicitante',
             'Abogado de Demandado',
-            'Testigo'
+            'Testigo',
         ];
 
         return Inertia::render('LegalCases/AddParticipant', [
             'legalCase' => $legalCase,
-            'availableRoles' => $rolesDisponibles
+            'availableRoles' => $rolesDisponibles,
         ]);
     }
 
@@ -43,7 +43,7 @@ class CaseParticipantController extends Controller
             'query' => 'required|min:2|max:50',
         ]);
 
-        $results = (new Search())
+        $results = (new Search)
             ->registerModel(Individual::class, ['first_name', 'last_name', 'national_id'])
             ->registerModel(LegalEntity::class, ['business_name', 'trade_name', 'rif'])
             ->search($validated['query']);
@@ -51,10 +51,11 @@ class CaseParticipantController extends Controller
         return response()->json([
             'results' => $results->map(function ($result) {
                 $model = $result->searchable;
-                
+
                 // Determinar el tipo y los datos según el modelo
                 if ($model instanceof Individual) {
                     $fullName = trim("{$model->first_name} {$model->middle_name} {$model->last_name} {$model->second_last_name}");
+
                     return [
                         'id' => $model->id,
                         'type' => 'individual',
@@ -62,9 +63,10 @@ class CaseParticipantController extends Controller
                         'identifier' => $model->national_id,
                     ];
                 } elseif ($model instanceof LegalEntity) {
-                    $name = $model->trade_name 
+                    $name = $model->trade_name
                         ? "{$model->business_name} ({$model->trade_name})"
                         : $model->business_name;
+
                     return [
                         'id' => $model->id,
                         'type' => 'entity',
@@ -72,7 +74,7 @@ class CaseParticipantController extends Controller
                         'identifier' => $model->rif,
                     ];
                 }
-            })
+            }),
         ]);
     }
 
@@ -91,9 +93,9 @@ class CaseParticipantController extends Controller
 
         if ($validated['type'] === 'individual') {
             $individual = Individual::findOrFail($validated['id']);
-            
+
             // Verificar si ya está asociado
-            if (!$legalCase->individuals()->where('individual_id', $individual->id)->exists()) {
+            if (! $legalCase->individuals()->where('individual_id', $individual->id)->exists()) {
                 $legalCase->individuals()->attach($individual->id, ['role' => $validated['role']]);
             } else {
                 // Actualizar el rol si ya existe
@@ -101,9 +103,9 @@ class CaseParticipantController extends Controller
             }
         } else {
             $entity = LegalEntity::findOrFail($validated['id']);
-            
+
             // Verificar si ya está asociado
-            if (!$legalCase->legalEntities()->where('legal_entity_id', $entity->id)->exists()) {
+            if (! $legalCase->legalEntities()->where('legal_entity_id', $entity->id)->exists()) {
                 $legalCase->legalEntities()->attach($entity->id, ['role' => $validated['role']]);
             } else {
                 // Actualizar el rol si ya existe
@@ -136,4 +138,4 @@ class CaseParticipantController extends Controller
         return Redirect::route('legal-cases.show', $legalCase->id)
             ->with('success', 'Participante eliminado correctamente del expediente.');
     }
-} 
+}

@@ -48,8 +48,9 @@ class CleanOrphanedMediaFiles extends Command
 
         try {
             // Verificar si el directorio media existe
-            if (!Storage::disk($diskName)->exists($mediaDirectory)) {
+            if (! Storage::disk($diskName)->exists($mediaDirectory)) {
                 $this->error("El directorio '{$mediaDirectory}' no existe en el disco '{$diskName}'.");
+
                 return Command::FAILURE;
             }
 
@@ -61,21 +62,22 @@ class CleanOrphanedMediaFiles extends Command
             $allCollections = array_unique(array_merge($knownCollections, $predefinedCollections));
 
             if ($isVerbose) {
-                $this->info('Colecciones a revisar: ' . implode(', ', $allCollections));
+                $this->info('Colecciones a revisar: '.implode(', ', $allCollections));
             }
 
             // Revisar cada colección
             foreach ($allCollections as $collection) {
-                $directoryPath = $mediaDirectory . '/' . $collection;
+                $directoryPath = $mediaDirectory.'/'.$collection;
 
                 if ($isVerbose) {
                     $this->line("Revisando directorio: {$directoryPath}");
                 }
 
-                if (!Storage::disk($diskName)->exists($directoryPath)) {
+                if (! Storage::disk($diskName)->exists($directoryPath)) {
                     if ($isVerbose) {
                         $this->line("El directorio {$directoryPath} no existe. Omitiendo...");
                     }
+
                     continue;
                 }
 
@@ -84,7 +86,7 @@ class CleanOrphanedMediaFiles extends Command
                 $totalFiles += count($files);
 
                 if ($isVerbose) {
-                    $this->info("Encontrados " . count($files) . " archivos en {$directoryPath}");
+                    $this->info('Encontrados '.count($files)." archivos en {$directoryPath}");
                 }
 
                 $progressBar = $this->output->createProgressBar(count($files));
@@ -100,13 +102,13 @@ class CleanOrphanedMediaFiles extends Command
                     // Verificar si este archivo está en la base de datos
                     $exists = Media::where('file_name', $fileName)->exists();
 
-                    if (!$exists) {
+                    if (! $exists) {
                         // Este archivo no está en la base de datos, es huérfano
                         if ($isVerbose) {
                             $this->warn("Archivo huérfano encontrado: {$file}");
                         }
 
-                        if (!$isDryRun) {
+                        if (! $isDryRun) {
                             try {
                                 Storage::disk($diskName)->delete($file);
                                 if ($isVerbose) {
@@ -157,13 +159,13 @@ class CleanOrphanedMediaFiles extends Command
                     // Verificar si este archivo está en la base de datos
                     $exists = Media::where('file_name', $fileName)->exists();
 
-                    if (!$exists) {
+                    if (! $exists) {
                         // Este archivo no está en la base de datos, es huérfano
                         if ($isVerbose) {
                             $this->warn("Archivo huérfano encontrado en raíz: {$file}");
                         }
 
-                        if (!$isDryRun) {
+                        if (! $isDryRun) {
                             try {
                                 Storage::disk($diskName)->delete($file);
                                 if ($isVerbose) {
@@ -189,11 +191,12 @@ class CleanOrphanedMediaFiles extends Command
                 $this->newLine();
             }
 
-            $actionText = $isDryRun ? "se encontraron" : "se eliminaron";
+            $actionText = $isDryRun ? 'se encontraron' : 'se eliminaron';
             $this->info("Limpieza completada. {$actionText} {$orphanedFiles} archivos huérfanos de un total de {$totalFiles} archivos.");
 
             if ($errors > 0) {
                 $this->warn("Se produjeron {$errors} errores durante el proceso.");
+
                 return Command::FAILURE;
             }
 
@@ -201,6 +204,7 @@ class CleanOrphanedMediaFiles extends Command
         } catch (\Exception $e) {
             $this->error("Error al limpiar archivos huérfanos: {$e->getMessage()}");
             $this->error($e->getTraceAsString());
+
             return Command::FAILURE;
         }
     }

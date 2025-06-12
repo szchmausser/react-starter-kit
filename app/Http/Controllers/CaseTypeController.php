@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\CaseType;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
 
 class CaseTypeController extends Controller
 {
@@ -18,6 +18,7 @@ class CaseTypeController extends Controller
     public function index()
     {
         $caseTypes = CaseType::orderBy('name')->get();
+
         return Inertia::render('CaseTypes/Index', [
             'caseTypes' => $caseTypes,
         ]);
@@ -52,7 +53,7 @@ class CaseTypeController extends Controller
     public function show(string $id)
     {
         // No necesitamos un show para CaseType, podríamos redirigir o retornar 404
-         return Redirect::route('case-types.index');
+        return Redirect::route('case-types.index');
     }
 
     /**
@@ -61,6 +62,7 @@ class CaseTypeController extends Controller
     public function edit(string $id)
     {
         $caseType = CaseType::findOrFail($id);
+
         return Inertia::render('CaseTypes/Edit', [
             'caseType' => $caseType,
         ]);
@@ -74,7 +76,7 @@ class CaseTypeController extends Controller
         $caseType = CaseType::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:case_types,name,' . $id,
+            'name' => 'required|string|max:255|unique:case_types,name,'.$id,
             'description' => 'nullable|string',
         ]);
 

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { Search, ArrowLeft, User, Building2, FileText } from 'lucide-react';
+import { Building2, FileText, Search, User } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -84,26 +84,27 @@ export default function SearchResults({ results, query }: Props) {
             breadcrumbs={breadcrumbs}
             backButton={{
                 show: true,
-                onClick: () => router.visit(route('search.index'), {
-                    preserveState: false,
-                    replace: true,
-                }),
+                onClick: () =>
+                    router.visit(route('search.index'), {
+                        preserveState: false,
+                        replace: true,
+                    }),
                 label: 'Volver',
             }}
         >
             <Head title="Resultados de Búsqueda" />
             <div className="p-4 sm:p-6">
-                <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
-                        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
+                    <div className="p-4 text-gray-900 sm:p-6 dark:text-gray-100">
+                        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center">
-                                <Search className="h-6 w-6 text-gray-500 dark:text-gray-400 mr-2" />
+                                <Search className="mr-2 h-6 w-6 text-gray-500 dark:text-gray-400" />
                                 <h1 className="text-2xl font-semibold">Resultados de búsqueda</h1>
                             </div>
                         </div>
 
-                        <div className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
-                            <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium border-b dark:border-zinc-700">
+                        <div className="mb-6 overflow-hidden rounded-md border dark:border-zinc-700">
+                            <div className="border-b bg-gray-100 px-4 py-2 font-medium dark:border-zinc-700 dark:bg-zinc-900">
                                 <span className="dark:text-gray-200">Criterio de búsqueda</span>
                             </div>
                             <div className="p-4 dark:bg-zinc-900">
@@ -115,14 +116,17 @@ export default function SearchResults({ results, query }: Props) {
 
                         {Object.entries(results).length > 0 ? (
                             Object.entries(results).map(([type, items]) => (
-                                <div key={type} className="mb-6 border dark:border-zinc-700 rounded-md overflow-hidden">
-                                    <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-3 font-medium flex items-center border-b dark:border-zinc-700">
+                                <div key={type} className="mb-6 overflow-hidden rounded-md border dark:border-zinc-700">
+                                    <div className="flex items-center border-b bg-gray-100 px-4 py-3 font-medium dark:border-zinc-700 dark:bg-zinc-900">
                                         {getIcon(type)}
                                         <span className="ml-2 dark:text-gray-200">
                                             {type.includes('individuals') && 'Personas Naturales'}
                                             {type.includes('legal_entities') && 'Personas Jurídicas'}
                                             {type.includes('legal_cases') && 'Expedientes Judiciales'}
-                                            {!type.includes('individuals') && !type.includes('legal_entities') && !type.includes('legal_cases') && type}
+                                            {!type.includes('individuals') &&
+                                                !type.includes('legal_entities') &&
+                                                !type.includes('legal_cases') &&
+                                                type}
                                         </span>
                                         <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
                                             ({items.length} {items.length === 1 ? 'resultado' : 'resultados'})
@@ -131,15 +135,20 @@ export default function SearchResults({ results, query }: Props) {
                                     {items.length > 0 ? (
                                         <ul className="divide-y divide-gray-200 dark:divide-zinc-800">
                                             {items.map((result) => (
-                                                <li key={result.searchable.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900 dark:bg-zinc-900">
-                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                                                <li
+                                                    key={result.searchable.id}
+                                                    className="p-4 hover:bg-gray-50 dark:bg-zinc-900 dark:hover:bg-gray-900"
+                                                >
+                                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                                         <div className="min-w-0 flex-1">
                                                             <p className="text-lg font-medium dark:text-white">{result.title}</p>
-                                                            <p className="text-sm text-gray-600 dark:text-gray-400">{getSecondaryInfo(result, type)}</p>
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                                {getSecondaryInfo(result, type)}
+                                                            </p>
                                                         </div>
                                                         <Button
                                                             onClick={() => router.visit(result.url)}
-                                                            className="w-full sm:w-auto bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                                                            className="w-full bg-blue-500 text-white hover:bg-blue-600 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700"
                                                             size="sm"
                                                         >
                                                             Ver Detalles
@@ -149,18 +158,18 @@ export default function SearchResults({ results, query }: Props) {
                                             ))}
                                         </ul>
                                     ) : (
-                                        <div className="p-4 text-center text-gray-500 dark:text-gray-400 dark:bg-zinc-900">
+                                        <div className="p-4 text-center text-gray-500 dark:bg-zinc-900 dark:text-gray-400">
                                             No se encontraron resultados.
                                         </div>
                                     )}
                                 </div>
                             ))
                         ) : (
-                            <div className="border dark:border-zinc-700 rounded-md overflow-hidden">
-                                <div className="bg-gray-100 dark:bg-zinc-900 px-4 py-2 font-medium border-b dark:border-zinc-700">
+                            <div className="overflow-hidden rounded-md border dark:border-zinc-700">
+                                <div className="border-b bg-gray-100 px-4 py-2 font-medium dark:border-zinc-700 dark:bg-zinc-900">
                                     <span className="dark:text-gray-200">Sin resultados</span>
                                 </div>
-                                <div className="p-6 text-center text-gray-500 dark:text-gray-400 dark:bg-zinc-900">
+                                <div className="p-6 text-center text-gray-500 dark:bg-zinc-900 dark:text-gray-400">
                                     No se encontraron resultados para tu búsqueda. Intenta con otros términos o revisa la ortografía.
                                 </div>
                             </div>

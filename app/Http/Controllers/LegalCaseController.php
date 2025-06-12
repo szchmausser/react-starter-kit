@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\LegalCase;
 use App\Models\CaseType;
+use App\Models\LegalCase;
 use App\Models\StatusList;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
 
 final class LegalCaseController extends Controller
 {
@@ -34,7 +34,7 @@ final class LegalCaseController extends Controller
             'statuses' => function ($query) {
                 // Ordenamos los estados por fecha de creación descendente
                 $query->orderBy('created_at', 'desc');
-            }
+            },
         ]);
 
         // Procesamos los filtros avanzados si existen
@@ -111,7 +111,7 @@ final class LegalCaseController extends Controller
         $paginationLinks[] = [
             'url' => $legalCases->currentPage() > 1 ? $legalCases->url($legalCases->currentPage() - 1) : null,
             'label' => '&laquo; Previous',
-            'active' => false
+            'active' => false,
         ];
 
         // Agregar links para todas las páginas
@@ -119,7 +119,7 @@ final class LegalCaseController extends Controller
             $paginationLinks[] = [
                 'url' => $legalCases->url($i),
                 'label' => (string) $i,
-                'active' => $i === $legalCases->currentPage()
+                'active' => $i === $legalCases->currentPage(),
             ];
         }
 
@@ -127,7 +127,7 @@ final class LegalCaseController extends Controller
         $paginationLinks[] = [
             'url' => $legalCases->currentPage() < $legalCases->lastPage() ? $legalCases->url($legalCases->currentPage() + 1) : null,
             'label' => 'Next &raquo;',
-            'active' => false
+            'active' => false,
         ];
 
         // Asignar los links generados manualmente a la respuesta JSON que irá al frontend
@@ -136,7 +136,7 @@ final class LegalCaseController extends Controller
         // Procesar los datos para incluir el estado actual
         foreach ($legalCasesResponse['data'] as &$case) {
             // Si tiene estados, tomamos el primero (ya están ordenados por fecha descendente)
-            if (!empty($case['statuses'])) {
+            if (! empty($case['statuses'])) {
                 $case['currentStatus'] = [
                     'id' => $case['statuses'][0]['id'],
                     'name' => $case['statuses'][0]['name'],
@@ -151,7 +151,7 @@ final class LegalCaseController extends Controller
         }
 
         // Asegurarse de que la estructura meta exista
-        if (!isset($legalCasesResponse['meta'])) {
+        if (! isset($legalCasesResponse['meta'])) {
             $legalCasesResponse['meta'] = [];
         }
 
@@ -194,6 +194,7 @@ final class LegalCaseController extends Controller
     public function create()
     {
         $caseTypes = CaseType::orderBy('name')->get();
+
         return Inertia::render('LegalCases/Create', [
             'caseTypes' => $caseTypes,
         ]);
@@ -218,7 +219,7 @@ final class LegalCaseController extends Controller
 
             // Crear el nuevo tipo de caso
             $caseType = CaseType::create([
-                'name' => $validated['new_case_type']
+                'name' => $validated['new_case_type'],
             ]);
 
             // Crear el expediente con el nuevo tipo de caso
@@ -267,7 +268,7 @@ final class LegalCaseController extends Controller
         Log::debug('Todos los archivos multimedia encontrados:', [
             'legal_case_id' => $legalCase->id,
             'count' => $allMedia->count(),
-            'collections' => $allMedia->pluck('collection_name')->unique()->toArray()
+            'collections' => $allMedia->pluck('collection_name')->unique()->toArray(),
         ]);
 
         // Obtener los 5 archivos multimedia más recientes para mostrar en la tarjeta
@@ -285,15 +286,15 @@ final class LegalCaseController extends Controller
         Log::debug('Archivos multimedia para mostrar:', [
             'legal_case_id' => $legalCase->id,
             'count' => $mediaItems->count(),
-            'items' => $mediaItems->toArray()
+            'items' => $mediaItems->toArray(),
         ]);
 
         // Depurar los datos de roles
         Log::debug('Individuos con roles:', $legalCase->individuals->map(function ($individual) {
             return [
                 'id' => $individual->id,
-                'name' => $individual->first_name . ' ' . $individual->last_name,
-                'role' => $individual->pivot->role ?? 'Sin rol definido'
+                'name' => $individual->first_name.' '.$individual->last_name,
+                'role' => $individual->pivot->role ?? 'Sin rol definido',
             ];
         })->toArray());
 
@@ -301,7 +302,7 @@ final class LegalCaseController extends Controller
             return [
                 'id' => $entity->id,
                 'name' => $entity->business_name,
-                'role' => $entity->pivot->role ?? 'Sin rol definido'
+                'role' => $entity->pivot->role ?? 'Sin rol definido',
             ];
         })->toArray());
 
@@ -319,10 +320,6 @@ final class LegalCaseController extends Controller
 
     /**
      * Calcula el tamaño legible para humanos
-     *
-     * @param int $bytes
-     * @param int $precision
-     * @return string
      */
     private function getHumanReadableSize(int $bytes, int $precision = 2): string
     {
@@ -335,7 +332,7 @@ final class LegalCaseController extends Controller
         $bytes /= pow(1024, $pow);
 
         // Formato para español: separador decimal coma, miles con punto
-        return number_format($bytes, $precision, ',', '.') . ' ' . $units[$pow];
+        return number_format($bytes, $precision, ',', '.').' '.$units[$pow];
     }
 
     /**
@@ -360,7 +357,7 @@ final class LegalCaseController extends Controller
         $legalCase = LegalCase::findOrFail($id);
 
         $validated = $request->validate([
-            'code' => 'required|string|max:255|unique:legal_cases,code,' . $id,
+            'code' => 'required|string|max:255|unique:legal_cases,code,'.$id,
             'entry_date' => 'required|date',
             'case_type_id' => 'required|exists:case_types,id',
         ]);
@@ -390,6 +387,7 @@ final class LegalCaseController extends Controller
     {
         $legalCase = LegalCase::findOrFail($id);
         $statuses = $legalCase->statuses()->orderByDesc('created_at')->get();
+
         return response()->json($statuses);
     }
 
@@ -410,7 +408,7 @@ final class LegalCaseController extends Controller
         $statusExists = StatusList::where('name', $statusName)->exists();
 
         // Si el estado no existe, crearlo en la tabla status_lists
-        if (!$statusExists) {
+        if (! $statusExists) {
             StatusList::create([
                 'name' => $statusName,
                 'description' => 'Creado automáticamente desde la interfaz de expedientes',
@@ -433,13 +431,14 @@ final class LegalCaseController extends Controller
     {
         // Obtener los nombres de los estatus desde la nueva tabla status_lists
         $statuses = StatusList::orderBy('name')->pluck('name');
+
         return response()->json($statuses);
     }
 
     /**
      * Obtener las etiquetas de un expediente legal.
      *
-     * @param string $id ID del expediente
+     * @param  string  $id  ID del expediente
      * @return \Illuminate\Http\JsonResponse
      */
     public function getTags(string $id)
@@ -451,7 +450,7 @@ final class LegalCaseController extends Controller
                 \Log::debug('Tag obtenido del expediente:', [
                     'id' => $tag->id,
                     'name' => $tag->name,
-                    'type' => $tag->type
+                    'type' => $tag->type,
                 ]);
 
                 return [
@@ -464,10 +463,11 @@ final class LegalCaseController extends Controller
 
             return response()->json($tags);
         } catch (\Exception $e) {
-            \Log::error('Error al obtener etiquetas del expediente: ' . $e->getMessage(), [
+            \Log::error('Error al obtener etiquetas del expediente: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'expediente_id' => $id
+                'expediente_id' => $id,
             ]);
+
             return response()->json(['error' => 'Error al obtener las etiquetas del expediente'], 500);
         }
     }
@@ -486,9 +486,9 @@ final class LegalCaseController extends Controller
 
             $tags = \Spatie\Tags\Tag::orderBy('order_column')->get();
 
-            \Log::debug("Etiquetas recuperadas de la BD:", [
+            \Log::debug('Etiquetas recuperadas de la BD:', [
                 'count' => $tags->count(),
-                'tags' => $tags->toArray()
+                'tags' => $tags->toArray(),
             ]);
 
             $formattedTags = $tags->map(function ($tag) {
@@ -503,7 +503,7 @@ final class LegalCaseController extends Controller
                     'name_raw' => $tag->getAttributes()['name'],
                     'name_processed' => $name,
                     'type' => $tag->type,
-                    'locale' => app()->getLocale()
+                    'locale' => app()->getLocale(),
                 ]);
 
                 return [
@@ -514,17 +514,18 @@ final class LegalCaseController extends Controller
                 ];
             });
 
-            \Log::debug("Enviando etiquetas formateadas:", [
+            \Log::debug('Enviando etiquetas formateadas:', [
                 'count' => $formattedTags->count(),
-                'tags' => $formattedTags->toArray()
+                'tags' => $formattedTags->toArray(),
             ]);
 
             return response()->json($formattedTags);
         } catch (\Exception $e) {
-            \Log::error('Error al obtener todas las etiquetas: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            \Log::error('Error al obtener todas las etiquetas: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['error' => 'Error al obtener las etiquetas: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Error al obtener las etiquetas: '.$e->getMessage()], 500);
         }
     }
 
@@ -532,8 +533,7 @@ final class LegalCaseController extends Controller
      * Agregar etiquetas a un expediente legal.
      * Permite crear etiquetas nuevas si no existen.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param string $id ID del expediente
+     * @param  string  $id  ID del expediente
      * @return \Illuminate\Http\JsonResponse
      */
     public function attachTags(Request $request, string $id)
@@ -554,7 +554,7 @@ final class LegalCaseController extends Controller
                 // Verificar si la etiqueta ya existe
                 $existingTag = \Spatie\Tags\Tag::findFromString($tag);
 
-                if (!$existingTag && $createIfNotExists) {
+                if (! $existingTag && $createIfNotExists) {
                     // Crear la etiqueta si no existe y está habilitada la opción
                     \Spatie\Tags\Tag::findOrCreate($tag);
                     $created = true;
@@ -566,17 +566,17 @@ final class LegalCaseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'created' => $created
+                'created' => $created,
             ]);
         } catch (\Exception $e) {
-            \Log::error("Error al agregar etiquetas: " . $e->getMessage(), [
+            \Log::error('Error al agregar etiquetas: '.$e->getMessage(), [
                 'exception' => $e,
                 'tags' => $tags,
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al agregar etiquetas: ' . $e->getMessage()
+                'message' => 'Error al agregar etiquetas: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -584,8 +584,7 @@ final class LegalCaseController extends Controller
     /**
      * Eliminar una etiqueta de un expediente legal.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param string $id ID del expediente
+     * @param  string  $id  ID del expediente
      * @return \Illuminate\Http\JsonResponse
      */
     public function detachTag(Request $request, string $id)
@@ -605,8 +604,7 @@ final class LegalCaseController extends Controller
     /**
      * Sincronizar las etiquetas de un expediente legal.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param string $id ID del expediente
+     * @param  string  $id  ID del expediente
      * @return \Illuminate\Http\JsonResponse
      */
     public function syncTags(Request $request, string $id)
@@ -638,16 +636,16 @@ final class LegalCaseController extends Controller
                 $query->where($field, '=', $value);
                 break;
             case 'contains':
-                $query->where($field, 'like', '%' . $value . '%');
+                $query->where($field, 'like', '%'.$value.'%');
                 break;
             case 'starts_with':
-                $query->where($field, 'like', $value . '%');
+                $query->where($field, 'like', $value.'%');
                 break;
             case 'ends_with':
-                $query->where($field, 'like', '%' . $value);
+                $query->where($field, 'like', '%'.$value);
                 break;
             case 'not_contains':
-                $query->where($field, 'not like', '%' . $value . '%');
+                $query->where($field, 'not like', '%'.$value.'%');
                 break;
         }
     }
@@ -677,7 +675,7 @@ final class LegalCaseController extends Controller
                     }
                 }
                 // Mantener compatibilidad con el formato anterior (array directo)
-                else if (is_array($value) && isset($value['start']) && isset($value['end'])) {
+                elseif (is_array($value) && isset($value['start']) && isset($value['end'])) {
                     $query->whereDate($field, '>=', $value['start'])
                         ->whereDate($field, '<=', $value['end']);
                 }
@@ -696,11 +694,12 @@ final class LegalCaseController extends Controller
      */
     private function isJson($string)
     {
-        if (!is_string($string)) {
+        if (! is_string($string)) {
             return false;
         }
 
         json_decode($string);
+
         return json_last_error() === JSON_ERROR_NONE;
     }
 
@@ -725,11 +724,11 @@ final class LegalCaseController extends Controller
 
     /**
      * Aplica filtros para buscar expedientes relacionados con individuos por su documento de identidad.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $field
-     * @param string $operator
-     * @param string $value
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $field
+     * @param  string  $operator
+     * @param  string  $value
      * @return void
      */
     private function applyIndividualFilter($query, $field, $operator, $value)
@@ -756,8 +755,8 @@ final class LegalCaseController extends Controller
                     break;
                 case 'contains':
                     $subQuery->where(function ($q) use ($value) {
-                        $q->where('national_id', 'like', '%' . $value . '%')
-                            ->orWhere('passport', 'like', '%' . $value . '%');
+                        $q->where('national_id', 'like', '%'.$value.'%')
+                            ->orWhere('passport', 'like', '%'.$value.'%');
                     });
                     break;
             }
@@ -766,11 +765,11 @@ final class LegalCaseController extends Controller
 
     /**
      * Aplica filtros para buscar expedientes relacionados con entidades legales por su RIF o razón social.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $field
-     * @param string $operator
-     * @param string $value
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $field
+     * @param  string  $operator
+     * @param  string  $value
      * @return void
      */
     private function applyLegalEntityFilter($query, $field, $operator, $value)
@@ -807,10 +806,10 @@ final class LegalCaseController extends Controller
                             $q->where($entityField, '=', $value);
                             break;
                         case 'contains':
-                            $q->where($entityField, 'like', '%' . $value . '%');
+                            $q->where($entityField, 'like', '%'.$value.'%');
                             break;
                         case 'starts_with':
-                            $q->where($entityField, 'like', $value . '%');
+                            $q->where($entityField, 'like', $value.'%');
                             break;
                     }
 
@@ -820,10 +819,10 @@ final class LegalCaseController extends Controller
                             $q->orWhere('trade_name', '=', $value);
                             break;
                         case 'contains':
-                            $q->orWhere('trade_name', 'like', '%' . $value . '%');
+                            $q->orWhere('trade_name', 'like', '%'.$value.'%');
                             break;
                         case 'starts_with':
-                            $q->orWhere('trade_name', 'like', $value . '%');
+                            $q->orWhere('trade_name', 'like', $value.'%');
                             break;
                     }
                 });
@@ -834,10 +833,10 @@ final class LegalCaseController extends Controller
                         $subQuery->where($entityField, '=', $value);
                         break;
                     case 'contains':
-                        $subQuery->where($entityField, 'like', '%' . $value . '%');
+                        $subQuery->where($entityField, 'like', '%'.$value.'%');
                         break;
                     case 'starts_with':
-                        $subQuery->where($entityField, 'like', $value . '%');
+                        $subQuery->where($entityField, 'like', $value.'%');
                         break;
                 }
             }

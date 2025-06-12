@@ -11,7 +11,7 @@ use Spatie\Tags\HasTags;
 
 class LegalEntity extends Model implements Searchable
 {
-    use HasFactory, SoftDeletes, HasTags;
+    use HasFactory, HasTags, SoftDeletes;
 
     protected $fillable = [
         'rif',

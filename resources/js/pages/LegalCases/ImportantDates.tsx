@@ -1,20 +1,3 @@
-import { Head, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Button } from '@/components/ui/button';
-import { formatDate, formatDateSafe } from '@/lib/utils';
-import { Plus, Pencil, Trash2, Calendar } from 'lucide-react';
-import { useState } from 'react';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-    DialogDescription,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -25,6 +8,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import { formatDateSafe } from '@/lib/utils';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/react';
+import { Calendar, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface ImportantDate {
@@ -102,32 +95,25 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
     const handleUpdate = () => {
         if (!selectedDate) return;
 
-        router.put(
-            route('legal-cases.important-dates.update', [legalCase.id, selectedDate.id]),
-            formData,
-            {
-                onSuccess: () => {
-                    setIsEditDialogOpen(false);
-                    setSelectedDate(null);
-                    toast.success('Fecha importante actualizada exitosamente');
-                },
-            }
-        );
+        router.put(route('legal-cases.important-dates.update', [legalCase.id, selectedDate.id]), formData, {
+            onSuccess: () => {
+                setIsEditDialogOpen(false);
+                setSelectedDate(null);
+                toast.success('Fecha importante actualizada exitosamente');
+            },
+        });
     };
 
     const handleDelete = () => {
         if (!selectedDate) return;
 
-        router.delete(
-            route('legal-cases.important-dates.destroy', [legalCase.id, selectedDate.id]),
-            {
-                onSuccess: () => {
-                    setIsDeleteDialogOpen(false);
-                    setSelectedDate(null);
-                    toast.success('Fecha importante eliminada exitosamente');
-                },
-            }
-        );
+        router.delete(route('legal-cases.important-dates.destroy', [legalCase.id, selectedDate.id]), {
+            onSuccess: () => {
+                setIsDeleteDialogOpen(false);
+                setSelectedDate(null);
+                toast.success('Fecha importante eliminada exitosamente');
+            },
+        });
     };
 
     const openEditDialog = (date: ImportantDate) => {
@@ -189,57 +175,61 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
             breadcrumbs={breadcrumbs}
             backButton={{
                 show: true,
-                onClick: () => router.visit(route('legal-cases.show', legalCase.id), {
-                    preserveState: false,
-                    replace: true,
-                }),
+                onClick: () =>
+                    router.visit(route('legal-cases.show', legalCase.id), {
+                        preserveState: false,
+                        replace: true,
+                    }),
                 label: 'Volver',
             }}
         >
             <Head title={`Fechas Importantes - Expediente ${legalCase.code}`} />
 
             <div className="p-4 sm:p-6">
-                <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
+                    <div className="p-4 text-gray-900 sm:p-6 dark:text-gray-100">
+                        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <h1 className="text-2xl font-bold">Fechas Importantes</h1>
                             <Button onClick={() => setIsCreateDialogOpen(true)}>
-                                <Plus className="h-4 w-4 mr-2" />
+                                <Plus className="mr-2 h-4 w-4" />
                                 Nueva Fecha
                             </Button>
                         </div>
 
                         {/* Próxima fecha importante */}
                         {nextImportantDate && (
-                            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                                <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-2">
-                                    Próxima Fecha Importante
-                                </h2>
+                            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                                <h2 className="mb-2 text-lg font-semibold text-blue-800 dark:text-blue-300">Próxima Fecha Importante</h2>
                                 <div className="flex items-center gap-2">
                                     <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                     <span className="font-medium">{nextImportantDate.title}</span>
-                                    <span className="text-blue-600 dark:text-blue-400">
-                                        ({formatDateSafe(nextImportantDate.end_date)})
-                                    </span>
+                                    <span className="text-blue-600 dark:text-blue-400">({formatDateSafe(nextImportantDate.end_date)})</span>
                                 </div>
                             </div>
                         )}
 
                         {/* Leyenda de estados */}
-                        <div className="mb-6 p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
-                            <h2 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Leyenda de Estados:</h2>
+                        <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+                            <h2 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Leyenda de Estados:</h2>
                             <div className="flex flex-wrap gap-4">
                                 <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-orange-100 dark:bg-orange-900 border border-orange-800 dark:border-orange-300"></span>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos activos pero con fecha ya pasada <span className="font-semibold">(Transcurrido)</span></span>
+                                    <span className="h-3 w-3 rounded-full border border-orange-800 bg-orange-100 dark:border-orange-300 dark:bg-orange-900"></span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        Plazos activos pero con fecha ya pasada <span className="font-semibold">(Transcurrido)</span>
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-green-100 dark:bg-green-900 border border-green-800 dark:border-green-300"></span>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos activos con fecha futura <span className="font-semibold">(En curso)</span></span>
+                                    <span className="h-3 w-3 rounded-full border border-green-800 bg-green-100 dark:border-green-300 dark:bg-green-900"></span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        Plazos activos con fecha futura <span className="font-semibold">(En curso)</span>
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-red-100 dark:bg-red-900 border border-red-800 dark:border-red-300"></span>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Plazos que ya no están activos y se conservan solo para referencia <span className="font-semibold">(Cerrado)</span></span>
+                                    <span className="h-3 w-3 rounded-full border border-red-800 bg-red-100 dark:border-red-300 dark:bg-red-900"></span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        Plazos que ya no están activos y se conservan solo para referencia{' '}
+                                        <span className="font-semibold">(Cerrado)</span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -260,36 +250,30 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                     return (
                                         <div
                                             key={date.id}
-                                            className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 rounded-lg border ${status.bg}`}
+                                            className={`flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between ${status.bg}`}
                                         >
                                             <div className="flex-1 space-y-1">
                                                 <div className="flex items-center gap-2">
                                                     <h3 className="font-medium">{date.title}</h3>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                                                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${status.color}`}>
                                                         {status.label}
                                                     </span>
                                                 </div>
                                                 {date.description && (
                                                     <>
-                                                        <div className="flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                                        <div className="mt-2 flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400">
                                                             <span>Inicio: {formatDateSafe(date.start_date)}</span>
                                                             <span>Fin: {formatDateSafe(date.end_date)}</span>
                                                         </div>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                                            {date.description}
-                                                        </p>
+                                                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{date.description}</p>
                                                     </>
                                                 )}
-                                                <div className="flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                                <div className="mt-2 flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400">
                                                     <span>Creado por: {date.created_by && date.created_by.name ? date.created_by.name : 'N/A'}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-2 justify-end mt-2 sm:mt-0">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => openEditDialog(date)}
-                                                >
+                                            <div className="mt-2 flex justify-end gap-2 sm:mt-0">
+                                                <Button variant="ghost" size="icon" onClick={() => openEditDialog(date)}>
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
                                                 <Button
@@ -307,31 +291,66 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                         </div>
 
                         {/* Sugerencia sobre la próxima fecha importante */}
-                        <div className="mt-8 mb-4 p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
-                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
-                                <span className="inline-flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z" /></svg></span>
+                        <div className="mt-8 mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+                            <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-gray-800 dark:text-gray-100">
+                                <span className="inline-flex items-center justify-center">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="mr-1 h-5 w-5 text-yellow-500"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z"
+                                        />
+                                    </svg>
+                                </span>
                                 ¿Cómo se determina la próxima fecha importante?
                             </h3>
-                            <p className="text-sm text-gray-700 dark:text-gray-200 mb-2 block">
-                                El plazo activo con fecha de finalización más cercana a la fecha actual será considerado la <b>fecha importante</b> para el expediente. Esta fecha se resalta automáticamente en la parte superior de la página.
+                            <p className="mb-2 block text-sm text-gray-700 dark:text-gray-200">
+                                El plazo activo con fecha de finalización más cercana a la fecha actual será considerado la <b>fecha importante</b>{' '}
+                                para el expediente. Esta fecha se resalta automáticamente en la parte superior de la página.
                             </p>
                         </div>
 
                         {/* Leyenda de discriminación de días hábiles/no hábiles */}
                         <div className="mt-8">
-                            <div className="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
-                                <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
-                                    <span className="inline-flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z" /></svg></span>
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+                                <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-gray-800 dark:text-gray-100">
+                                    <span className="inline-flex items-center justify-center">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="mr-1 h-5 w-5 text-yellow-500"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                    </span>
                                     Sugerencia para discriminar días hábiles y no hábiles
                                 </h3>
-                                <p className="text-sm text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                <p className="mb-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
                                     <span className="inline-flex items-center justify-center"></span>
-                                    Para mayor claridad, aparte de un titulo descriptivo para el rango de fechas, se recomienda que en la descripción indiques explícitamente qué días son hábiles y cuáles no, por ejemplo:
+                                    Para mayor claridad, aparte de un titulo descriptivo para el rango de fechas, se recomienda que en la descripción
+                                    indiques explícitamente qué días son hábiles y cuáles no, por ejemplo:
                                 </p>
-                                <div className="bg-gray-100 dark:bg-zinc-900 rounded p-3 text-xs text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-zinc-700">
-                                    <p className="mb-1">Días hábiles: 12/05/2025, 13/05/2025, 14/05/2025, 19/05/2025 {'< | >'} Días no hábiles: 15/05/2025, 16/05/2025, 17/05/2025, 18/05/2025</p>
+                                <div className="rounded border border-gray-200 bg-gray-100 p-3 text-xs text-gray-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-100">
+                                    <p className="mb-1">
+                                        Días hábiles: 12/05/2025, 13/05/2025, 14/05/2025, 19/05/2025 {'< | >'} Días no hábiles: 15/05/2025,
+                                        16/05/2025, 17/05/2025, 18/05/2025
+                                    </p>
                                 </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex items-center gap-2">
+                                <p className="mt-2 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                                     <span className="inline-flex items-center justify-center"></span>
                                     Esto facilitará la interpretación y seguimiento de los plazos para todos los usuarios del sistema.
                                 </p>
@@ -346,27 +365,21 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Nueva Fecha Importante</DialogTitle>
-                        <DialogDescription>
-                            Complete los detalles de la nueva fecha importante para el expediente.
-                        </DialogDescription>
+                        <DialogDescription>Complete los detalles de la nueva fecha importante para el expediente.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div>
                             <label className="text-sm font-medium">Título</label>
                             <Input
                                 value={formData.title}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setFormData({ ...formData, title: e.target.value })
-                                }
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, title: e.target.value })}
                             />
                         </div>
                         <div>
                             <label className="text-sm font-medium">Descripción</label>
                             <Textarea
                                 value={formData.description}
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                                    setFormData({ ...formData, description: e.target.value })
-                                }
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -375,9 +388,7 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                 <Input
                                     type="date"
                                     value={formData.start_date}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setFormData({ ...formData, start_date: e.target.value })
-                                    }
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, start_date: e.target.value })}
                                 />
                             </div>
                             <div>
@@ -385,9 +396,7 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                 <Input
                                     type="date"
                                     value={formData.end_date}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setFormData({ ...formData, end_date: e.target.value })
-                                    }
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, end_date: e.target.value })}
                                 />
                             </div>
                         </div>
@@ -396,10 +405,12 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                 type="checkbox"
                                 id="is_expired"
                                 checked={formData.is_expired}
-                                onChange={e => setFormData({ ...formData, is_expired: e.target.checked })}
-                                className="form-checkbox h-4 w-4 text-red-600 border-gray-300 rounded"
+                                onChange={(e) => setFormData({ ...formData, is_expired: e.target.checked })}
+                                className="form-checkbox h-4 w-4 rounded border-gray-300 text-red-600"
                             />
-                            <label htmlFor="is_expired" className="text-sm font-medium">Marcar como vencido</label>
+                            <label htmlFor="is_expired" className="text-sm font-medium">
+                                Marcar como vencido
+                            </label>
                         </div>
                     </div>
                     <DialogFooter>
@@ -413,27 +424,21 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Editar Fecha Importante</DialogTitle>
-                        <DialogDescription>
-                            Modifique los detalles de la fecha importante seleccionada.
-                        </DialogDescription>
+                        <DialogDescription>Modifique los detalles de la fecha importante seleccionada.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div>
                             <label className="text-sm font-medium">Título</label>
                             <Input
                                 value={formData.title}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setFormData({ ...formData, title: e.target.value })
-                                }
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, title: e.target.value })}
                             />
                         </div>
                         <div>
                             <label className="text-sm font-medium">Descripción</label>
                             <Textarea
                                 value={formData.description}
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                                    setFormData({ ...formData, description: e.target.value })
-                                }
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -442,9 +447,7 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                 <Input
                                     type="date"
                                     value={formData.start_date}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setFormData({ ...formData, start_date: e.target.value })
-                                    }
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, start_date: e.target.value })}
                                 />
                             </div>
                             <div>
@@ -452,9 +455,7 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                 <Input
                                     type="date"
                                     value={formData.end_date}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setFormData({ ...formData, end_date: e.target.value })
-                                    }
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, end_date: e.target.value })}
                                 />
                             </div>
                         </div>
@@ -463,10 +464,12 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                 type="checkbox"
                                 id="is_expired"
                                 checked={formData.is_expired}
-                                onChange={e => setFormData({ ...formData, is_expired: e.target.checked })}
-                                className="form-checkbox h-4 w-4 text-red-600 border-gray-300 rounded"
+                                onChange={(e) => setFormData({ ...formData, is_expired: e.target.checked })}
+                                className="form-checkbox h-4 w-4 rounded border-gray-300 text-red-600"
                             />
-                            <label htmlFor="is_expired" className="text-sm font-medium">Marcar como vencido</label>
+                            <label htmlFor="is_expired" className="text-sm font-medium">
+                                Marcar como vencido
+                            </label>
                         </div>
                     </div>
                     <DialogFooter>
@@ -481,8 +484,7 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                     <AlertDialogHeader>
                         <AlertDialogTitle>Eliminar Fecha Importante</AlertDialogTitle>
                         <AlertDialogDescription>
-                            ¿Está seguro que desea eliminar esta fecha importante? Esta acción no se
-                            puede deshacer.
+                            ¿Está seguro que desea eliminar esta fecha importante? Esta acción no se puede deshacer.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -495,4 +497,4 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
             </AlertDialog>
         </AppLayout>
     );
-} 
+}

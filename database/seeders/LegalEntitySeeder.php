@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\LegalEntity;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class LegalEntitySeeder extends Seeder
@@ -26,7 +25,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Distrito Capital',
                 'email_1' => 'info@invercaracas.com.ve',
                 'phone_number_1' => '0212-9876543',
-                'website' => 'www.invercaracas.com.ve'
+                'website' => 'www.invercaracas.com.ve',
             ],
             [
                 'rif' => 'J-30987654-3',
@@ -40,7 +39,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Mérida',
                 'email_1' => 'contacto@conandes.com.ve',
                 'phone_number_1' => '0274-8765432',
-                'website' => 'www.conandes.com.ve'
+                'website' => 'www.conandes.com.ve',
             ],
             [
                 'rif' => 'J-12098765-4',
@@ -54,7 +53,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Zulia',
                 'email_1' => 'ventas@diszulia.com.ve',
                 'phone_number_1' => '0261-7654321',
-                'website' => 'www.diszulia.com.ve'
+                'website' => 'www.diszulia.com.ve',
             ],
             [
                 'rif' => 'J-45678901-1',
@@ -67,7 +66,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Carabobo',
                 'email_1' => 'contacto@ayudasocial.org.ve',
                 'phone_number_1' => '0241-6543210',
-                'website' => 'www.ayudasocial.org.ve'
+                'website' => 'www.ayudasocial.org.ve',
             ],
             [
                 'rif' => 'J-56789012-1',
@@ -81,7 +80,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Lara',
                 'email_1' => 'info@coopsembrador.com.ve',
                 'phone_number_1' => '0251-5432109',
-                'website' => 'www.coopsembrador.com.ve'
+                'website' => 'www.coopsembrador.com.ve',
             ],
             [
                 'rif' => 'J-67890123-7',
@@ -95,7 +94,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Distrito Capital',
                 'email_1' => 'info@edimod.com.ve',
                 'phone_number_1' => '0212-4321098',
-                'website' => 'www.edimod.com.ve'
+                'website' => 'www.edimod.com.ve',
             ],
             [
                 'rif' => 'J-78901234-8',
@@ -108,7 +107,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Carabobo',
                 'email_1' => 'contacto@deportivavenezuela.org.ve',
                 'phone_number_1' => '0241-3210987',
-                'website' => 'www.deportivavenezuela.org.ve'
+                'website' => 'www.deportivavenezuela.org.ve',
             ],
             [
                 'rif' => 'J-89012345-9',
@@ -122,7 +121,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Zulia',
                 'email_1' => 'ventas@invertech.com.ve',
                 'phone_number_1' => '0261-2109876',
-                'website' => 'www.invertech.com.ve'
+                'website' => 'www.invertech.com.ve',
             ],
             [
                 'rif' => 'J-90123456-0',
@@ -135,7 +134,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Distrito Capital',
                 'email_1' => 'info@culturalcaracas.org.ve',
                 'phone_number_1' => '0212-1098765',
-                'website' => 'www.culturalcaracas.org.ve'
+                'website' => 'www.culturalcaracas.org.ve',
             ],
             [
                 'rif' => 'J-01234567-1',
@@ -149,7 +148,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Distrito Capital',
                 'email_1' => 'contacto@cooptrans.com.ve',
                 'phone_number_1' => '0212-0987654',
-                'website' => 'www.cooptrans.com.ve'
+                'website' => 'www.cooptrans.com.ve',
             ],
             [
                 'rif' => 'J-12345678-2',
@@ -163,7 +162,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Distrito Capital',
                 'email_1' => 'info@conasoc.com.ve',
                 'phone_number_1' => '0212-9876543',
-                'website' => 'www.conasoc.com.ve'
+                'website' => 'www.conasoc.com.ve',
             ],
             [
                 'rif' => 'J-23456789-3',
@@ -176,7 +175,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Lara',
                 'email_1' => 'contacto@productoresagricolas.org.ve',
                 'phone_number_1' => '0251-8765432',
-                'website' => 'www.productoresagricolas.org.ve'
+                'website' => 'www.productoresagricolas.org.ve',
             ],
             [
                 'rif' => 'J-34567890-4',
@@ -190,7 +189,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Distrito Capital',
                 'email_1' => 'ventas@invereste.com.ve',
                 'phone_number_1' => '0212-7654321',
-                'website' => 'www.invereste.com.ve'
+                'website' => 'www.invereste.com.ve',
             ],
             [
                 'rif' => 'J-45678901-2',
@@ -203,7 +202,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Carabobo',
                 'email_1' => 'info@futuroeducativo.org.ve',
                 'phone_number_1' => '0241-6543210',
-                'website' => 'www.futuroeducativo.org.ve'
+                'website' => 'www.futuroeducativo.org.ve',
             ],
             [
                 'rif' => 'J-56789012-2',
@@ -217,7 +216,7 @@ class LegalEntitySeeder extends Seeder
                 'fiscal_state' => 'Zulia',
                 'email_1' => 'contacto@coopserv.com.ve',
                 'phone_number_1' => '0261-5432109',
-                'website' => 'www.coopserv.com.ve'
+                'website' => 'www.coopserv.com.ve',
             ],
         ];
 

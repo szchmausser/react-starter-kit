@@ -25,7 +25,7 @@ class UpdateIndividualRequest extends FormRequest
     public function rules()
     {
         $id = $this->route('individual');
-        
+
         return [
             'national_id' => 'required|string|max:20|unique:individuals,national_id,'.$id,
             'passport' => 'nullable|string|max:30|unique:individuals,passport,'.$id,
@@ -51,7 +51,7 @@ class UpdateIndividualRequest extends FormRequest
             'educational_level' => 'nullable|string|max:100',
         ];
     }
-    
+
     /**
      * Get the error messages for the defined validation rules.
      *
@@ -72,4 +72,4 @@ class UpdateIndividualRequest extends FormRequest
             'email_2.unique' => 'Este correo electrónico ya está registrado.',
         ];
     }
-} 
+}

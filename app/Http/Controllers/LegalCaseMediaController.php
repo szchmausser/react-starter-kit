@@ -17,7 +17,6 @@ final class LegalCaseMediaController extends Controller
     /**
      * Muestra los archivos multimedia asociados a un caso legal.
      *
-     * @param LegalCase $legalCase
      * @return \Inertia\Response
      */
     public function index(LegalCase $legalCase)
@@ -45,7 +44,7 @@ final class LegalCaseMediaController extends Controller
                 $item->thumbnail = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : null;
 
                 // Para imágenes, si no hay miniaturas, usar la URL directa
-                if (strpos($item->mime_type, 'image/') === 0 && !$item->thumbnail) {
+                if (strpos($item->mime_type, 'image/') === 0 && ! $item->thumbnail) {
                     $item->thumbnail = $item->file_url;
                 }
 
@@ -61,16 +60,15 @@ final class LegalCaseMediaController extends Controller
                 'legalCase' => $legalCase->only(['id', 'code']),
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al cargar archivos multimedia: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al cargar archivos multimedia: ' . $e->getMessage());
+            Log::error('Error al cargar archivos multimedia: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error al cargar archivos multimedia: '.$e->getMessage());
         }
     }
 
     /**
      * Almacena un nuevo archivo multimedia asociado a un caso legal.
      *
-     * @param Request $request
-     * @param LegalCase $legalCase
      * @return \Illuminate\Http\RedirectResponse|\Inertia\Response
      */
     public function store(Request $request, LegalCase $legalCase)
@@ -88,7 +86,7 @@ final class LegalCaseMediaController extends Controller
                 'legal_case_code' => $legalCase->code,
                 'file_name' => $request->file('file')->getClientOriginalName(),
                 'mime_type' => $request->file('file')->getMimeType(),
-                'size' => $request->file('file')->getSize()
+                'size' => $request->file('file')->getSize(),
             ]);
 
             // Determinar la colección basada en el tipo MIME
@@ -101,7 +99,7 @@ final class LegalCaseMediaController extends Controller
                     'description' => $validated['description'] ?? null,
                     'category' => $validated['category'] ?? null,
                     'original_filename' => $request->file('file')->getClientOriginalName(),
-                    'uploaded_by' => Auth::id() ?? 1
+                    'uploaded_by' => Auth::id() ?? 1,
                 ])
                 ->usingName($validated['name'])
                 ->toMediaCollection($collection);
@@ -109,7 +107,7 @@ final class LegalCaseMediaController extends Controller
             Log::info('Archivo subido correctamente', [
                 'media_id' => $media->id,
                 'file_name' => $media->file_name,
-                'collection' => $media->collection_name
+                'collection' => $media->collection_name,
             ]);
 
             // Flash del mensaje de éxito
@@ -118,11 +116,11 @@ final class LegalCaseMediaController extends Controller
             // Redirigir usando Inertia::location para una navegación fluida
             return Inertia::location(route('legal-cases.media.index', $legalCase->id));
         } catch (\Exception $e) {
-            Log::error('Error al subir archivo: ' . $e->getMessage());
+            Log::error('Error al subir archivo: '.$e->getMessage());
             Log::error($e->getTraceAsString());
 
             return redirect()->back()
-                ->withErrors(['file' => 'Error al subir el archivo: ' . $e->getMessage()])
+                ->withErrors(['file' => 'Error al subir el archivo: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -130,8 +128,6 @@ final class LegalCaseMediaController extends Controller
     /**
      * Muestra los detalles de un archivo multimedia específico.
      *
-     * @param LegalCase $legalCase
-     * @param Media $media
      * @return \Inertia\Response
      */
     public function show(LegalCase $legalCase, Media $media)
@@ -169,15 +165,15 @@ final class LegalCaseMediaController extends Controller
                 'legalCase' => $legalCase->only(['id', 'code']),
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al mostrar archivo multimedia: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al mostrar archivo multimedia: ' . $e->getMessage());
+            Log::error('Error al mostrar archivo multimedia: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error al mostrar archivo multimedia: '.$e->getMessage());
         }
     }
 
     /**
      * Muestra el formulario para crear un nuevo archivo multimedia.
      *
-     * @param LegalCase $legalCase
      * @return \Inertia\Response
      */
     public function create(LegalCase $legalCase)
@@ -187,16 +183,15 @@ final class LegalCaseMediaController extends Controller
                 'legalCase' => $legalCase->only(['id', 'code']),
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al mostrar formulario de subida de archivos: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al mostrar formulario de subida de archivos: ' . $e->getMessage());
+            Log::error('Error al mostrar formulario de subida de archivos: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error al mostrar formulario de subida de archivos: '.$e->getMessage());
         }
     }
 
     /**
      * Muestra el formulario para editar un archivo multimedia.
      *
-     * @param LegalCase $legalCase
-     * @param Media $media
      * @return \Inertia\Response|\Illuminate\Http\JsonResponse
      */
     public function edit(LegalCase $legalCase, Media $media)
@@ -228,17 +223,15 @@ final class LegalCaseMediaController extends Controller
                 'legalCase' => $legalCase->only(['id', 'code']),
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al editar archivo multimedia: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al editar archivo multimedia: ' . $e->getMessage());
+            Log::error('Error al editar archivo multimedia: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error al editar archivo multimedia: '.$e->getMessage());
         }
     }
 
     /**
      * Actualiza un archivo multimedia existente.
      *
-     * @param Request $request
-     * @param LegalCase $legalCase
-     * @param Media $media
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function update(Request $request, LegalCase $legalCase, Media $media)
@@ -271,7 +264,7 @@ final class LegalCaseMediaController extends Controller
 
             Log::info('Archivo multimedia actualizado', [
                 'media_id' => $media->id,
-                'name' => $media->name
+                'name' => $media->name,
             ]);
 
             // Si se proporciona un nuevo archivo, reemplazarlo
@@ -279,7 +272,7 @@ final class LegalCaseMediaController extends Controller
                 Log::info('Reemplazando archivo', [
                     'media_id' => $media->id,
                     'old_file_name' => $media->file_name,
-                    'new_file_name' => $request->file('file')->getClientOriginalName()
+                    'new_file_name' => $request->file('file')->getClientOriginalName(),
                 ]);
 
                 // Eliminar el archivo actual
@@ -293,14 +286,14 @@ final class LegalCaseMediaController extends Controller
                         'original_filename' => $request->file('file')->getClientOriginalName(),
                         'uploaded_by' => Auth::id() ?? 1,
                         'updated_by' => Auth::id() ?? 1,
-                        'updated_at' => now()->toDateTimeString()
+                        'updated_at' => now()->toDateTimeString(),
                     ])
                     ->usingName($validated['name'])
                     ->toMediaCollection($this->getCollectionForMimeType($request->file('file')->getMimeType()));
 
                 Log::info('Nuevo archivo subido', [
                     'media_id' => $newMedia->id,
-                    'file_name' => $newMedia->file_name
+                    'file_name' => $newMedia->file_name,
                 ]);
 
                 // Flash del mensaje de éxito
@@ -316,11 +309,11 @@ final class LegalCaseMediaController extends Controller
             // Redirigir usando Inertia::location para una navegación fluida
             return Inertia::location(route('legal-cases.media.index', $legalCase->id));
         } catch (\Exception $e) {
-            Log::error('Error al actualizar archivo multimedia: ' . $e->getMessage());
+            Log::error('Error al actualizar archivo multimedia: '.$e->getMessage());
             Log::error($e->getTraceAsString());
 
             return redirect()->back()
-                ->withErrors(['error' => 'Error al actualizar el archivo: ' . $e->getMessage()])
+                ->withErrors(['error' => 'Error al actualizar el archivo: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -328,9 +321,6 @@ final class LegalCaseMediaController extends Controller
     /**
      * Elimina un archivo multimedia.
      *
-     * @param LegalCase $legalCase
-     * @param Media $media
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function destroy(LegalCase $legalCase, Media $media, Request $request)
@@ -348,7 +338,7 @@ final class LegalCaseMediaController extends Controller
             Log::info('Eliminando archivo multimedia', [
                 'media_id' => $mediaId,
                 'file_name' => $fileName,
-                'legal_case_id' => $legalCase->id
+                'legal_case_id' => $legalCase->id,
             ]);
 
             // Eliminar el archivo
@@ -362,19 +352,17 @@ final class LegalCaseMediaController extends Controller
             // Redirigir usando Inertia::location para una navegación fluida
             return Inertia::location(route('legal-cases.media.index', $legalCase->id));
         } catch (\Exception $e) {
-            Log::error('Error al eliminar archivo multimedia: ' . $e->getMessage());
+            Log::error('Error al eliminar archivo multimedia: '.$e->getMessage());
             Log::error($e->getTraceAsString());
 
             return redirect()->back()
-                ->withErrors(['error' => 'Error al eliminar el archivo: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Error al eliminar el archivo: '.$e->getMessage()]);
         }
     }
 
     /**
      * Descarga un archivo multimedia.
      *
-     * @param LegalCase $legalCase
-     * @param Media $media
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function download(LegalCase $legalCase, Media $media)
@@ -389,7 +377,7 @@ final class LegalCaseMediaController extends Controller
             Log::info('Descargando archivo multimedia', [
                 'media_id' => $media->id,
                 'file_name' => $media->file_name,
-                'legal_case_id' => $legalCase->id
+                'legal_case_id' => $legalCase->id,
             ]);
 
             // Intentar diferentes rutas posibles
@@ -410,7 +398,7 @@ final class LegalCaseMediaController extends Controller
                 // Rutas adicionales con variaciones
                 public_path("storage/media/{$media->collection_name}/{$media->file_name}"),
                 public_path("storage/{$media->id}/{$media->file_name}"),
-                public_path("storage/{$media->file_name}")
+                public_path("storage/{$media->file_name}"),
             ];
 
             // Buscar el archivo en las rutas posibles
@@ -424,10 +412,10 @@ final class LegalCaseMediaController extends Controller
             }
 
             // Si no se encuentra el archivo, redireccionar con mensaje de error
-            if (!$filePath) {
+            if (! $filePath) {
                 Log::error('Archivo no encontrado para descarga', [
                     'media_id' => $media->id,
-                    'rutas_probadas' => $possiblePaths
+                    'rutas_probadas' => $possiblePaths,
                 ]);
 
                 return redirect()->back()->with('error', 'Archivo no encontrado');
@@ -438,16 +426,14 @@ final class LegalCaseMediaController extends Controller
 
             return response()->download($filePath, $fileName);
         } catch (\Exception $e) {
-            Log::error('Error al descargar archivo multimedia: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al descargar el archivo: ' . $e->getMessage());
+            Log::error('Error al descargar archivo multimedia: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error al descargar el archivo: '.$e->getMessage());
         }
     }
 
     /**
      * Determina la colección adecuada basada en el tipo MIME.
-     *
-     * @param string $mimeType
-     * @return string
      */
     private function getCollectionForMimeType(string $mimeType): string
     {
@@ -462,28 +448,28 @@ final class LegalCaseMediaController extends Controller
                 'application/pdf',
                 'application/msword',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'text/plain'
+                'text/plain',
             ])
         ) {
             return 'documents';
         } elseif (
             in_array($mimeType, [
                 'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])
         ) {
             return 'spreadsheets';
         } elseif (
             in_array($mimeType, [
                 'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
             ])
         ) {
             return 'presentations';
         } elseif (
             in_array($mimeType, [
                 'application/zip',
-                'application/x-rar-compressed'
+                'application/x-rar-compressed',
             ])
         ) {
             return 'compressed';
@@ -495,9 +481,6 @@ final class LegalCaseMediaController extends Controller
 
     /**
      * Obtiene un nombre descriptivo para el tipo de archivo según su extensión.
-     *
-     * @param string $extension
-     * @return string|null
      */
     private function getTypeNameFromExtension(string $extension): ?string
     {
@@ -571,9 +554,6 @@ final class LegalCaseMediaController extends Controller
 
     /**
      * Obtiene un nombre descriptivo para el tipo de archivo según su MIME type.
-     *
-     * @param string $mimeType
-     * @return string
      */
     private function getTypeNameForMimeType(string $mimeType): string
     {
@@ -602,17 +582,20 @@ final class LegalCaseMediaController extends Controller
         // Si no se pudo determinar por extensión, usar el MIME type
         if (strpos($mimeType, 'image/') === 0) {
             $type = str_replace('image/', '', $mimeType);
-            return 'Imagen ' . strtoupper($type);
+
+            return 'Imagen '.strtoupper($type);
         } elseif ($mimeType === 'application/pdf') {
             return 'Documento PDF';
         } elseif ($mimeType === 'application/msword' || $mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
             return 'Documento Word';
         } elseif (strpos($mimeType, 'video/') === 0) {
             $type = str_replace('video/', '', $mimeType);
-            return 'Video ' . strtoupper($type);
+
+            return 'Video '.strtoupper($type);
         } elseif (strpos($mimeType, 'audio/') === 0) {
             $type = str_replace('audio/', '', $mimeType);
-            return 'Audio ' . strtoupper($type);
+
+            return 'Audio '.strtoupper($type);
         } elseif ($mimeType === 'application/vnd.ms-excel' || $mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
             return 'Hoja de cálculo Excel';
         } elseif ($mimeType === 'application/vnd.ms-powerpoint' || $mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
@@ -636,14 +619,11 @@ final class LegalCaseMediaController extends Controller
         }
 
         // Si no coincide con ninguna de las anteriores, devolver un nombre genérico con el MIME type
-        return 'Archivo ' . $mimeType;
+        return 'Archivo '.$mimeType;
     }
 
     /**
      * Obtiene un icono descriptivo para el tipo de archivo según su MIME type.
-     *
-     * @param string $mimeType
-     * @return string
      */
     private function getTypeIconForMimeType(string $mimeType): string
     {
@@ -672,9 +652,6 @@ final class LegalCaseMediaController extends Controller
 
     /**
      * Convierte un tamaño en bytes a un formato legible para humanos.
-     *
-     * @param int $bytes
-     * @return string
      */
     private function getHumanReadableSize(int $bytes): string
     {
@@ -686,14 +663,11 @@ final class LegalCaseMediaController extends Controller
         $bytes /= pow(1024, $pow);
 
         // Formato para español: separador decimal coma, miles con punto
-        return number_format($bytes, 2, ',', '.') . ' ' . $units[$pow];
+        return number_format($bytes, 2, ',', '.').' '.$units[$pow];
     }
 
     /**
      * Obtiene la URL correcta para un archivo de media.
-     * 
-     * @param Media $media
-     * @return string
      */
     private function getCorrectUrl(Media $media): string
     {

@@ -24,7 +24,7 @@ const PaginationComponent = ({ data, itemsPerPage, onPageChange }: PaginationPro
     };
 
     return (
-        <div className="flex justify-center mt-4">
+        <div className="mt-4 flex justify-center">
             <Pagination>
                 <PaginationContent>
                     {currentPage > 1 && (

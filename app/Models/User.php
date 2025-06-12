@@ -6,17 +6,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
-use Spatie\Searchable\Searchable;
-use Spatie\Searchable\SearchResult;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Permission\Traits\HasRoles;
+use Spatie\Searchable\Searchable;
+use Spatie\Searchable\SearchResult;
 
-class User extends Authenticatable implements Searchable, HasMedia
+class User extends Authenticatable implements HasMedia, Searchable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, InteractsWithMedia;
+    use HasFactory, HasRoles, InteractsWithMedia, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -54,8 +54,6 @@ class User extends Authenticatable implements Searchable, HasMedia
 
     /**
      * Implementación del método requerido por la interfaz Searchable
-     * 
-     * @return \Spatie\Searchable\SearchResult
      */
     public function getSearchResult(): SearchResult
     {
@@ -70,11 +68,8 @@ class User extends Authenticatable implements Searchable, HasMedia
 
     /**
      * Registra las conversiones de medios.
-     *
-     * @param \Spatie\MediaLibrary\MediaCollections\Models\Media|null $media
-     * @return void
      */
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
             ->width(200)
@@ -91,8 +86,6 @@ class User extends Authenticatable implements Searchable, HasMedia
     /**
      * Registra todas las conversiones de medios.
      * Este método es necesario para el reemplazo de archivos.
-     *
-     * @return void
      */
     public function registerAllMediaConversions(): void
     {

@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CaseImportantDate extends Model
 {
@@ -18,7 +18,7 @@ class CaseImportantDate extends Model
         'start_date',
         'end_date',
         'is_expired',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
@@ -44,15 +44,15 @@ class CaseImportantDate extends Model
 
     public function isActive(): bool
     {
-        return !$this->is_expired;
+        return ! $this->is_expired;
     }
 
     public function getDaysRemaining(): int
     {
-        if (!$this->isActive()) {
+        if (! $this->isActive()) {
             return 0;
         }
 
         return now()->diffInDays($this->end_date, false);
     }
-} 
+}

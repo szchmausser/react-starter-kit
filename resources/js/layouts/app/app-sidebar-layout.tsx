@@ -6,7 +6,11 @@ import { AuthMiddleware } from '@/components/auth-middleware';
 import { type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 
-export default function AppSidebarLayout({ children, breadcrumbs = [], backButton }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[], backButton?: { show: boolean, onClick?: () => void, label?: string } }>) {
+export default function AppSidebarLayout({
+    children,
+    breadcrumbs = [],
+    backButton,
+}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[]; backButton?: { show: boolean; onClick?: () => void; label?: string } }>) {
     return (
         <AuthMiddleware>
             <AppShell variant="sidebar">

@@ -1,25 +1,24 @@
-import React from 'react';
-import { Head, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 import { formatDateSafe } from '@/lib/utils';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import {
+    ArchiveIcon,
     ArrowLeft,
+    ChevronDown,
     Download,
     Edit,
-    Trash2,
-    FileText,
     FileIcon,
-    ImageIcon,
-    VideoIcon,
-    MusicIcon,
     FileSpreadsheetIcon,
+    FileText,
+    ImageIcon,
+    MusicIcon,
     PresentationIcon,
-    ArchiveIcon,
-    ChevronDown
+    Trash2,
+    VideoIcon,
 } from 'lucide-react';
 
 interface MediaItem {
@@ -79,7 +78,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
 
     // Función para obtener el icono según el tipo de archivo
     const getFileIcon = (size: 'sm' | 'lg' = 'lg') => {
-        const iconSize = size === 'lg' ? "h-24 w-24" : "h-6 w-6";
+        const iconSize = size === 'lg' ? 'h-24 w-24' : 'h-6 w-6';
 
         if (!mediaItem.type_icon) return <FileIcon className={`${iconSize} text-gray-500 dark:text-gray-400`} />;
 
@@ -107,7 +106,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
     const renderPreview = () => {
         if (!mediaItem.mime_type) {
             return (
-                <div className="flex flex-col items-center justify-center h-64 bg-gray-100 dark:bg-zinc-800 rounded-md">
+                <div className="flex h-64 flex-col items-center justify-center rounded-md bg-gray-100 dark:bg-zinc-800">
                     <span className="text-gray-500 dark:text-gray-400">No se puede mostrar una vista previa para este archivo</span>
                 </div>
             );
@@ -116,11 +115,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
         if (mediaItem.mime_type.startsWith('image/')) {
             return (
                 <div className="flex items-center justify-center">
-                    <img
-                        src={mediaItem.file_url}
-                        alt={mediaItem.name}
-                        className="max-h-[600px] object-contain rounded-md"
-                    />
+                    <img src={mediaItem.file_url} alt={mediaItem.name} className="max-h-[600px] rounded-md object-contain" />
                 </div>
             );
         }
@@ -136,14 +131,14 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
 
             // Mapa de extensiones a tipos MIME para asegurar compatibilidad
             const mimeMap: Record<string, string> = {
-                'mp4': 'video/mp4',
-                'webm': 'video/webm',
-                'ogg': 'video/ogg',
-                'mov': 'video/quicktime',
-                'avi': 'video/x-msvideo',
-                'wmv': 'video/x-ms-wmv',
-                'flv': 'video/x-flv',
-                'mkv': 'video/x-matroska'
+                mp4: 'video/mp4',
+                webm: 'video/webm',
+                ogg: 'video/ogg',
+                mov: 'video/quicktime',
+                avi: 'video/x-msvideo',
+                wmv: 'video/x-ms-wmv',
+                flv: 'video/x-flv',
+                mkv: 'video/x-matroska',
             };
 
             // Si tenemos una extensión conocida, usar el tipo MIME correspondiente
@@ -182,12 +177,12 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
 
             // Mapa de extensiones a tipos MIME para asegurar compatibilidad
             const mimeMap: Record<string, string> = {
-                'mp3': 'audio/mpeg',
-                'wav': 'audio/wav',
-                'ogg': 'audio/ogg',
-                'flac': 'audio/flac',
-                'aac': 'audio/aac',
-                'm4a': 'audio/mp4'
+                mp3: 'audio/mpeg',
+                wav: 'audio/wav',
+                ogg: 'audio/ogg',
+                flac: 'audio/flac',
+                aac: 'audio/aac',
+                m4a: 'audio/mp4',
             };
 
             // Si tenemos una extensión conocida, usar el tipo MIME correspondiente
@@ -197,14 +192,9 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
 
             return (
                 <div className="flex flex-col items-center justify-center py-8">
-                    <div className="text-5xl mb-6">{getFileIcon('lg')}</div>
-                    <h3 className="text-xl font-medium mb-4">{mediaItem.name}</h3>
-                    <audio
-                        controls
-                        className="w-full max-w-md"
-                        controlsList="nodownload"
-                        preload="metadata"
-                    >
+                    <div className="mb-6 text-5xl">{getFileIcon('lg')}</div>
+                    <h3 className="mb-4 text-xl font-medium">{mediaItem.name}</h3>
+                    <audio controls className="w-full max-w-md" controlsList="nodownload" preload="metadata">
                         {/* Usar múltiples elementos source para mayor compatibilidad */}
                         <source src={mediaItem.file_url} type={audioType} />
                         {ext === 'mp3' && <source src={mediaItem.file_url} type="audio/mpeg" />}
@@ -221,22 +211,18 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
 
         if (mediaItem.mime_type === 'application/pdf' && mediaItem.file_url) {
             return (
-                <div className="h-[600px] rounded-md overflow-hidden">
-                    <iframe
-                        src={mediaItem.file_url}
-                        className="w-full h-full"
-                        title={mediaItem.name}
-                    />
+                <div className="h-[600px] overflow-hidden rounded-md">
+                    <iframe src={mediaItem.file_url} className="h-full w-full" title={mediaItem.name} />
                 </div>
             );
         }
 
         // Para otros tipos de archivos, mostrar información sobre el archivo
         return (
-            <div className="flex flex-col items-center justify-center h-64 bg-gray-100 dark:bg-zinc-800 rounded-md p-6 text-center">
-                <div className="text-5xl mb-4">{getFileIcon('lg')}</div>
+            <div className="flex h-64 flex-col items-center justify-center rounded-md bg-gray-100 p-6 text-center dark:bg-zinc-800">
+                <div className="mb-4 text-5xl">{getFileIcon('lg')}</div>
                 <h3 className="text-xl font-medium">{mediaItem.file_name || mediaItem.name}</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">{mediaItem.type_name || mediaItem.mime_type}</p>
+                <p className="mt-2 text-gray-500 dark:text-gray-400">{mediaItem.type_name || mediaItem.mime_type}</p>
                 <p className="text-gray-500 dark:text-gray-400">{mediaItem.human_readable_size}</p>
                 <div className="mt-4">
                     <Button
@@ -260,14 +246,14 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Archivo: ${mediaItem.name} - Expediente: ${legalCase.code}`} />
-            <div className="p-4 sm:p-6 space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-6 p-4 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-2xl font-semibold">{mediaItem.name}</h1>
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                         <Button
                             variant="outline"
                             onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
-                            className="w-full sm:w-auto justify-center"
+                            className="w-full justify-center sm:w-auto"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Volver al listado
@@ -275,7 +261,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                         <Button
                             variant="outline"
                             onClick={() => router.visit(route('legal-cases.media.edit', [legalCase.id, mediaItem.id]))}
-                            className="w-full sm:w-auto justify-center"
+                            className="w-full justify-center sm:w-auto"
                         >
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
@@ -283,31 +269,25 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                         <Button
                             variant="outline"
                             onClick={() => window.open(route('legal-cases.media.download', [legalCase.id, mediaItem.id]), '_blank')}
-                            className="w-full sm:w-auto justify-center"
+                            className="w-full justify-center sm:w-auto"
                         >
                             <Download className="mr-2 h-4 w-4" />
                             Descargar
                         </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={deleteMedia}
-                            className="w-full sm:w-auto justify-center"
-                        >
+                        <Button variant="destructive" onClick={deleteMedia} className="w-full justify-center sm:w-auto">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Eliminar
                         </Button>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <div className="lg:col-span-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Vista Previa</CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                {renderPreview()}
-                            </CardContent>
+                            <CardContent>{renderPreview()}</CardContent>
                         </Card>
                     </div>
 
@@ -317,7 +297,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                                 <CardTitle>Información del Archivo</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+                                <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
                                     <div>
                                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</h3>
                                         <p className="mt-1">{mediaItem.name}</p>
@@ -325,7 +305,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
 
                                     <div>
                                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo de archivo</h3>
-                                        <div className="flex items-center mt-1 space-x-2">
+                                        <div className="mt-1 flex items-center space-x-2">
                                             {getFileIcon('sm')}
                                             <span>{mediaItem.type_name || mediaItem.mime_type}</span>
                                         </div>
@@ -341,7 +321,9 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                                     {mediaItem.category && (
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Categoría</h3>
-                                            <Badge variant="outline" className="mt-1">{mediaItem.category}</Badge>
+                                            <Badge variant="outline" className="mt-1">
+                                                {mediaItem.category}
+                                            </Badge>
                                         </div>
                                     )}
 
@@ -352,9 +334,7 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
 
                                     <div>
                                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Fecha de creación</h3>
-                                        <p className="mt-1">
-                                            {formatDateSafe(mediaItem.created_at)}
-                                        </p>
+                                        <p className="mt-1">{formatDateSafe(mediaItem.created_at)}</p>
                                     </div>
 
                                     {mediaItem.last_modified && (
@@ -364,15 +344,15 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
                                         </div>
                                     )}
 
-                                    <div className="col-span-1 sm:col-span-2 border-t pt-3 dark:border-zinc-700">
+                                    <div className="col-span-1 border-t pt-3 sm:col-span-2 dark:border-zinc-700">
                                         <details className="group">
-                                            <summary className="flex items-center font-medium cursor-pointer list-none text-sm text-gray-500 dark:text-gray-400">
+                                            <summary className="flex cursor-pointer list-none items-center text-sm font-medium text-gray-500 dark:text-gray-400">
                                                 <span>Información técnica</span>
-                                                <span className="transition group-open:rotate-180 ml-auto">
+                                                <span className="ml-auto transition group-open:rotate-180">
                                                     <ChevronDown className="h-4 w-4" />
                                                 </span>
                                             </summary>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 mt-3">
+                                            <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
                                                 <div>
                                                     <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre del archivo</h3>
                                                     <p className="mt-1 text-xs break-all">{mediaItem.file_name}</p>
@@ -405,4 +385,4 @@ export default function MediaShow({ mediaItem, legalCase }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

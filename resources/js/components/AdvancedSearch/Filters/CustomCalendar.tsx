@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, addDays, getDay } from 'date-fns';
+import { addDays, addMonths, endOfMonth, format, getDay, isSameDay, isSameMonth, isToday, startOfMonth, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface CustomCalendarProps {
     selectedDate?: Date;
@@ -22,7 +22,7 @@ export default function CustomCalendar({
     maxDate,
     disabledDates,
     initialMonth = new Date(),
-    onMonthChange
+    onMonthChange,
 }: CustomCalendarProps) {
     const [currentMonth, setCurrentMonth] = useState(initialMonth);
 
@@ -34,17 +34,11 @@ export default function CustomCalendar({
     }, [initialMonth]);
 
     // Nombres de los meses en español
-    const months = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
     // Generar años para el selector (desde 1950 hasta el año actual + 10)
     const currentYearNow = new Date().getFullYear();
-    const years = Array.from(
-        { length: currentYearNow + 10 - 1950 + 1 },
-        (_, i) => 1950 + i
-    );
+    const years = Array.from({ length: currentYearNow + 10 - 1950 + 1 }, (_, i) => 1950 + i);
 
     // Manejar cambio de mes
     const handlePrevMonth = () => {
@@ -116,24 +110,15 @@ export default function CustomCalendar({
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 rounded-md">
+        <div className="rounded-md border bg-white dark:border-zinc-800 dark:bg-zinc-950">
             {/* Cabecera con selector de mes/año */}
-            <div className="flex justify-between items-center p-2 border-b dark:border-zinc-800">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handlePrevMonth}
-                    className="h-7 w-7"
-                    type="button"
-                >
+            <div className="flex items-center justify-between border-b p-2 dark:border-zinc-800">
+                <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="h-7 w-7" type="button">
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
 
                 <div className="flex gap-1">
-                    <Select
-                        value={currentMonth.getMonth().toString()}
-                        onValueChange={handleMonthChange}
-                    >
+                    <Select value={currentMonth.getMonth().toString()} onValueChange={handleMonthChange}>
                         <SelectTrigger className="h-7 w-32">
                             <SelectValue>{months[currentMonth.getMonth()]}</SelectValue>
                         </SelectTrigger>
@@ -146,10 +131,7 @@ export default function CustomCalendar({
                         </SelectContent>
                     </Select>
 
-                    <Select
-                        value={currentMonth.getFullYear().toString()}
-                        onValueChange={handleYearChange}
-                    >
+                    <Select value={currentMonth.getFullYear().toString()} onValueChange={handleYearChange}>
                         <SelectTrigger className="h-7 w-24">
                             <SelectValue>{currentMonth.getFullYear()}</SelectValue>
                         </SelectTrigger>
@@ -163,26 +145,18 @@ export default function CustomCalendar({
                     </Select>
                 </div>
 
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleNextMonth}
-                    className="h-7 w-7"
-                    type="button"
-                >
+                <Button variant="ghost" size="icon" onClick={handleNextMonth} className="h-7 w-7" type="button">
                     <ChevronRight className="h-4 w-4" />
                 </Button>
             </div>
 
             {/* Nombre del mes y año */}
-            <div className="text-center text-sm font-medium p-2 dark:text-gray-300">
-                {format(currentMonth, 'MMMM yyyy', { locale: es })}
-            </div>
+            <div className="p-2 text-center text-sm font-medium dark:text-gray-300">{format(currentMonth, 'MMMM yyyy', { locale: es })}</div>
 
             {/* Días de la semana */}
             <div className="grid grid-cols-7 gap-0 text-center">
                 {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day, index) => (
-                    <div key={index} className="text-xs font-medium text-gray-500 dark:text-gray-400 py-1">
+                    <div key={index} className="py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                         {day}
                     </div>
                 ))}
@@ -196,32 +170,26 @@ export default function CustomCalendar({
                     const isCurrentDay = isToday(day);
                     const disabled = isDayDisabled(day);
 
-                    let dayClasses = "h-9 w-full flex items-center justify-center text-sm rounded-md ";
+                    let dayClasses = 'h-9 w-full flex items-center justify-center text-sm rounded-md ';
 
                     if (!isCurrentMonth) {
-                        dayClasses += "text-gray-400 dark:text-gray-600 ";
+                        dayClasses += 'text-gray-400 dark:text-gray-600 ';
                     } else if (isSelected) {
-                        dayClasses += "bg-primary text-primary-foreground font-medium dark:bg-blue-600 dark:text-white ";
+                        dayClasses += 'bg-primary text-primary-foreground font-medium dark:bg-blue-600 dark:text-white ';
                     } else if (isCurrentDay) {
-                        dayClasses += "bg-accent text-accent-foreground dark:bg-gray-700 dark:text-gray-100 ";
+                        dayClasses += 'bg-accent text-accent-foreground dark:bg-gray-700 dark:text-gray-100 ';
                     } else {
-                        dayClasses += "hover:bg-accent hover:text-accent-foreground dark:hover:bg-gray-800 ";
+                        dayClasses += 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-gray-800 ';
                     }
 
                     if (disabled) {
-                        dayClasses += "opacity-50 cursor-not-allowed ";
+                        dayClasses += 'opacity-50 cursor-not-allowed ';
                     } else {
-                        dayClasses += "cursor-pointer ";
+                        dayClasses += 'cursor-pointer ';
                     }
 
                     return (
-                        <button
-                            key={index}
-                            className={dayClasses}
-                            onClick={() => !disabled && onDateSelect(day)}
-                            disabled={disabled}
-                            type="button"
-                        >
+                        <button key={index} className={dayClasses} onClick={() => !disabled && onDateSelect(day)} disabled={disabled} type="button">
                             {day.getDate()}
                         </button>
                     );
@@ -229,4 +197,4 @@ export default function CustomCalendar({
             </div>
         </div>
     );
-} 
+}

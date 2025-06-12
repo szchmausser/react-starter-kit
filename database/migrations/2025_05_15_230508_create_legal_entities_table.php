@@ -23,7 +23,7 @@ return new class extends Migration
                 'cooperativa',
                 'fundacion',
                 'asociacion_civil',
-                'otro'
+                'otro',
             ])->comment('Tipo de entidad legal');
             $table->string('registration_number', 50)->unique()->nullable()->comment('Número de registro mercantil');
             $table->date('registration_date')->nullable()->comment('Fecha de registro mercantil');

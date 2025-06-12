@@ -10,7 +10,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * Modelo para gestionar los archivos compartidos de la biblioteca multimedia.
- * 
+ *
  * Este modelo actúa como propietario de los archivos compartidos que no pertenecen
  * a ningún usuario específico, permitiendo una gestión centralizada de los mismos.
  */
@@ -30,17 +30,15 @@ class MediaOwner extends Model implements HasMedia
 
     /**
      * Método estático para obtener o crear la instancia principal de MediaOwner.
-     * 
-     * @return \App\Models\MediaOwner
      */
     public static function instance(): self
     {
         $instance = static::first();
 
-        if (!$instance) {
+        if (! $instance) {
             $instance = static::create([
                 'name' => 'Shared files owner',
-                'description' => 'Sample model to use as media owner'
+                'description' => 'Sample model to use as media owner',
             ]);
         }
 
@@ -49,11 +47,8 @@ class MediaOwner extends Model implements HasMedia
 
     /**
      * Registra las conversiones de medios.
-     *
-     * @param \Spatie\MediaLibrary\MediaCollections\Models\Media|null $media
-     * @return void
      */
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
             ->width(200)
@@ -70,8 +65,6 @@ class MediaOwner extends Model implements HasMedia
     /**
      * Registra todas las conversiones de medios.
      * Este método es necesario para el reemplazo de archivos.
-     *
-     * @return void
      */
     public function registerAllMediaConversions(): void
     {

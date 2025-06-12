@@ -1,6 +1,5 @@
-import { usePage } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
+import { router, usePage } from '@inertiajs/react';
 
 interface User {
     id: number;
@@ -41,7 +40,7 @@ export function useAuth() {
         router.visit(route('login'), {
             preserveState: false,
             preserveScroll: false,
-            replace: true
+            replace: true,
         });
     };
 
@@ -56,6 +55,6 @@ export function useAuth() {
         isAuthenticated,
         redirectToLogin,
         getUser,
-        user: auth?.user
+        user: auth?.user,
     };
-} 
+}

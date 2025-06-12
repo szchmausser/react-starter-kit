@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\MediaOwner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Illuminate\Support\Str;
-use App\Models\MediaOwner;
 
 class MediaLibraryController extends Controller
 {
     /**
      * Muestra el listado de archivos.
      *
-     * @param Request $request
      * @return \Inertia\Response
      */
     public function index(Request $request)
@@ -80,7 +79,7 @@ class MediaLibraryController extends Controller
                 $item->thumbnail = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : null;
 
                 // Para imágenes, si no hay miniaturas, usar la URL directa
-                if (strpos($item->mime_type, 'image/') === 0 && !$item->thumbnail) {
+                if (strpos($item->mime_type, 'image/') === 0 && ! $item->thumbnail) {
                     $item->thumbnail = $item->file_url;
                 }
 
@@ -101,7 +100,7 @@ class MediaLibraryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error al cargar la biblioteca de archivos: ' . $e->getMessage(),
+                'message' => 'Error al cargar la biblioteca de archivos: '.$e->getMessage(),
             ]);
         }
     }
@@ -119,7 +118,6 @@ class MediaLibraryController extends Controller
     /**
      * Almacena un nuevo archivo en la base de datos.
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
@@ -135,23 +133,23 @@ class MediaLibraryController extends Controller
             \Log::info('Iniciando subida de archivo', [
                 'file_name' => $request->file('file')->getClientOriginalName(),
                 'mime_type' => $request->file('file')->getMimeType(),
-                'size' => $request->file('file')->getSize()
+                'size' => $request->file('file')->getSize(),
             ]);
 
             // Determinar la colección basada en el tipo MIME
             $mimeType = $request->file('file')->getMimeType();
             $collection = $this->getCollectionForMimeType($mimeType);
 
-            \Log::info('Colección determinada: ' . $collection);
+            \Log::info('Colección determinada: '.$collection);
 
             // En lugar de usar un modelo anónimo, vamos a usar un enfoque más directo
             // Crear un registro de Media manualmente
             $file = $request->file('file');
-            $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $fileName = Str::random(40).'.'.$file->getClientOriginalExtension();
 
             // Guardar el archivo en el disco
             $path = Storage::disk('public')->putFileAs(
-                'media/' . $collection,
+                'media/'.$collection,
                 $file,
                 $fileName
             );
@@ -159,7 +157,7 @@ class MediaLibraryController extends Controller
             \Log::info('Archivo guardado en disco', ['path' => $path]);
 
             // Crear un registro de Media
-            $media = new Media();
+            $media = new Media;
             $media->name = $validated['name'];
             $media->file_name = $fileName;
             $media->disk = 'public';
@@ -173,7 +171,7 @@ class MediaLibraryController extends Controller
                 'description' => $validated['description'] ?? null,
                 'category' => $validated['category'] ?? null,
                 'original_filename' => $file->getClientOriginalName(),
-                'uploaded_by' => Auth::id() ?? 1
+                'uploaded_by' => Auth::id() ?? 1,
             ];
             $media->responsive_images = [];
             $media->order_column = Media::max('order_column') + 1;
@@ -191,16 +189,17 @@ class MediaLibraryController extends Controller
 
             \Log::info('Media guardado en base de datos', [
                 'media_id' => $media->id,
-                'file_name' => $media->file_name
+                'file_name' => $media->file_name,
             ]);
 
             return redirect()->route('media-library.index')
                 ->with('success', 'Archivo subido correctamente.');
         } catch (\Exception $e) {
-            \Log::error('Error al subir archivo: ' . $e->getMessage());
+            \Log::error('Error al subir archivo: '.$e->getMessage());
             \Log::error($e->getTraceAsString());
+
             return redirect()->back()->withErrors([
-                'error' => 'Error al subir el archivo: ' . $e->getMessage()
+                'error' => 'Error al subir el archivo: '.$e->getMessage(),
             ])->withInput();
         }
     }
@@ -208,7 +207,6 @@ class MediaLibraryController extends Controller
     /**
      * Muestra los detalles de un archivo específico.
      *
-     * @param Media $media
      * @return \Inertia\Response
      */
     public function show(Media $media)
@@ -243,7 +241,6 @@ class MediaLibraryController extends Controller
     /**
      * Muestra el formulario para editar un archivo existente.
      *
-     * @param Media $media
      * @return \Inertia\Response
      */
     public function edit(Media $media)
@@ -267,8 +264,6 @@ class MediaLibraryController extends Controller
     /**
      * Actualiza un archivo existente.
      *
-     * @param Request $request
-     * @param Media $media
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, Media $media)
@@ -292,7 +287,7 @@ class MediaLibraryController extends Controller
                 'media_id' => $media->id,
                 'has_file' => $request->hasFile('file'),
                 'all_inputs' => $request->all(),
-                'files' => $request->allFiles()
+                'files' => $request->allFiles(),
             ]);
 
             // Actualizar nombre
@@ -310,7 +305,7 @@ class MediaLibraryController extends Controller
 
             \Log::info('Media actualizado', [
                 'media_id' => $media->id,
-                'name' => $media->name
+                'name' => $media->name,
             ]);
 
             // Si se proporciona un nuevo archivo, reemplazarlo
@@ -320,7 +315,7 @@ class MediaLibraryController extends Controller
                     'old_file_name' => $media->file_name,
                     'new_file_name' => $request->file('file')->getClientOriginalName(),
                     'new_file_size' => $request->file('file')->getSize(),
-                    'new_file_mime' => $request->file('file')->getMimeType()
+                    'new_file_mime' => $request->file('file')->getMimeType(),
                 ]);
 
                 // Guardar información original
@@ -330,35 +325,36 @@ class MediaLibraryController extends Controller
                 $oldCollection = $media->collection_name;
 
                 // Eliminar el archivo físico anterior
-                $oldRelativePath = 'media/' . $oldCollection . '/' . $oldFileName;
+                $oldRelativePath = 'media/'.$oldCollection.'/'.$oldFileName;
                 if (Storage::disk($media->disk)->exists($oldRelativePath)) {
                     Storage::disk($media->disk)->delete($oldRelativePath);
-                    \Log::info('Archivo anterior eliminado: ' . $oldRelativePath);
+                    \Log::info('Archivo anterior eliminado: '.$oldRelativePath);
                 }
 
                 // Procesar el nuevo archivo
                 $file = $request->file('file');
                 $mimeType = $file->getMimeType();
                 $collection = $this->getCollectionForMimeType($mimeType);
-                $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $fileName = Str::random(40).'.'.$file->getClientOriginalExtension();
 
                 try {
                     // Guardar el nuevo archivo
                     $path = Storage::disk('public')->putFileAs(
-                        'media/' . $collection,
+                        'media/'.$collection,
                         $file,
                         $fileName
                     );
 
                     \Log::info('Nuevo archivo guardado en disco', ['path' => $path]);
 
-                    if (!Storage::disk('public')->exists('media/' . $collection . '/' . $fileName)) {
+                    if (! Storage::disk('public')->exists('media/'.$collection.'/'.$fileName)) {
                         throw new \Exception('El archivo no se guardó correctamente en el disco');
                     }
                 } catch (\Exception $e) {
-                    \Log::error('Error al guardar el archivo en el disco: ' . $e->getMessage());
+                    \Log::error('Error al guardar el archivo en el disco: '.$e->getMessage());
+
                     return redirect()->back()->withErrors([
-                        'error' => 'Error al guardar el archivo: ' . $e->getMessage()
+                        'error' => 'Error al guardar el archivo: '.$e->getMessage(),
                     ])->withInput();
                 }
 
@@ -383,7 +379,7 @@ class MediaLibraryController extends Controller
 
                 \Log::info('Media actualizado con nuevo archivo', [
                     'media_id' => $media->id,
-                    'file_name' => $media->file_name
+                    'file_name' => $media->file_name,
                 ]);
 
                 return redirect()->route('media-library.index')
@@ -393,10 +389,11 @@ class MediaLibraryController extends Controller
             return redirect()->route('media-library.index')
                 ->with('success', 'Información actualizada correctamente.');
         } catch (\Exception $e) {
-            \Log::error('Error al actualizar archivo: ' . $e->getMessage());
+            \Log::error('Error al actualizar archivo: '.$e->getMessage());
             \Log::error($e->getTraceAsString());
+
             return redirect()->back()->withErrors([
-                'error' => 'Error al actualizar el archivo: ' . $e->getMessage()
+                'error' => 'Error al actualizar el archivo: '.$e->getMessage(),
             ])->withInput();
         }
     }
@@ -404,7 +401,6 @@ class MediaLibraryController extends Controller
     /**
      * Elimina un archivo.
      *
-     * @param Media $media
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Media $media)
@@ -423,13 +419,13 @@ class MediaLibraryController extends Controller
             $mediaId = $media->id;
 
             // Construir la ruta relativa del archivo
-            $relativePath = 'media/' . $collection . '/' . $fileName;
+            $relativePath = 'media/'.$collection.'/'.$fileName;
 
             \Log::info('Eliminando archivo', [
                 'media_id' => $mediaId,
                 'file_name' => $fileName,
                 'relative_path' => $relativePath,
-                'disk' => $diskName
+                'disk' => $diskName,
             ]);
 
             // Eliminar el archivo físico del disco
@@ -437,7 +433,7 @@ class MediaLibraryController extends Controller
                 Storage::disk($diskName)->delete($relativePath);
                 \Log::info('Archivo físico eliminado correctamente');
             } else {
-                \Log::warning('No se encontró el archivo físico en la ruta: ' . $relativePath);
+                \Log::warning('No se encontró el archivo físico en la ruta: '.$relativePath);
             }
 
             // Eliminar el registro de la base de datos
@@ -447,11 +443,11 @@ class MediaLibraryController extends Controller
             return redirect()->route('media-library.index')
                 ->with('success', 'Archivo eliminado correctamente.');
         } catch (\Exception $e) {
-            \Log::error('Error al eliminar archivo: ' . $e->getMessage());
+            \Log::error('Error al eliminar archivo: '.$e->getMessage());
             \Log::error($e->getTraceAsString());
 
             return redirect()->back()->withErrors([
-                'error' => 'Error al eliminar el archivo: ' . $e->getMessage()
+                'error' => 'Error al eliminar el archivo: '.$e->getMessage(),
             ]);
         }
     }
@@ -459,7 +455,6 @@ class MediaLibraryController extends Controller
     /**
      * Método de depuración para ver la información de un archivo.
      *
-     * @param Media $media
      * @return \Illuminate\Http\JsonResponse
      */
     public function fileInfo(Media $media)
@@ -470,10 +465,10 @@ class MediaLibraryController extends Controller
 
         // Buscar el archivo en diferentes ubicaciones posibles
         $possiblePaths = [
-            $diskPath . '/' . $media->file_name,
-            $diskPath . '/media/' . $media->collection_name . '/' . $media->file_name,
-            $diskPath . '/' . $media->id . '/' . $media->file_name,
-            $diskPath . '/' . $media->collection_name . '/' . $media->file_name
+            $diskPath.'/'.$media->file_name,
+            $diskPath.'/media/'.$media->collection_name.'/'.$media->file_name,
+            $diskPath.'/'.$media->id.'/'.$media->file_name,
+            $diskPath.'/'.$media->collection_name.'/'.$media->file_name,
         ];
 
         $foundPaths = [];
@@ -498,7 +493,6 @@ class MediaLibraryController extends Controller
     /**
      * Descarga un archivo.
      *
-     * @param Media $media
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\JsonResponse
      */
     public function download(Media $media)
@@ -516,7 +510,7 @@ class MediaLibraryController extends Controller
             'filename' => $media->file_name,
             'path_from_getPath' => $media->getPath(),
             'disk' => $media->disk,
-            'disk_path' => Storage::disk($media->disk)->path('')
+            'disk_path' => Storage::disk($media->disk)->path(''),
         ]);
 
         // Intentar diferentes rutas posibles
@@ -537,7 +531,7 @@ class MediaLibraryController extends Controller
             // Rutas adicionales con variaciones
             public_path("storage/media/{$media->collection_name}/{$media->file_name}"),
             public_path("storage/{$media->id}/{$media->file_name}"),
-            public_path("storage/{$media->file_name}")
+            public_path("storage/{$media->file_name}"),
         ];
 
         // Buscar el archivo en las rutas posibles
@@ -551,10 +545,10 @@ class MediaLibraryController extends Controller
         }
 
         // Si no se encuentra el archivo, registrar error y devolver respuesta con información de depuración
-        if (!$filePath) {
+        if (! $filePath) {
             \Log::error('Archivo no encontrado para descarga', [
                 'media_id' => $media->id,
-                'rutas_probadas' => $possiblePaths
+                'rutas_probadas' => $possiblePaths,
             ]);
 
             // En entorno de desarrollo, devolver información detallada
@@ -562,7 +556,7 @@ class MediaLibraryController extends Controller
                 return response()->json([
                     'error' => 'Archivo no encontrado',
                     'media' => $media->toArray(),
-                    'rutas_probadas' => $possiblePaths
+                    'rutas_probadas' => $possiblePaths,
                 ], 404);
             }
 
@@ -577,9 +571,6 @@ class MediaLibraryController extends Controller
 
     /**
      * Determina la colección adecuada basada en el tipo MIME.
-     *
-     * @param string $mimeType
-     * @return string
      */
     private function getCollectionForMimeType(string $mimeType): string
     {
@@ -594,28 +585,28 @@ class MediaLibraryController extends Controller
                 'application/pdf',
                 'application/msword',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'text/plain'
+                'text/plain',
             ])
         ) {
             return 'documents';
         } elseif (
             in_array($mimeType, [
                 'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])
         ) {
             return 'spreadsheets';
         } elseif (
             in_array($mimeType, [
                 'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
             ])
         ) {
             return 'presentations';
         } elseif (
             in_array($mimeType, [
                 'application/zip',
-                'application/x-rar-compressed'
+                'application/x-rar-compressed',
             ])
         ) {
             return 'compressed';
@@ -627,25 +618,25 @@ class MediaLibraryController extends Controller
 
     /**
      * Obtiene un nombre descriptivo para el tipo de archivo según su MIME type.
-     *
-     * @param string $mimeType
-     * @return string
      */
     private function getTypeNameForMimeType(string $mimeType): string
     {
         if (strpos($mimeType, 'image/') === 0) {
             $type = str_replace('image/', '', $mimeType);
-            return 'Imagen ' . strtoupper($type);
+
+            return 'Imagen '.strtoupper($type);
         } elseif ($mimeType === 'application/pdf') {
             return 'Documento PDF';
         } elseif ($mimeType === 'application/msword' || $mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
             return 'Documento Word';
         } elseif (strpos($mimeType, 'video/') === 0) {
             $type = str_replace('video/', '', $mimeType);
-            return 'Video ' . strtoupper($type);
+
+            return 'Video '.strtoupper($type);
         } elseif (strpos($mimeType, 'audio/') === 0) {
             $type = str_replace('audio/', '', $mimeType);
-            return 'Audio ' . strtoupper($type);
+
+            return 'Audio '.strtoupper($type);
         } elseif ($mimeType === 'application/vnd.ms-excel' || $mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
             return 'Hoja de cálculo Excel';
         } elseif ($mimeType === 'application/vnd.ms-powerpoint' || $mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
@@ -656,14 +647,11 @@ class MediaLibraryController extends Controller
             return 'Archivo de texto';
         }
 
-        return 'Archivo ' . $mimeType;
+        return 'Archivo '.$mimeType;
     }
 
     /**
      * Obtiene un icono descriptivo para el tipo de archivo según su MIME type.
-     *
-     * @param string $mimeType
-     * @return string
      */
     private function getTypeIconForMimeType(string $mimeType): string
     {
@@ -699,11 +687,11 @@ class MediaLibraryController extends Controller
     {
         try {
             // Ejecutar el comando artisan
-            $output = new \Symfony\Component\Console\Output\BufferedOutput();
+            $output = new \Symfony\Component\Console\Output\BufferedOutput;
             $exitCode = \Artisan::call('media:clean-orphaned', [], $output);
 
             $outputText = $output->fetch();
-            \Log::info('Resultado de la limpieza de archivos huérfanos: ' . $outputText);
+            \Log::info('Resultado de la limpieza de archivos huérfanos: '.$outputText);
 
             if ($exitCode === 0) {
                 return redirect()->route('media-library.index')
@@ -713,20 +701,17 @@ class MediaLibraryController extends Controller
                     ->with('warning', 'La limpieza de archivos huérfanos se completó con advertencias. Revise los logs para más detalles.');
             }
         } catch (\Exception $e) {
-            \Log::error('Error al limpiar archivos huérfanos: ' . $e->getMessage());
+            \Log::error('Error al limpiar archivos huérfanos: '.$e->getMessage());
             \Log::error($e->getTraceAsString());
 
             return redirect()->back()->withErrors([
-                'error' => 'Error al limpiar archivos huérfanos: ' . $e->getMessage()
+                'error' => 'Error al limpiar archivos huérfanos: '.$e->getMessage(),
             ]);
         }
     }
 
     /**
      * Convierte un tamaño en bytes a un formato legible para humanos.
-     *
-     * @param int $bytes
-     * @return string
      */
     private function getHumanReadableSize(int $bytes): string
     {
@@ -738,14 +723,11 @@ class MediaLibraryController extends Controller
         $bytes /= pow(1024, $pow);
 
         // Formato para español: separador decimal coma, miles con punto
-        return number_format($bytes, 2, ',', '.') . ' ' . $units[$pow];
+        return number_format($bytes, 2, ',', '.').' '.$units[$pow];
     }
 
     /**
      * Obtiene la URL correcta para un archivo de media.
-     * 
-     * @param Media $media
-     * @return string
      */
     private function getCorrectUrl(Media $media): string
     {

@@ -1,12 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { Head, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import { ArrowLeft, FileText, Upload } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface MediaItem {
@@ -110,7 +110,7 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
             onFinish: () => {
                 setIsUploading(false);
             },
-            forceFormData: true
+            forceFormData: true,
         });
     };
 
@@ -118,7 +118,16 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
     const getFileIcon = () => {
         if (mediaItem.mime_type.startsWith('image/')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-blue-500">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-blue-500"
+                >
                     <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                     <circle cx="9" cy="9" r="2" />
                     <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
@@ -126,7 +135,16 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
             );
         } else if (mediaItem.mime_type === 'application/pdf') {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-red-500">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-red-500"
+                >
                     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                     <polyline points="14 2 14 8 20 8" />
                     <path d="M9 15v-1h6v1" />
@@ -136,7 +154,16 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
             );
         } else if (mediaItem.mime_type.startsWith('video/')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-purple-500">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-purple-500"
+                >
                     <path d="m10 7 5 3-5 3Z" />
                     <rect width="20" height="14" x="2" y="3" rx="2" />
                     <path d="M12 17v4" />
@@ -145,7 +172,16 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
             );
         } else if (mediaItem.mime_type.startsWith('audio/') || mediaItem.mime_type.includes('audio')) {
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-indigo-500">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-indigo-500"
+                >
                     <path d="M9 18V5l12-2v13" />
                     <circle cx="6" cy="18" r="3" />
                     <circle cx="18" cy="16" r="3" />
@@ -164,19 +200,15 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
                     <div className="p-4 text-gray-900 sm:p-6 dark:text-gray-100">
                         <div className="mb-6 flex items-center justify-between">
                             <h1 className="text-xl font-bold">Editar Archivo - Expediente: {legalCase.code}</h1>
-                            <Button
-                                onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))}
-                                variant="outline"
-                                size="sm"
-                            >
+                            <Button onClick={() => router.visit(route('legal-cases.media.index', legalCase.id))} variant="outline" size="sm">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver a Archivos
                             </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             <div className="md:col-span-2">
-                                <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+                                <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">Nombre del archivo *</Label>
                                         <Input
@@ -212,18 +244,8 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
                                     <div className="space-y-2">
                                         <Label htmlFor="file">Reemplazar archivo (opcional)</Label>
                                         <div className="flex items-center gap-4">
-                                            <Input
-                                                id="file"
-                                                ref={fileInputRef}
-                                                type="file"
-                                                onChange={handleFileChange}
-                                                className="max-w-md"
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={() => fileInputRef.current?.click()}
-                                            >
+                                            <Input id="file" ref={fileInputRef} type="file" onChange={handleFileChange} className="max-w-md" />
+                                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                                                 <Upload className="mr-2 h-4 w-4" />
                                                 Seleccionar archivo
                                             </Button>
@@ -281,4 +303,4 @@ export default function MediaEdit({ mediaItem, legalCase }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

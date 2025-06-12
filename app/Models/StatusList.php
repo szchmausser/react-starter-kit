@@ -17,4 +17,4 @@ final class StatusList extends Model
         'name',
         'description',
     ];
-} 
+}

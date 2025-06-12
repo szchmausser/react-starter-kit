@@ -1,15 +1,15 @@
-import { useState, FormEvent, ChangeEvent } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ChevronLeftIcon, UploadIcon, FileIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
+import { ChevronLeftIcon, FileIcon, UploadIcon } from 'lucide-react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 
 interface Media {
     id: number;
@@ -79,7 +79,7 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
 
         // Simular intervalos de progreso
         const progressInterval = setInterval(() => {
-            setUploadProgress(prev => {
+            setUploadProgress((prev) => {
                 if (prev >= 95) {
                     clearInterval(progressInterval);
                     return 95;
@@ -121,7 +121,7 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
                 console.log('Upload successful:', page);
 
                 // Mostrar mensaje de éxito
-                const flash = page?.props?.flash as { success?: string } || {};
+                const flash = (page?.props?.flash as { success?: string }) || {};
                 if (flash.success) {
                     alert(flash.success);
                 } else {
@@ -144,7 +144,7 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
             onFinish: () => {
                 console.log('Upload finished');
                 // setIsUploading(false);
-            }
+            },
         });
     };
 
@@ -154,7 +154,9 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
         if (mediaItem.mime_type.startsWith('image/')) {
             return filePreview ? (
                 <img src={filePreview} alt="Vista previa" className="max-h-[120px] object-contain" />
-            ) : <FileIcon className="h-12 w-12 text-gray-400" />;
+            ) : (
+                <FileIcon className="h-12 w-12 text-gray-400" />
+            );
         }
 
         return <FileIcon className="h-12 w-12 text-gray-400" />;
@@ -164,19 +166,19 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar: ${mediaItem.name}`} />
 
-            <div className="p-4 sm:p-6 space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Editar Archivo</h1>
                     <Link href={route('media-library.show', mediaItem.id)}>
                         <Button variant="outline">
-                            <ChevronLeftIcon className="h-4 w-4 mr-2" />
+                            <ChevronLeftIcon className="mr-2 h-4 w-4" />
                             Volver a los detalles
                         </Button>
                     </Link>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         <div className="md:col-span-2">
                             <Card>
                                 <CardHeader>
@@ -193,9 +195,7 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
                                             className={errors.name ? 'border-red-500' : ''}
                                             disabled={isUploading}
                                         />
-                                        {errors.name && (
-                                            <p className="text-xs text-red-500">{errors.name}</p>
-                                        )}
+                                        {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
                                     </div>
 
                                     <div className="space-y-2">
@@ -208,9 +208,7 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
                                             className={errors.description ? 'border-red-500' : ''}
                                             disabled={isUploading}
                                         />
-                                        {errors.description && (
-                                            <p className="text-xs text-red-500">{errors.description}</p>
-                                        )}
+                                        {errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
                                     </div>
 
                                     <div className="space-y-2">
@@ -223,9 +221,7 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
                                             className={errors.category ? 'border-red-500' : ''}
                                             disabled={isUploading}
                                         />
-                                        {errors.category && (
-                                            <p className="text-xs text-red-500">{errors.category}</p>
-                                        )}
+                                        {errors.category && <p className="text-xs text-red-500">{errors.category}</p>}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -242,34 +238,29 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
                                             <img
                                                 src={mediaItem.thumbnail}
                                                 alt={mediaItem.name}
-                                                className="max-h-[120px] mx-auto object-contain mb-4"
+                                                className="mx-auto mb-4 max-h-[120px] object-contain"
                                             />
                                         ) : (
-                                            <FileIcon className="h-16 w-16 text-gray-400 mb-4" />
+                                            <FileIcon className="mb-4 h-16 w-16 text-gray-400" />
                                         )}
                                         <p className="text-sm font-medium">{mediaItem.file_name}</p>
-                                        <p className="text-xs text-gray-500 mt-1">{mediaItem.human_readable_size}</p>
+                                        <p className="mt-1 text-xs text-gray-500">{mediaItem.human_readable_size}</p>
                                         <p className="text-xs text-gray-500">{mediaItem.mime_type}</p>
                                     </div>
 
-                                    <div className="space-y-2 pt-4 border-t">
+                                    <div className="space-y-2 border-t pt-4">
                                         <Label htmlFor="file">Reemplazar archivo (opcional)</Label>
                                         <div
-                                            className={`border-2 border-dashed rounded-md p-4 flex flex-col items-center justify-center ${errors.file ? 'border-red-500' : 'border-gray-300'
-                                                } ${isUploading ? 'opacity-50' : 'hover:border-primary cursor-pointer'}`}
+                                            className={`flex flex-col items-center justify-center rounded-md border-2 border-dashed p-4 ${
+                                                errors.file ? 'border-red-500' : 'border-gray-300'
+                                            } ${isUploading ? 'opacity-50' : 'hover:border-primary cursor-pointer'}`}
                                             onClick={() => {
                                                 if (!isUploading) {
                                                     document.getElementById('file')?.click();
                                                 }
                                             }}
                                         >
-                                            <input
-                                                id="file"
-                                                type="file"
-                                                onChange={handleFileChange}
-                                                className="hidden"
-                                                disabled={isUploading}
-                                            />
+                                            <input id="file" type="file" onChange={handleFileChange} className="hidden" disabled={isUploading} />
 
                                             {file ? (
                                                 <div className="w-full text-center">
@@ -277,28 +268,22 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
                                                         <img
                                                             src={filePreview}
                                                             alt="Vista previa"
-                                                            className="max-h-[100px] mx-auto object-contain mb-2"
+                                                            className="mx-auto mb-2 max-h-[100px] object-contain"
                                                         />
                                                     ) : (
-                                                        <FileIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                                                        <FileIcon className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                                                     )}
-                                                    <p className="text-sm text-gray-600 truncate">{file.name}</p>
-                                                    <p className="text-xs text-gray-500">
-                                                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                                                    </p>
+                                                    <p className="truncate text-sm text-gray-600">{file.name}</p>
+                                                    <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <UploadIcon className="h-8 w-8 text-gray-400 mb-2" />
-                                                    <p className="text-sm text-gray-600">
-                                                        Seleccionar nuevo archivo
-                                                    </p>
+                                                    <UploadIcon className="mb-2 h-8 w-8 text-gray-400" />
+                                                    <p className="text-sm text-gray-600">Seleccionar nuevo archivo</p>
                                                 </>
                                             )}
                                         </div>
-                                        {errors.file && (
-                                            <p className="text-xs text-red-500">{errors.file}</p>
-                                        )}
+                                        {errors.file && <p className="text-xs text-red-500">{errors.file}</p>}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -335,4 +320,4 @@ export default function MediaEdit({ mediaItem }: MediaEditProps) {
             </div>
         </AppLayout>
     );
-} 
+}

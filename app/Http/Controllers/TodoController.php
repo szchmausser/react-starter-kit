@@ -7,13 +7,12 @@ namespace App\Http\Controllers;
 use App\Models\Todo;
 use App\Models\TodoList;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 
 final class TodoController extends Controller
 {
     private function ensureAjaxOrJson(Request $request): void
     {
-        if (!($request->wantsJson() || $request->ajax())) {
+        if (! ($request->wantsJson() || $request->ajax())) {
             abort(404);
         }
     }
@@ -22,6 +21,7 @@ final class TodoController extends Controller
     {
         $this->ensureAjaxOrJson($request);
         $todos = $todoList->todos()->orderBy('created_at')->get();
+
         return response()->json(['todos' => $todos]);
     }
 
@@ -36,6 +36,7 @@ final class TodoController extends Controller
             'is_completed' => false,
         ]);
         $todos = $todoList->todos()->orderBy('created_at')->get();
+
         return response()->json(['todos' => $todos]);
     }
 
@@ -48,6 +49,7 @@ final class TodoController extends Controller
         ]);
         $todo->update($validated);
         $todos = $todoList->todos()->orderBy('created_at')->get();
+
         return response()->json(['todos' => $todos]);
     }
 
@@ -56,6 +58,7 @@ final class TodoController extends Controller
         $this->ensureAjaxOrJson($request);
         $todo->delete();
         $todos = $todoList->todos()->orderBy('created_at')->get();
+
         return response()->json(['todos' => $todos]);
     }
-} 
+}

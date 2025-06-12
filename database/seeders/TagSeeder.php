@@ -21,7 +21,7 @@ class TagSeeder extends Seeder
             ['name' => 'Título Supletorio', 'type' => 'case_type'],
             ['name' => 'Daños y Perjuicios', 'type' => 'case_type'],
             ['name' => 'Herencia', 'type' => 'case_type'],
-            
+
             // Etiquetas por estado
             ['name' => 'Urgente', 'type' => 'priority'],
             ['name' => 'Prioridad Alta', 'type' => 'priority'],
@@ -34,7 +34,7 @@ class TagSeeder extends Seeder
             ['name' => 'Apelación', 'type' => 'status'],
             ['name' => 'Sentenciado', 'type' => 'status'],
             ['name' => 'Cerrado', 'type' => 'status'],
-            
+
             // Etiquetas por área de práctica
             ['name' => 'Derecho Familiar', 'type' => 'practice_area'],
             ['name' => 'Derecho Civil', 'type' => 'practice_area'],
@@ -44,7 +44,7 @@ class TagSeeder extends Seeder
             ['name' => 'Derecho Penal', 'type' => 'practice_area'],
             ['name' => 'Derecho Tributario', 'type' => 'practice_area'],
             ['name' => 'Derecho Corporativo', 'type' => 'practice_area'],
-            
+
             // Otras etiquetas útiles
             ['name' => 'Reunión Pendiente', 'type' => 'action_required'],
             ['name' => 'Documentos Faltantes', 'type' => 'action_required'],

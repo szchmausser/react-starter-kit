@@ -44,7 +44,7 @@ class StoreLegalEntityRequest extends FormRequest
             'legal_representative_id' => 'nullable|exists:individuals,id',
         ];
     }
-    
+
     /**
      * Get the error messages for the defined validation rules.
      *
@@ -68,4 +68,4 @@ class StoreLegalEntityRequest extends FormRequest
             'legal_representative_id.exists' => 'El representante legal seleccionado no existe.',
         ];
     }
-} 
+}

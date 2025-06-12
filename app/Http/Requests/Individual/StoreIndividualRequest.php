@@ -49,7 +49,7 @@ class StoreIndividualRequest extends FormRequest
             'educational_level' => 'nullable|string|max:100',
         ];
     }
-    
+
     /**
      * Get the error messages for the defined validation rules.
      *
@@ -70,4 +70,4 @@ class StoreIndividualRequest extends FormRequest
             'email_2.unique' => 'Este correo electrónico ya está registrado.',
         ];
     }
-} 
+}

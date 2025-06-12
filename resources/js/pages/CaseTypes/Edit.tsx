@@ -1,11 +1,11 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import InputError from '@/components/input-error';
+import AppLayout from '@/layouts/app-layout';
 import { type CaseType } from '@/types';
+import { Head, useForm, usePage } from '@inertiajs/react';
 
 interface Props {
     caseType: CaseType;
@@ -28,9 +28,9 @@ export default function Edit() {
             <Head title={`Editar Tipo de Caso: ${caseType.name}`} />
 
             <div className="p-4 sm:p-6">
-                <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
+                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
                     <div className="p-6 text-gray-900 dark:text-gray-100">
-                        <h2 className="text-xl font-semibold mb-4">Editar Tipo de Caso: {caseType.name}</h2>
+                        <h2 className="mb-4 text-xl font-semibold">Editar Tipo de Caso: {caseType.name}</h2>
 
                         <form onSubmit={submit} className="mt-6 space-y-6">
                             <div>
@@ -59,7 +59,9 @@ export default function Edit() {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <Button type="submit" disabled={processing}>Actualizar</Button>
+                                <Button type="submit" disabled={processing}>
+                                    Actualizar
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -67,4 +69,4 @@ export default function Edit() {
             </div>
         </AppLayout>
     );
-} 
+}

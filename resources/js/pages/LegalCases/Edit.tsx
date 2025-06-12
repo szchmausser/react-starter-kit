@@ -1,12 +1,12 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
-import { type LegalCase, type CaseType } from '@/types';
-import { useEffect } from 'react';
+import AppLayout from '@/layouts/app-layout';
+import { type CaseType, type LegalCase } from '@/types';
 import { PageProps } from '@inertiajs/core';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
 
 interface Props extends PageProps {
     legalCase: LegalCase;
@@ -15,7 +15,7 @@ interface Props extends PageProps {
 
 export default function Edit() {
     const { legalCase, caseTypes } = usePage<Props>().props;
-    
+
     // Formato correcto para input type="date" YYYY-MM-DD
     const formatDateForInput = (dateString: string): string => {
         if (!dateString) return '';
@@ -33,7 +33,7 @@ export default function Edit() {
             return '';
         }
     };
-    
+
     const { data, setData, put, processing, errors } = useForm({
         code: legalCase.code,
         entry_date: '', // Inicializamos vacío y lo configuramos en el useEffect
@@ -55,9 +55,9 @@ export default function Edit() {
             <Head title={`Editar Expediente: ${legalCase.code}`} />
 
             <div className="p-4 sm:p-6">
-                <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-lg">
+                <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-zinc-900">
                     <div className="p-6 text-gray-900 dark:text-gray-100">
-                        <h2 className="text-xl font-semibold mb-4">Editar Expediente Legal: {legalCase.code}</h2>
+                        <h2 className="mb-4 text-xl font-semibold">Editar Expediente Legal: {legalCase.code}</h2>
 
                         <form onSubmit={submit} className="mt-6 space-y-6">
                             <div>
@@ -91,7 +91,7 @@ export default function Edit() {
                                 <Label htmlFor="case_type_id">Tipo de Caso</Label>
                                 <select
                                     id="case_type_id"
-                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-zinc-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-zinc-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
                                     value={data.case_type_id}
                                     onChange={(e) => setData('case_type_id', e.target.value)}
                                     required
@@ -107,7 +107,9 @@ export default function Edit() {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <Button type="submit" disabled={processing}>Actualizar</Button>
+                                <Button type="submit" disabled={processing}>
+                                    Actualizar
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -115,4 +117,4 @@ export default function Edit() {
             </div>
         </AppLayout>
     );
-} 
+}

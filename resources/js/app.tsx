@@ -1,11 +1,10 @@
 import '../css/app.css';
 
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
+import axios from 'axios';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
-import { router } from '@inertiajs/react';
-import axios from 'axios';
 
 // Configurar axios para que maneje correctamente los formularios con archivos
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -22,7 +21,7 @@ document.addEventListener('inertia:error', (event: any) => {
             router.visit(route('login'), {
                 preserveState: false,
                 preserveScroll: false,
-                replace: true
+                replace: true,
             });
         } catch (error) {
             console.error('Error al redireccionar:', error);
@@ -41,14 +40,16 @@ document.addEventListener('inertia:error', (event: any) => {
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Promesa no manejada:', event.reason);
     // Si el error parece estar relacionado con la autenticación, redirigir al login
-    if (event.reason?.response?.status === 401 ||
+    if (
+        event.reason?.response?.status === 401 ||
         (typeof event.reason === 'string' && event.reason.includes('auth')) ||
-        (event.reason?.message && event.reason.message.includes('auth'))) {
+        (event.reason?.message && event.reason.message.includes('auth'))
+    ) {
         try {
             router.visit(route('login'), {
                 preserveState: false,
                 preserveScroll: false,
-                replace: true
+                replace: true,
             });
         } catch (error) {
             window.location.href = '/login';

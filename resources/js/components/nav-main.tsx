@@ -16,10 +16,7 @@ export function NavMain({ items = [], onOpenTodoPanel }: NavMainProps) {
             <SidebarMenu>
                 {items.map((item, idx) => (
                     <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton  
-                            asChild isActive={item.href === page.url}
-                            tooltip={{ children: item.title }}
-                        >
+                        <SidebarMenuButton asChild isActive={item.href === page.url} tooltip={{ children: item.title }}>
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>

@@ -50,4 +50,4 @@ export function AuthMiddleware({ children }: AuthMiddlewareProps) {
     }
 
     return <>{children}</>;
-} 
+}

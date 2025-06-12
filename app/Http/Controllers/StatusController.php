@@ -67,4 +67,4 @@ final class StatusController extends Controller
         return redirect()->route('statuses.index')
             ->with('success', 'Status deleted successfully.');
     }
-} 
+}

@@ -19,8 +19,9 @@ final class CaseEventSeeder extends Seeder
         $legalCases = LegalCase::all();
         $user = User::first();
 
-        if ($legalCases->isEmpty() || !$user) {
+        if ($legalCases->isEmpty() || ! $user) {
             $this->command->warn('No hay casos legales o usuarios para asociar eventos.');
+
             return;
         }
 

@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\LegalCase;
 use App\Models\Individual;
+use App\Models\LegalCase;
 use App\Models\LegalEntity;
+use Illuminate\Database\Seeder;
 use Spatie\Tags\Tag;
-use Illuminate\Support\Facades\Log;
 
 class TaggableSeeder extends Seeder
 {
@@ -25,6 +24,7 @@ class TaggableSeeder extends Seeder
 
         if ($allTags->isEmpty()) {
             $this->command->error('No hay etiquetas disponibles. Ejecute primero el TagSeeder.');
+
             return;
         }
 
@@ -52,7 +52,7 @@ class TaggableSeeder extends Seeder
     /**
      * Asigna etiquetas aleatorias a los expedientes legales.
      *
-     * @param array $tagsByType
+     * @param  array  $tagsByType
      * @return void
      */
     private function assignTagsToLegalCases($tagsByType)
@@ -62,6 +62,7 @@ class TaggableSeeder extends Seeder
 
         if ($legalCases->isEmpty()) {
             $this->command->warn('No hay expedientes legales para asignar etiquetas.');
+
             return;
         }
 
@@ -101,9 +102,9 @@ class TaggableSeeder extends Seeder
             }
 
             // Asignar etiquetas al expediente
-            if (!empty($selectedTags)) {
+            if (! empty($selectedTags)) {
                 $legalCase->syncTagsWithType($selectedTags);
-                $this->command->line("  Expediente #{$legalCase->id}: " . implode(', ', $selectedTags));
+                $this->command->line("  Expediente #{$legalCase->id}: ".implode(', ', $selectedTags));
             }
         }
     }
@@ -111,7 +112,7 @@ class TaggableSeeder extends Seeder
     /**
      * Asigna etiquetas aleatorias a individuos.
      *
-     * @param array $tagsByType
+     * @param  array  $tagsByType
      * @return void
      */
     private function assignTagsToIndividuals($tagsByType)
@@ -121,6 +122,7 @@ class TaggableSeeder extends Seeder
 
         if ($individuals->isEmpty()) {
             $this->command->warn('No hay individuos para asignar etiquetas.');
+
             return;
         }
 
@@ -141,7 +143,7 @@ class TaggableSeeder extends Seeder
                 $tagNames = $selectedTags->pluck('name')->toArray();
 
                 $individual->syncTagsWithType($tagNames);
-                $this->command->line("  Individuo #{$individual->id}: " . implode(', ', $tagNames));
+                $this->command->line("  Individuo #{$individual->id}: ".implode(', ', $tagNames));
             }
         }
     }
@@ -149,7 +151,7 @@ class TaggableSeeder extends Seeder
     /**
      * Asigna etiquetas aleatorias a entidades legales.
      *
-     * @param array $tagsByType
+     * @param  array  $tagsByType
      * @return void
      */
     private function assignTagsToLegalEntities($tagsByType)
@@ -159,6 +161,7 @@ class TaggableSeeder extends Seeder
 
         if ($legalEntities->isEmpty()) {
             $this->command->warn('No hay entidades legales para asignar etiquetas.');
+
             return;
         }
 
@@ -179,7 +182,7 @@ class TaggableSeeder extends Seeder
                 $tagNames = $selectedTags->pluck('name')->toArray();
 
                 $entity->syncTagsWithType($tagNames);
-                $this->command->line("  Entidad legal #{$entity->id}: " . implode(', ', $tagNames));
+                $this->command->line("  Entidad legal #{$entity->id}: ".implode(', ', $tagNames));
             }
         }
     }

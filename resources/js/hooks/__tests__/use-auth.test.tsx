@@ -1,15 +1,15 @@
-import { useAuth } from '../use-auth';
 import { renderHook } from '@testing-library/react';
+import { useAuth } from '../use-auth';
 
 // Mock de Inertia
 jest.mock('@inertiajs/react', () => ({
     usePage: jest.fn(),
     router: {
-        visit: jest.fn()
-    }
+        visit: jest.fn(),
+    },
 }));
 
-import { usePage, router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 
 describe('useAuth', () => {
     beforeEach(() => {
@@ -21,9 +21,9 @@ describe('useAuth', () => {
         (usePage as jest.Mock).mockReturnValue({
             props: {
                 auth: {
-                    user: { id: 1, name: 'Test User', email: 'test@example.com' }
-                }
-            }
+                    user: { id: 1, name: 'Test User', email: 'test@example.com' },
+                },
+            },
         });
 
         const { result } = renderHook(() => useAuth());
@@ -36,9 +36,9 @@ describe('useAuth', () => {
         (usePage as jest.Mock).mockReturnValue({
             props: {
                 auth: {
-                    user: null
-                }
-            }
+                    user: null,
+                },
+            },
         });
 
         const { result } = renderHook(() => useAuth());
@@ -53,9 +53,9 @@ describe('useAuth', () => {
         (usePage as jest.Mock).mockReturnValue({
             props: {
                 auth: {
-                    user: null
-                }
-            }
+                    user: null,
+                },
+            },
         });
 
         const { result } = renderHook(() => useAuth());
@@ -64,7 +64,7 @@ describe('useAuth', () => {
         expect(router.visit).toHaveBeenCalledWith('/login', {
             preserveState: false,
             preserveScroll: false,
-            replace: true
+            replace: true,
         });
     });
-}); 
+});

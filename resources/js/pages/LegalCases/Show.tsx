@@ -1,4 +1,5 @@
 import { CaseEvents } from '@/components/LegalCases/CaseEvents';
+import { TagRelationsModal } from '@/components/TagRelationsModal';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -12,10 +13,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { formatDateSafe } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
+import axios from 'axios';
 import {
     ArrowDown,
     ArrowUp,
@@ -25,31 +28,20 @@ import {
     ChevronsUpDown,
     Edit,
     Eye,
+    FileText,
     Gavel,
     Info,
     Plus,
     Tag,
+    Upload,
     UserCheck,
     UserCog,
     UserPlus,
     Users,
     X,
-    FileText,
-    Upload,
-    List,
-    Grid
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { TagRelationsModal } from '@/components/TagRelationsModal';
-import axios from 'axios';
 
 interface CaseType {
     id: number;
@@ -409,15 +401,13 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
         if (!tagToAdd) return;
 
         // Verificar si la etiqueta ya existe en el sistema
-        const tagExists = allTags.some(tag => {
+        const tagExists = allTags.some((tag) => {
             try {
                 if (typeof tag.name === 'string') {
                     return tag.name.toLowerCase() === tagToAdd.toLowerCase();
                 }
                 if (typeof tag.name === 'object' && tag.name !== null) {
-                    return Object.values(tag.name).some(name =>
-                        typeof name === 'string' && name.toLowerCase() === tagToAdd.toLowerCase()
-                    );
+                    return Object.values(tag.name).some((name) => typeof name === 'string' && name.toLowerCase() === tagToAdd.toLowerCase());
                 }
                 return false;
             } catch (error) {
@@ -429,7 +419,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
         // Validación adicional para evitar duplicados
         if (tagExists) {
             try {
-                const tagsAsociadas = tags.map(tag => getTagName(tag).toLowerCase());
+                const tagsAsociadas = tags.map((tag) => getTagName(tag).toLowerCase());
                 if (tagsAsociadas.includes(tagToAdd.toLowerCase())) {
                     toast.error('Esta etiqueta ya está asociada al expediente');
                     return;
@@ -449,7 +439,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
             credentials: 'same-origin',
             body: JSON.stringify({
                 tags: [tagToAdd],
-                create_if_not_exists: isCreatingNewTag // Solo crear si es una etiqueta nueva
+                create_if_not_exists: isCreatingNewTag, // Solo crear si es una etiqueta nueva
             }),
         })
             .then((res) => {
@@ -530,7 +520,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
             .then(() => {
                 // Si estamos creando un nuevo estado, añadirlo a la lista de estados disponibles
                 if (creatingStatus && statusToSet && !availableStatuses.includes(statusToSet)) {
-                    setAvailableStatuses(prevStatuses => [...prevStatuses, statusToSet].sort());
+                    setAvailableStatuses((prevStatuses) => [...prevStatuses, statusToSet].sort());
                 }
 
                 setStatusDialogOpen(false);
@@ -548,7 +538,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                     });
                 toast.success('Estatus actualizado');
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error('Error al actualizar el estatus:', error);
                 toast.error('Error al actualizar el estatus');
             });
@@ -600,8 +590,8 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
         try {
             const response = await axios.get<Record<string, any[]>>(route('tags.relations', tag.id), {
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest' // Indicar que es una petición AJAX
-                }
+                    'X-Requested-With': 'XMLHttpRequest', // Indicar que es una petición AJAX
+                },
             });
 
             if (response.data && Object.keys(response.data).length > 0) {
@@ -620,36 +610,91 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
     // Función para obtener el icono según el tipo de archivo
     const getFileIcon = (mimeType: string) => {
         if (mimeType.startsWith('image/')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-500">
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                <circle cx="9" cy="9" r="2" />
-                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5 text-blue-500"
+                >
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                </svg>
+            );
         } else if (mimeType === 'application/pdf') {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-red-500">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-                <path d="M9 15v-1h6v1" />
-                <path d="M11 18v-6" />
-                <path d="M9 12v-1h6v1" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5 text-red-500"
+                >
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <path d="M9 15v-1h6v1" />
+                    <path d="M11 18v-6" />
+                    <path d="M9 12v-1h6v1" />
+                </svg>
+            );
         } else if (mimeType.startsWith('video/')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-purple-500">
-                <path d="m10 7 5 3-5 3Z" />
-                <rect width="20" height="14" x="2" y="3" rx="2" />
-                <path d="M12 17v4" />
-                <path d="M8 21h8" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5 text-purple-500"
+                >
+                    <path d="m10 7 5 3-5 3Z" />
+                    <rect width="20" height="14" x="2" y="3" rx="2" />
+                    <path d="M12 17v4" />
+                    <path d="M8 21h8" />
+                </svg>
+            );
         } else if (mimeType.includes('word') || mimeType.includes('document')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-700">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5 text-blue-700"
+                >
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+            );
         } else if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-green-600">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5 text-green-600"
+                >
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+            );
         } else {
             return <FileText className="h-5 w-5 text-gray-500" />;
         }
@@ -658,42 +703,108 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
     // Función para obtener un icono más grande para la vista de cuadrícula
     const getLargeFileIcon = (mimeType: string) => {
         if (mimeType.startsWith('image/')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-blue-500">
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                <circle cx="9" cy="9" r="2" />
-                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-blue-500"
+                >
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                </svg>
+            );
         } else if (mimeType === 'application/pdf') {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-red-500">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-                <path d="M9 15v-1h6v1" />
-                <path d="M11 18v-6" />
-                <path d="M9 12v-1h6v1" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-red-500"
+                >
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <path d="M9 15v-1h6v1" />
+                    <path d="M11 18v-6" />
+                    <path d="M9 12v-1h6v1" />
+                </svg>
+            );
         } else if (mimeType.startsWith('video/')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-purple-500">
-                <path d="m10 7 5 3-5 3Z" />
-                <rect width="20" height="14" x="2" y="3" rx="2" />
-                <path d="M12 17v4" />
-                <path d="M8 21h8" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-purple-500"
+                >
+                    <path d="m10 7 5 3-5 3Z" />
+                    <rect width="20" height="14" x="2" y="3" rx="2" />
+                    <path d="M12 17v4" />
+                    <path d="M8 21h8" />
+                </svg>
+            );
         } else if (mimeType.includes('word') || mimeType.includes('document')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-blue-700">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-blue-700"
+                >
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+            );
         } else if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-green-600">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-green-600"
+                >
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+            );
         } else if (mimeType.includes('audio')) {
-            return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-pink-500">
-                <path d="M17.5 22h.5a2 2 0 0 0 2-2V7.7a2 2 0 0 0-1.5-1.94l-9-1.7A2 2 0 0 0 7 6v14a2 2 0 0 0 2 2h.5" />
-                <circle cx="14" cy="17" r="3" />
-                <circle cx="10" cy="17" r="3" />
-            </svg>;
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-16 w-16 text-pink-500"
+                >
+                    <path d="M17.5 22h.5a2 2 0 0 0 2-2V7.7a2 2 0 0 0-1.5-1.94l-9-1.7A2 2 0 0 0 7 6v14a2 2 0 0 0 2 2h.5" />
+                    <circle cx="14" cy="17" r="3" />
+                    <circle cx="10" cy="17" r="3" />
+                </svg>
+            );
         } else {
             return <FileText className="h-16 w-16 text-gray-500" />;
         }
@@ -784,15 +895,37 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                                             </span>
                                                             <button
                                                                 onClick={(e) => toggleTitleExpand(tagId, e)}
-                                                                className="ml-1.5 text-current opacity-60 hover:opacity-100 p-1 -m-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full"
+                                                                className="-m-1 ml-1.5 rounded-full p-1 text-current opacity-60 hover:bg-black/5 hover:opacity-100 dark:hover:bg-white/10"
                                                                 title="Expandir/contraer texto"
                                                             >
                                                                 {expandedTitles[tagId] ? (
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-up">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="16"
+                                                                        height="16"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        strokeWidth="2"
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        className="lucide lucide-chevron-up"
+                                                                    >
                                                                         <path d="m18 15-6-6-6 6" />
                                                                     </svg>
                                                                 ) : (
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="16"
+                                                                        height="16"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        strokeWidth="2"
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        className="lucide lucide-chevron-down"
+                                                                    >
                                                                         <path d="m6 9 6 6 6-6" />
                                                                     </svg>
                                                                 )}
@@ -804,13 +937,13 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                                                 <span className="hidden text-xs sm:inline">{tag.type}</span>
                                                             </div>
                                                         )}
-                                                        <div className="h-4 w-px bg-current opacity-20 mx-0.5"></div>
+                                                        <div className="mx-0.5 h-4 w-px bg-current opacity-20"></div>
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 confirmRemoveTag(tagName);
                                                             }}
-                                                            className="p-1 -m-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-current opacity-70 transition-all hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:text-red-400"
+                                                            className="-m-1 rounded-full p-1 text-current opacity-70 transition-all hover:bg-red-100 hover:text-red-600 hover:opacity-100 focus:opacity-100 dark:hover:bg-red-900/30 dark:hover:text-red-400"
                                                             title="Eliminar etiqueta"
                                                         >
                                                             <X className="h-4 w-4" />
@@ -838,8 +971,17 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                             <div className="px-6 pt-6 pb-2">
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                     <div className="flex flex-col items-stretch rounded-md border border-gray-200 bg-gray-100 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                                        <div className="flex items-center gap-1.5 mb-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400">
+                                        <div className="mb-1 flex items-center gap-1.5">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400"
+                                            >
                                                 <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
                                                 <path d="M18 14h-8"></path>
                                                 <path d="M15 18h-5"></path>
@@ -854,7 +996,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                         </span>
                                     </div>
                                     <div className="flex flex-col items-stretch rounded-md border border-gray-200 bg-gray-100 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                                        <div className="flex items-center gap-1.5 mb-1">
+                                        <div className="mb-1 flex items-center gap-1.5">
                                             <BookOpen className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                                             <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                                 TIPO DE CASO
@@ -865,7 +1007,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                         </span>
                                     </div>
                                     <div className="flex flex-col items-stretch rounded-md border border-gray-200 bg-gray-100 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                                        <div className="flex items-center gap-1.5 mb-1">
+                                        <div className="mb-1 flex items-center gap-1.5">
                                             <ChevronsUpDown className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                                             <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                                 ESTADO
@@ -893,7 +1035,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                             {/* Fechas importantes en la parte inferior, en recuadros */}
                             <div className="grid grid-cols-1 gap-6 px-6 pb-6 md:grid-cols-4">
                                 <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <div className="flex items-center gap-1.5 mb-1">
+                                    <div className="mb-1 flex items-center gap-1.5">
                                         <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                                         <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             FECHA DE ENTRADA
@@ -904,7 +1046,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                     </span>
                                 </div>
                                 <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <div className="flex items-center gap-1.5 mb-1">
+                                    <div className="mb-1 flex items-center gap-1.5">
                                         <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                                         <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             FECHA DE SENTENCIA
@@ -915,7 +1057,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                     </span>
                                 </div>
                                 <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <div className="flex items-center gap-1.5 mb-1">
+                                    <div className="mb-1 flex items-center gap-1.5">
                                         <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                                         <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             FECHA DE CIERRE
@@ -926,8 +1068,17 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                     </span>
                                 </div>
                                 <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <div className="flex items-center gap-1.5 mb-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400">
+                                    <div className="mb-1 flex items-center gap-1.5">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400"
+                                        >
                                             <circle cx="12" cy="12" r="10"></circle>
                                             <line x1="12" x2="12" y1="8" y2="12"></line>
                                             <line x1="12" x2="12.01" y1="16" y2="16"></line>
@@ -1247,7 +1398,10 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
 
                                                 <div className="divide-y divide-gray-200 dark:divide-zinc-800 dark:bg-zinc-900">
                                                     {mediaItems.slice(0, 5).map((item) => (
-                                                        <div key={item.id} className="flex flex-col justify-between px-4 py-3 sm:flex-row sm:items-center">
+                                                        <div
+                                                            key={item.id}
+                                                            className="flex flex-col justify-between px-4 py-3 sm:flex-row sm:items-center"
+                                                        >
                                                             <div className="flex items-center">
                                                                 {getFileIcon(item.mime_type)}
                                                                 <div className="ml-3">
@@ -1257,12 +1411,14 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                                                             <span>{item.human_readable_size}</span>
                                                                             <span className="mx-1">•</span>
                                                                             <span className="whitespace-nowrap">
-                                                                                <span className="font-medium">Creado:</span> {formatDateSafe(item.created_at)}
+                                                                                <span className="font-medium">Creado:</span>{' '}
+                                                                                {formatDateSafe(item.created_at)}
                                                                             </span>
                                                                         </div>
                                                                         {item.updated_at && item.updated_at !== item.created_at && (
                                                                             <div className="text-gray-500 dark:text-gray-500">
-                                                                                <span className="font-medium">Actualizado:</span> {formatDateSafe(item.updated_at)}
+                                                                                <span className="font-medium">Actualizado:</span>{' '}
+                                                                                {formatDateSafe(item.updated_at)}
                                                                             </div>
                                                                         )}
                                                                     </div>
@@ -1270,7 +1426,9 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                                             </div>
                                                             <div className="mt-2 flex justify-end sm:mt-0">
                                                                 <Button
-                                                                    onClick={() => router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))}
+                                                                    onClick={() =>
+                                                                        router.visit(route('legal-cases.media.show', [legalCase.id, item.id]))
+                                                                    }
                                                                     variant="ghost"
                                                                     size="sm"
                                                                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
@@ -1349,10 +1507,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                     <div className="space-y-4">
                         {!creatingStatus ? (
                             <>
-                                <Select
-                                    value={selectedStatus}
-                                    onValueChange={(value) => setSelectedStatus(value)}
-                                >
+                                <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Seleccione un estatus" />
                                     </SelectTrigger>
@@ -1384,10 +1539,14 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                     className="w-full border-gray-300 dark:border-gray-600 dark:bg-zinc-800"
                                     autoFocus
                                 />
-                                <Button variant="link" onClick={() => {
-                                    setCreatingStatus(false);
-                                    setNewStatus('');
-                                }} className="p-0 text-xs">
+                                <Button
+                                    variant="link"
+                                    onClick={() => {
+                                        setCreatingStatus(false);
+                                        setNewStatus('');
+                                    }}
+                                    className="p-0 text-xs"
+                                >
                                     Seleccionar existente
                                 </Button>
                             </div>
@@ -1426,7 +1585,10 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button onClick={handleStatusChange} disabled={(!selectedStatus && !newStatus) || (selectedStatus === 'placeholder' && !newStatus)}>
+                        <Button
+                            onClick={handleStatusChange}
+                            disabled={(!selectedStatus && !newStatus) || (selectedStatus === 'placeholder' && !newStatus)}
+                        >
                             Guardar
                         </Button>
                     </DialogFooter>
@@ -1460,12 +1622,18 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                             >
                                 {allTags.length > 0 ? (
                                     <>
-                                        <option value="" className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">Selecciona una etiqueta</option>
+                                        <option value="" className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">
+                                            Selecciona una etiqueta
+                                        </option>
                                         {allTags.map((tag) => {
                                             try {
                                                 const displayName = getTagName(tag);
                                                 return (
-                                                    <option key={tag.id} value={displayName} className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">
+                                                    <option
+                                                        key={tag.id}
+                                                        value={displayName}
+                                                        className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100"
+                                                    >
                                                         {displayName} {tag.type ? `(${tag.type})` : ''}
                                                     </option>
                                                 );
@@ -1476,7 +1644,9 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                         })}
                                     </>
                                 ) : (
-                                    <option value="" className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">No hay etiquetas disponibles</option>
+                                    <option value="" className="bg-white text-gray-900 dark:bg-zinc-800 dark:text-gray-100">
+                                        No hay etiquetas disponibles
+                                    </option>
                                 )}
                             </select>
                         </div>
@@ -1506,28 +1676,31 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                 className="border-gray-300 text-gray-900 dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-100"
                             />
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {allTags.some(tag =>
-                                    (typeof tag.name === 'string' && tag.name.toLowerCase() === newTagName.toLowerCase()) ||
-                                    (typeof tag.name === 'object' && Object.values(tag.name).some(name =>
-                                        typeof name === 'string' && name.toLowerCase() === newTagName.toLowerCase()))
-                                ) && newTagName !== '' ?
-                                    '⚠️ Ya existe una etiqueta con este nombre' :
-                                    'La etiqueta se creará y asignará al expediente'}
+                                {allTags.some(
+                                    (tag) =>
+                                        (typeof tag.name === 'string' && tag.name.toLowerCase() === newTagName.toLowerCase()) ||
+                                        (typeof tag.name === 'object' &&
+                                            Object.values(tag.name).some(
+                                                (name) => typeof name === 'string' && name.toLowerCase() === newTagName.toLowerCase(),
+                                            )),
+                                ) && newTagName !== ''
+                                    ? '⚠️ Ya existe una etiqueta con este nombre'
+                                    : 'La etiqueta se creará y asignará al expediente'}
                             </p>
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => {
-                            setTagDialogOpen(false);
-                            setSelectedTag('');
-                            setNewTagName('');
-                        }}>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setTagDialogOpen(false);
+                                setSelectedTag('');
+                                setNewTagName('');
+                            }}
+                        >
                             Cancelar
                         </Button>
-                        <Button
-                            onClick={handleAddTag}
-                            disabled={!selectedTag && !newTagName.trim()}
-                        >
+                        <Button onClick={handleAddTag} disabled={!selectedTag && !newTagName.trim()}>
                             Agregar
                         </Button>
                     </DialogFooter>

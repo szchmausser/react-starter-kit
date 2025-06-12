@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { X, Calendar as CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { format, parse, isValid, getYear, getMonth, setYear, setMonth } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { type FilterCriterion } from '../AdvancedSearchContainer';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format, isValid, parse } from 'date-fns';
+import { Calendar as CalendarIcon, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { type FilterCriterion } from '../AdvancedSearchContainer';
 import CustomCalendar from './CustomCalendar';
 
 interface DateFilterProps {
@@ -35,19 +33,13 @@ const dateOperators = [
 
 export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
     const [startDate, setStartDate] = useState<Date | undefined>(
-        criterion.value && criterion.value.start ? new Date(criterion.value.start) : undefined
+        criterion.value && criterion.value.start ? new Date(criterion.value.start) : undefined,
     );
-    const [endDate, setEndDate] = useState<Date | undefined>(
-        criterion.value && criterion.value.end ? new Date(criterion.value.end) : undefined
-    );
+    const [endDate, setEndDate] = useState<Date | undefined>(criterion.value && criterion.value.end ? new Date(criterion.value.end) : undefined);
 
-    const [startDateInput, setStartDateInput] = useState<string>(
-        startDate ? format(startDate, 'dd/MM/yyyy') : ''
-    );
+    const [startDateInput, setStartDateInput] = useState<string>(startDate ? format(startDate, 'dd/MM/yyyy') : '');
 
-    const [endDateInput, setEndDateInput] = useState<string>(
-        endDate ? format(endDate, 'dd/MM/yyyy') : ''
-    );
+    const [endDateInput, setEndDateInput] = useState<string>(endDate ? format(endDate, 'dd/MM/yyyy') : '');
 
     // Estados para controlar la navegación del calendario
     const [startCalendarDate, setStartCalendarDate] = useState<Date>(startDate || new Date());
@@ -80,7 +72,7 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
 
                 // Convertir el objeto a JSON string para asegurar que se envíe correctamente
                 onChange({
-                    value: JSON.stringify(rangeValue)
+                    value: JSON.stringify(rangeValue),
                 });
             }
         } else if (criterion.operator === 'equals' || criterion.operator === 'before' || criterion.operator === 'after') {
@@ -96,7 +88,7 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
 
     // Cuando cambia el campo seleccionado
     const handleFieldChange = (value: string) => {
-        const selectedField = dateFields.find(field => field.value === value);
+        const selectedField = dateFields.find((field) => field.value === value);
         onChange({
             field: value,
             label: selectedField?.label || '',
@@ -179,22 +171,13 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
 
         if (criterion.operator === 'between') {
             return (
-                <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="flex-1 relative">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="relative flex-1">
                         <div className="relative">
-                            <Input
-                                value={startDateInput}
-                                onChange={handleStartDateInputChange}
-                                placeholder="DD/MM/AAAA"
-                                className="pr-10"
-                            />
+                            <Input value={startDateInput} onChange={handleStartDateInputChange} placeholder="DD/MM/AAAA" className="pr-10" />
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-0 top-0 h-full"
-                                    >
+                                    <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-full">
                                         <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                                     </Button>
                                 </PopoverTrigger>
@@ -214,19 +197,10 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
                     </div>
                     <div className="flex-1">
                         <div className="relative">
-                            <Input
-                                value={endDateInput}
-                                onChange={handleEndDateInputChange}
-                                placeholder="DD/MM/AAAA"
-                                className="pr-10"
-                            />
+                            <Input value={endDateInput} onChange={handleEndDateInputChange} placeholder="DD/MM/AAAA" className="pr-10" />
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-0 top-0 h-full"
-                                    >
+                                    <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-full">
                                         <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                                     </Button>
                                 </PopoverTrigger>
@@ -240,7 +214,7 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
                                         initialMonth={endDate || new Date()}
                                         onMonthChange={setEndCalendarDate}
                                         minDate={startDate}
-                                        disabledDates={(date) => startDate ? date < startDate : false}
+                                        disabledDates={(date) => (startDate ? date < startDate : false)}
                                     />
                                 </PopoverContent>
                             </Popover>
@@ -252,19 +226,10 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
 
         return (
             <div className="relative">
-                <Input
-                    value={startDateInput}
-                    onChange={handleStartDateInputChange}
-                    placeholder="DD/MM/AAAA"
-                    className="pr-10"
-                />
+                <Input value={startDateInput} onChange={handleStartDateInputChange} placeholder="DD/MM/AAAA" className="pr-10" />
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-0 top-0 h-full"
-                        >
+                        <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-full">
                             <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                         </Button>
                     </PopoverTrigger>
@@ -286,10 +251,10 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
 
     return (
         <div className="grid grid-cols-1 gap-2 sm:gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 md:grid-cols-4">
                 <div>
                     <Select value={criterion.field} onValueChange={handleFieldChange}>
-                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                        <SelectTrigger className="h-8 w-full text-xs sm:h-10 sm:text-sm">
                             <SelectValue placeholder="Seleccionar campo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -303,12 +268,8 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
                 </div>
 
                 <div>
-                    <Select
-                        value={criterion.operator}
-                        onValueChange={handleOperatorChange}
-                        disabled={!criterion.field}
-                    >
-                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                    <Select value={criterion.operator} onValueChange={handleOperatorChange} disabled={!criterion.field}>
+                        <SelectTrigger className="h-8 w-full text-xs sm:h-10 sm:text-sm">
                             <SelectValue placeholder="Seleccionar operador" />
                         </SelectTrigger>
                         <SelectContent>
@@ -321,23 +282,19 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
                     </Select>
                 </div>
 
-                <div className="sm:col-span-2 flex items-start flex-col sm:flex-row sm:items-center gap-2">
+                <div className="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
                     {criterion.operator === 'between' ? (
-                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
                             <div className="relative">
                                 <Input
                                     value={startDateInput}
                                     onChange={handleStartDateInputChange}
                                     placeholder="DD/MM/AAAA"
-                                    className="pr-10 text-xs sm:text-sm h-8 sm:h-10"
+                                    className="h-8 pr-10 text-xs sm:h-10 sm:text-sm"
                                 />
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="absolute right-0 top-0 h-full w-8"
-                                        >
+                                        <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-full w-8">
                                             <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                                         </Button>
                                     </PopoverTrigger>
@@ -359,15 +316,11 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
                                     value={endDateInput}
                                     onChange={handleEndDateInputChange}
                                     placeholder="DD/MM/AAAA"
-                                    className="pr-10 text-xs sm:text-sm h-8 sm:h-10"
+                                    className="h-8 pr-10 text-xs sm:h-10 sm:text-sm"
                                 />
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="absolute right-0 top-0 h-full w-8"
-                                        >
+                                        <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-full w-8">
                                             <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                                         </Button>
                                     </PopoverTrigger>
@@ -381,7 +334,7 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
                                             initialMonth={endDate || new Date()}
                                             onMonthChange={setEndCalendarDate}
                                             minDate={startDate}
-                                            disabledDates={(date) => startDate ? date < startDate : false}
+                                            disabledDates={(date) => (startDate ? date < startDate : false)}
                                         />
                                     </PopoverContent>
                                 </Popover>
@@ -393,15 +346,11 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
                                 value={startDateInput}
                                 onChange={handleStartDateInputChange}
                                 placeholder="DD/MM/AAAA"
-                                className="pr-10 text-xs sm:text-sm h-8 sm:h-10"
+                                className="h-8 pr-10 text-xs sm:h-10 sm:text-sm"
                             />
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-0 top-0 h-full w-8"
-                                    >
+                                    <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-full w-8">
                                         <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                                     </Button>
                                 </PopoverTrigger>
@@ -424,7 +373,7 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
                         variant="ghost"
                         size="icon"
                         onClick={onRemove}
-                        className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 ml-auto"
+                        className="ml-auto h-8 w-8 flex-shrink-0 sm:h-10 sm:w-10"
                         title="Eliminar criterio"
                     >
                         <X className="h-4 w-4" />
@@ -433,4 +382,4 @@ export function DateFilter({ criterion, onChange, onRemove }: DateFilterProps) {
             </div>
         </div>
     );
-} 
+}

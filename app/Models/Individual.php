@@ -11,7 +11,7 @@ use Spatie\Tags\HasTags;
 
 class Individual extends Model implements Searchable
 {
-    use HasFactory, SoftDeletes, HasTags;
+    use HasFactory, HasTags, SoftDeletes;
 
     protected $fillable = [
         'national_id',

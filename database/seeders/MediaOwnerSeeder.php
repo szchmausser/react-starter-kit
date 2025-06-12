@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\MediaOwner;
+use Illuminate\Database\Seeder;
 
 class MediaOwnerSeeder extends Seeder
 {
@@ -13,10 +13,10 @@ class MediaOwnerSeeder extends Seeder
     public function run(): void
     {
         // Asegurarse de que exista al menos una instancia de MediaOwner
-        if (!MediaOwner::count()) {
+        if (! MediaOwner::count()) {
             MediaOwner::create([
                 'name' => 'Shared files owner',
-                'description' => 'Sample model to use as media owner'
+                'description' => 'Sample model to use as media owner',
             ]);
 
             $this->command->info('MediaOwner creado correctamente.');

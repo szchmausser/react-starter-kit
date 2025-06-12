@@ -20,9 +20,7 @@ export function UserInfo({ user, showEmail = false }: { user?: User | null; show
         return (
             <>
                 <Avatar className="h-8 w-8 overflow-hidden rounded-full">
-                    <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                        ?
-                    </AvatarFallback>
+                    <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">?</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">Invitado</span>

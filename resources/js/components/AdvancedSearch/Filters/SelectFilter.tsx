@@ -1,5 +1,5 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
 import { type FilterCriterion } from '../AdvancedSearchContainer';
 
@@ -11,9 +11,7 @@ interface SelectFilterProps {
 }
 
 // Definición de campos de selección disponibles para filtrar
-const selectFields = [
-    { value: 'case_type_id', label: 'Tipo de Caso' },
-];
+const selectFields = [{ value: 'case_type_id', label: 'Tipo de Caso' }];
 
 // Operadores disponibles para campos de selección
 const selectOperators = [
@@ -24,7 +22,7 @@ const selectOperators = [
 export function SelectFilter({ criterion, onChange, onRemove, options }: SelectFilterProps) {
     // Cuando cambia el campo seleccionado
     const handleFieldChange = (value: string) => {
-        const selectedField = selectFields.find(field => field.value === value);
+        const selectedField = selectFields.find((field) => field.value === value);
         onChange({
             field: value,
             label: selectedField?.label || '',
@@ -46,10 +44,10 @@ export function SelectFilter({ criterion, onChange, onRemove, options }: SelectF
 
     return (
         <div className="grid grid-cols-1 gap-2 sm:gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 md:grid-cols-4">
                 <div>
                     <Select value={criterion.field} onValueChange={handleFieldChange}>
-                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                        <SelectTrigger className="h-8 w-full text-xs sm:h-10 sm:text-sm">
                             <SelectValue placeholder="Seleccionar campo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -63,12 +61,8 @@ export function SelectFilter({ criterion, onChange, onRemove, options }: SelectF
                 </div>
 
                 <div>
-                    <Select
-                        value={criterion.operator}
-                        onValueChange={handleOperatorChange}
-                        disabled={!criterion.field}
-                    >
-                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                    <Select value={criterion.operator} onValueChange={handleOperatorChange} disabled={!criterion.field}>
+                        <SelectTrigger className="h-8 w-full text-xs sm:h-10 sm:text-sm">
                             <SelectValue placeholder="Seleccionar operador" />
                         </SelectTrigger>
                         <SelectContent>
@@ -81,14 +75,14 @@ export function SelectFilter({ criterion, onChange, onRemove, options }: SelectF
                     </Select>
                 </div>
 
-                <div className="sm:col-span-2 flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:col-span-2">
                     <div className="flex-grow">
                         <Select
                             value={criterion.value?.toString() || ''}
                             onValueChange={handleValueChange}
                             disabled={!criterion.field || !criterion.operator}
                         >
-                            <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                            <SelectTrigger className="h-8 w-full text-xs sm:h-10 sm:text-sm">
                                 <SelectValue placeholder="Seleccionar valor" />
                             </SelectTrigger>
                             <SelectContent>
@@ -104,7 +98,7 @@ export function SelectFilter({ criterion, onChange, onRemove, options }: SelectF
                         variant="ghost"
                         size="icon"
                         onClick={onRemove}
-                        className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+                        className="h-8 w-8 flex-shrink-0 sm:h-10 sm:w-10"
                         title="Eliminar criterio"
                     >
                         <X className="h-4 w-4" />
@@ -113,4 +107,4 @@ export function SelectFilter({ criterion, onChange, onRemove, options }: SelectF
             </div>
         </div>
     );
-} 
+}

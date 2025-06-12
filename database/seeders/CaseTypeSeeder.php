@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\CaseType;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CaseTypeSeeder extends Seeder
@@ -16,52 +15,52 @@ class CaseTypeSeeder extends Seeder
         $caseTypes = [
             [
                 'name' => 'Divorcio',
-                'description' => 'Procedimiento legal para la disolución del vínculo matrimonial'
+                'description' => 'Procedimiento legal para la disolución del vínculo matrimonial',
             ],
             [
                 'name' => 'Manutención',
-                'description' => 'Casos relacionados con obligaciones de manutención a menores o dependientes'
+                'description' => 'Casos relacionados con obligaciones de manutención a menores o dependientes',
             ],
             [
                 'name' => 'Título Supletorio',
-                'description' => 'Procedimiento para obtener un título de propiedad cuando se carece del mismo'
+                'description' => 'Procedimiento para obtener un título de propiedad cuando se carece del mismo',
             ],
             [
                 'name' => 'Demanda por Daños y Perjuicios',
-                'description' => 'Reclamación por daños materiales o morales causados por un tercero'
+                'description' => 'Reclamación por daños materiales o morales causados por un tercero',
             ],
             [
                 'name' => 'Partición de Herencia',
-                'description' => 'Procedimiento para dividir los bienes dejados por una persona fallecida'
+                'description' => 'Procedimiento para dividir los bienes dejados por una persona fallecida',
             ],
             [
                 'name' => 'Accidente de Tránsito',
-                'description' => 'Casos relacionados con accidentes de tránsito, responsabilidad civil y daños materiales'
+                'description' => 'Casos relacionados con accidentes de tránsito, responsabilidad civil y daños materiales',
             ],
             [
                 'name' => 'Despido Laboral',
-                'description' => 'Procedimiento para reclamar indemnizaciones por despido injustificado'
+                'description' => 'Procedimiento para reclamar indemnizaciones por despido injustificado',
             ],
             [
                 'name' => 'Negligencia Médica',
-                'description' => 'Casos relacionados con errores médicos y responsabilidad profesional'
+                'description' => 'Casos relacionados con errores médicos y responsabilidad profesional',
             ],
             [
                 'name' => 'Infracción a la Propiedad Intelectual',
-                'description' => 'Procedimiento para proteger la propiedad intelectual y reclamar daños'
+                'description' => 'Procedimiento para proteger la propiedad intelectual y reclamar daños',
             ],
             [
                 'name' => 'Protección de Datos Personales',
-                'description' => 'Casos relacionados con la protección de la privacidad y seguridad de los datos personales'
+                'description' => 'Casos relacionados con la protección de la privacidad y seguridad de los datos personales',
             ],
             [
                 'name' => 'Contratos y Negocios',
-                'description' => 'Procedimiento para resolver disputas contractuales y comerciales'
+                'description' => 'Procedimiento para resolver disputas contractuales y comerciales',
             ],
             [
                 'name' => 'Expropiación',
-                'description' => 'Procedimiento para la expropiación de propiedades por causa de utilidad pública'
-            ]
+                'description' => 'Procedimiento para la expropiación de propiedades por causa de utilidad pública',
+            ],
         ];
 
         foreach ($caseTypes as $caseType) {

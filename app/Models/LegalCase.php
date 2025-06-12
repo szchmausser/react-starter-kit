@@ -10,16 +10,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Searchable\Searchable;
-use Spatie\Searchable\SearchResult;
-use Spatie\ModelStatus\HasStatuses;
-use Spatie\Tags\HasTags;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\ModelStatus\HasStatuses;
+use Spatie\Searchable\Searchable;
+use Spatie\Searchable\SearchResult;
+use Spatie\Tags\HasTags;
 
-final class LegalCase extends Model implements Searchable, HasMedia
+final class LegalCase extends Model implements HasMedia, Searchable
 {
-    use HasFactory, SoftDeletes, HasStatuses, HasTags, InteractsWithMedia;
+    use HasFactory, HasStatuses, HasTags, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
         'code',
@@ -37,8 +37,6 @@ final class LegalCase extends Model implements Searchable, HasMedia
 
     /**
      * Registra las colecciones de media y sus conversiones.
-     *
-     * @return void
      */
     public function registerMediaCollections(): void
     {

@@ -1,29 +1,50 @@
-import { Head, Link, router } from '@inertiajs/react';
-import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, X, RotateCcw, Network } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
-import { useState, useMemo, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import axios from 'axios';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
 import {
-    ColumnDef,
     ColumnFiltersState,
-    SortingState,
+    createColumnHelper,
     flexRender,
     getCoreRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    useReactTable,
-    createColumnHelper,
     PaginationState,
     Row,
+    SortingState,
+    useReactTable,
 } from '@tanstack/react-table';
-import { type BreadcrumbItem } from '@/types';
+import axios from 'axios';
+import {
+    ArrowDown,
+    ArrowUp,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    Network,
+    Pencil,
+    Plus,
+    RotateCcw,
+    Trash2,
+    X,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 // Importar el componente del modal de relaciones
 import { TagRelationsModal } from '@/components/TagRelationsModal';
@@ -96,88 +117,75 @@ export default function Index({ tags: initialTags }: Props) {
     useEffect(() => {
         // Filtrar valores nulos y duplicados
         const types = initialTags
-            .map(tag => tag.type)
-            .filter((type, index, self) =>
-                type !== null &&
-                type !== '' &&
-                self.indexOf(type) === index
-            ) as string[];
+            .map((tag) => tag.type)
+            .filter((type, index, self) => type !== null && type !== '' && self.indexOf(type) === index) as string[];
 
         setUniqueTypes(types);
     }, [initialTags]);
 
     // Definición de columnas para TanStack Table
-    const columns = useMemo(() => [
-        // Columna de numeración
-        columnHelper.display({
-            id: 'numero',
-            header: () => <div className="text-center font-medium">#</div>,
-            cell: (info) => {
-                // Calcular el índice global considerando la paginación
-                const globalIndex = pagination.pageIndex * pagination.pageSize + info.row.index + 1;
-                return <div className="text-center font-medium text-gray-500">{globalIndex}</div>;
-            },
-            enableSorting: false,
-            enableColumnFilter: false,
-        }),
-        columnHelper.accessor(
-            (tag) => getTagName(tag),
-            {
+    const columns = useMemo(
+        () => [
+            // Columna de numeración
+            columnHelper.display({
+                id: 'numero',
+                header: () => <div className="text-center font-medium">#</div>,
+                cell: (info) => {
+                    // Calcular el índice global considerando la paginación
+                    const globalIndex = pagination.pageIndex * pagination.pageSize + info.row.index + 1;
+                    return <div className="text-center font-medium text-gray-500">{globalIndex}</div>;
+                },
+                enableSorting: false,
+                enableColumnFilter: false,
+            }),
+            columnHelper.accessor((tag) => getTagName(tag), {
                 id: 'name',
                 header: 'Nombre',
                 cell: ({ getValue }) => <div className="font-medium">{getValue()}</div>,
                 enableSorting: true,
                 enableColumnFilter: true,
-            }
-        ),
-        columnHelper.accessor('type', {
-            header: 'Tipo',
-            cell: ({ row }) => {
-                const type = row.original.type;
-                return type !== null && type !== '' ? type : '-';
-            },
-            enableSorting: true,
-            enableColumnFilter: true,
-            filterFn: (row, columnId, filterValue) => {
-                if (!filterValue || filterValue === 'all') return true;
-                const rowValue = row.getValue(columnId);
-                return rowValue === filterValue;
-            },
-        }),
-        columnHelper.display({
-            id: 'actions',
-            header: 'Acciones',
-            cell: ({ row }) => {
-                const tag = row.original;
-                return (
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            title="Ver relaciones"
-                            onClick={() => handleViewRelations(tag)}
-                        >
-                            <Network className="h-4 w-4" />
-                        </Button>
-                        <Link href={route('tags.edit', tag.id)}>
-                            <Button variant="outline" size="icon">
-                                <Pencil className="h-4 w-4" />
+            }),
+            columnHelper.accessor('type', {
+                header: 'Tipo',
+                cell: ({ row }) => {
+                    const type = row.original.type;
+                    return type !== null && type !== '' ? type : '-';
+                },
+                enableSorting: true,
+                enableColumnFilter: true,
+                filterFn: (row, columnId, filterValue) => {
+                    if (!filterValue || filterValue === 'all') return true;
+                    const rowValue = row.getValue(columnId);
+                    return rowValue === filterValue;
+                },
+            }),
+            columnHelper.display({
+                id: 'actions',
+                header: 'Acciones',
+                cell: ({ row }) => {
+                    const tag = row.original;
+                    return (
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="icon" title="Ver relaciones" onClick={() => handleViewRelations(tag)}>
+                                <Network className="h-4 w-4" />
                             </Button>
-                        </Link>
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => confirmDelete(tag)}
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                );
-            },
-            enableSorting: false,
-            enableColumnFilter: false,
-        }),
-    ], []);
+                            <Link href={route('tags.edit', tag.id)}>
+                                <Button variant="outline" size="icon">
+                                    <Pencil className="h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <Button variant="destructive" size="icon" onClick={() => confirmDelete(tag)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    );
+                },
+                enableSorting: false,
+                enableColumnFilter: false,
+            }),
+        ],
+        [],
+    );
 
     // Configuración de TanStack Table
     const table = useReactTable({
@@ -212,9 +220,7 @@ export default function Index({ tags: initialTags }: Props) {
 
     // Flag para indicar si hay filtros activos
     const hasActiveFilters = useMemo(() => {
-        return table.getState().columnFilters.length > 0 ||
-            sorting.length > 0 ||
-            globalFilter !== '';
+        return table.getState().columnFilters.length > 0 || sorting.length > 0 || globalFilter !== '';
     }, [table.getState().columnFilters, sorting, globalFilter]);
 
     // Métricas globales - Total de registros
@@ -272,8 +278,8 @@ export default function Index({ tags: initialTags }: Props) {
         try {
             const response = await axios.get<Record<string, any[]>>(route('tags.relations', tag.id), {
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest' // Indicar que es una petición AJAX
-                }
+                    'X-Requested-With': 'XMLHttpRequest', // Indicar que es una petición AJAX
+                },
             });
 
             if (response.data && Object.keys(response.data).length > 0) {
@@ -292,8 +298,8 @@ export default function Index({ tags: initialTags }: Props) {
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
             <Head title="Tags" />
-            <div className="p-4 sm:p-6 relative">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+            <div className="relative p-4 sm:p-6">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-2xl font-bold">
                         Gestión de Etiquetas
                         {hasActiveFilters && (
@@ -302,21 +308,15 @@ export default function Index({ tags: initialTags }: Props) {
                             </span>
                         )}
                     </h1>
-                    <div className="flex flex-1 gap-2 items-center justify-end">
+                    <div className="flex flex-1 items-center justify-end gap-2">
                         {hasActiveFilters && (
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={handleResetFilters}
-                                title="Limpiar filtros"
-                                className="shrink-0"
-                            >
+                            <Button variant="outline" size="icon" onClick={handleResetFilters} title="Limpiar filtros" className="shrink-0">
                                 <RotateCcw className="h-4 w-4" />
                             </Button>
                         )}
                         <Link href={route('tags.create')}>
                             <Button className="hidden sm:inline-flex">
-                                <Plus className="h-4 w-4 mr-2" />
+                                <Plus className="mr-2 h-4 w-4" />
                                 Nueva Etiqueta
                             </Button>
                             <Button className="sm:hidden" size="icon">
@@ -326,59 +326,65 @@ export default function Index({ tags: initialTags }: Props) {
                     </div>
                 </div>
 
-                <div className="block sm:hidden space-y-2 mb-16">
+                <div className="mb-16 block space-y-2 sm:hidden">
                     {/* Selector de filtros para móvil */}
-                    <div className="bg-white dark:bg-zinc-900 rounded shadow p-3 mb-2">
+                    <div className="mb-2 rounded bg-white p-3 shadow dark:bg-zinc-900">
                         <div className="space-y-2">
-                            <h3 className="text-sm font-semibold mb-2">Filtros</h3>
+                            <h3 className="mb-2 text-sm font-semibold">Filtros</h3>
 
                             {/* Filtros de columnas */}
-                            {table.getAllColumns().filter(column =>
-                                column.getCanFilter()
-                            ).map(column => (
-                                <div key={column.id} className="space-y-1">
-                                    <label htmlFor={`filter-${column.id}`} className="text-xs text-gray-500">
-                                        {column.columnDef.header as string}
-                                    </label>
-                                    {column.id === 'type' ? (
-                                        <Select
-                                            value={(column.getFilterValue() as string) ?? ''}
-                                            onValueChange={value => column.setFilterValue(value)}
-                                        >
-                                            <SelectTrigger className="h-8 text-xs">
-                                                <SelectValue placeholder={`Filtrar ${column.columnDef.header as string}...`} />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">Todos</SelectItem>
-                                                {uniqueTypes.map(type => (
-                                                    <SelectItem key={type} value={type}>
-                                                        {type}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    ) : (
-                                        <Input
-                                            id={`filter-${column.id}`}
-                                            value={(column.getFilterValue() as string) ?? ''}
-                                            onChange={e => column.setFilterValue(e.target.value)}
-                                            placeholder={`Filtrar ${column.columnDef.header as string}...`}
-                                            className="h-8 text-xs"
-                                        />
-                                    )}
-                                </div>
-                            ))}
+                            {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanFilter())
+                                .map((column) => (
+                                    <div key={column.id} className="space-y-1">
+                                        <label htmlFor={`filter-${column.id}`} className="text-xs text-gray-500">
+                                            {column.columnDef.header as string}
+                                        </label>
+                                        {column.id === 'type' ? (
+                                            <Select
+                                                value={(column.getFilterValue() as string) ?? ''}
+                                                onValueChange={(value) => column.setFilterValue(value)}
+                                            >
+                                                <SelectTrigger className="h-8 text-xs">
+                                                    <SelectValue placeholder={`Filtrar ${column.columnDef.header as string}...`} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Todos</SelectItem>
+                                                    {uniqueTypes.map((type) => (
+                                                        <SelectItem key={type} value={type}>
+                                                            {type}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <Input
+                                                id={`filter-${column.id}`}
+                                                value={(column.getFilterValue() as string) ?? ''}
+                                                onChange={(e) => column.setFilterValue(e.target.value)}
+                                                placeholder={`Filtrar ${column.columnDef.header as string}...`}
+                                                className="h-8 text-xs"
+                                            />
+                                        )}
+                                    </div>
+                                ))}
 
                             {/* Filtros activos */}
                             {(table.getState().columnFilters.length > 0 || sorting.length > 0) && (
                                 <div className="mt-4">
-                                    <h3 className="text-xs font-semibold mb-2">Filtros activos:</h3>
+                                    <h3 className="mb-2 text-xs font-semibold">Filtros activos:</h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {table.getState().columnFilters.map(filter => {
+                                        {table.getState().columnFilters.map((filter) => {
                                             const column = table.getColumn(filter.id);
                                             return (
-                                                <div key={filter.id} className="bg-gray-100 dark:bg-zinc-800 rounded-full px-3 py-1 text-xs flex items-center gap-1">
-                                                    <span>{column?.columnDef?.header as string}: {filter.value as string}</span>
+                                                <div
+                                                    key={filter.id}
+                                                    className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs dark:bg-zinc-800"
+                                                >
+                                                    <span>
+                                                        {column?.columnDef?.header as string}: {filter.value as string}
+                                                    </span>
                                                     <button
                                                         onClick={() => column?.setFilterValue(undefined)}
                                                         className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -388,14 +394,19 @@ export default function Index({ tags: initialTags }: Props) {
                                                 </div>
                                             );
                                         })}
-                                        {sorting.map(sort => {
+                                        {sorting.map((sort) => {
                                             const column = table.getColumn(sort.id);
                                             return (
-                                                <div key={sort.id} className="bg-gray-100 dark:bg-zinc-800 rounded-full px-3 py-1 text-xs flex items-center gap-1">
-                                                    <span>{column?.columnDef?.header as string}: {sort.desc ? 'Descendente' : 'Ascendente'}</span>
+                                                <div
+                                                    key={sort.id}
+                                                    className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs dark:bg-zinc-800"
+                                                >
+                                                    <span>
+                                                        {column?.columnDef?.header as string}: {sort.desc ? 'Descendente' : 'Ascendente'}
+                                                    </span>
                                                     <button
                                                         onClick={() => {
-                                                            setSorting(prev => prev.filter(s => s.id !== sort.id));
+                                                            setSorting((prev) => prev.filter((s) => s.id !== sort.id));
                                                         }}
                                                         className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                                     >
@@ -417,20 +428,16 @@ export default function Index({ tags: initialTags }: Props) {
                             // Calcular el número directamente basado en la página actual
                             const rowNumber = pagination.pageIndex * pagination.pageSize + index + 1;
                             return (
-                                <div key={tag.id} className="bg-white dark:bg-zinc-900 rounded shadow p-3 flex flex-col gap-2">
-                                    <div className="font-bold text-base flex items-start">
-                                        <span className="mr-2 mt-0.5 flex-shrink-0 text-gray-500">
-                                            #{rowNumber}
-                                        </span>
+                                <div key={tag.id} className="flex flex-col gap-2 rounded bg-white p-3 shadow dark:bg-zinc-900">
+                                    <div className="flex items-start text-base font-bold">
+                                        <span className="mt-0.5 mr-2 flex-shrink-0 text-gray-500">#{rowNumber}</span>
                                         <span>{tagName}</span>
                                     </div>
                                     <div className="text-sm text-gray-500 dark:text-gray-400">
                                         {tag.type !== null && tag.type !== '' ? `Tipo: ${tag.type}` : 'Sin tipo'}
                                     </div>
-                                    <div className="text-xs text-gray-400">
-                                        Creado: {new Date(tag.created_at).toLocaleDateString()}
-                                    </div>
-                                    <div className="flex gap-2 mt-2 justify-end">
+                                    <div className="text-xs text-gray-400">Creado: {new Date(tag.created_at).toLocaleDateString()}</div>
+                                    <div className="mt-2 flex justify-end gap-2">
                                         <Button
                                             variant="outline"
                                             size="icon"
@@ -445,12 +452,7 @@ export default function Index({ tags: initialTags }: Props) {
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Button
-                                            variant="destructive"
-                                            size="icon"
-                                            className="h-8 w-8"
-                                            onClick={() => confirmDelete(tag)}
-                                        >
+                                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => confirmDelete(tag)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -458,22 +460,20 @@ export default function Index({ tags: initialTags }: Props) {
                             );
                         })
                     ) : (
-                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            No se encontraron etiquetas.
-                        </div>
+                        <div className="py-8 text-center text-gray-500 dark:text-gray-400">No se encontraron etiquetas.</div>
                     )}
                 </div>
 
                 {/* Tabla solo visible en escritorio/tablet */}
-                <div className="hidden sm:block overflow-hidden shadow-sm">
+                <div className="hidden overflow-hidden shadow-sm sm:block">
                     {/* Tabla */}
-                    <div className="bg-white dark:bg-zinc-900 overflow-hidden sm:rounded-t-lg">
+                    <div className="overflow-hidden bg-white sm:rounded-t-lg dark:bg-zinc-900">
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    {table.getHeaderGroups().map(headerGroup => (
+                                    {table.getHeaderGroups().map((headerGroup) => (
                                         <TableRow key={headerGroup.id}>
-                                            {headerGroup.headers.map(header => (
+                                            {headerGroup.headers.map((header) => (
                                                 <TableHead key={header.id} className={header.id === 'actions' ? 'text-right' : ''}>
                                                     {header.isPlaceholder ? null : (
                                                         <div>
@@ -485,18 +485,15 @@ export default function Index({ tags: initialTags }: Props) {
                                                                     onClick: header.column.getToggleSortingHandler(),
                                                                 }}
                                                             >
-                                                                {flexRender(
-                                                                    header.column.columnDef.header,
-                                                                    header.getContext()
-                                                                )}
+                                                                {flexRender(header.column.columnDef.header, header.getContext())}
                                                                 {header.column.getCanSort() && (
-                                                                    <span className="inline-flex ml-1 text-muted-foreground">
+                                                                    <span className="text-muted-foreground ml-1 inline-flex">
                                                                         {header.column.getIsSorted() === 'asc' ? (
-                                                                            <ArrowUp className="h-4 w-4 text-primary" />
+                                                                            <ArrowUp className="text-primary h-4 w-4" />
                                                                         ) : header.column.getIsSorted() === 'desc' ? (
-                                                                            <ArrowDown className="h-4 w-4 text-primary" />
+                                                                            <ArrowDown className="text-primary h-4 w-4" />
                                                                         ) : (
-                                                                            <div className="h-4 w-4 flex flex-col opacity-50 group-hover:opacity-100">
+                                                                            <div className="flex h-4 w-4 flex-col opacity-50 group-hover:opacity-100">
                                                                                 <ArrowUp className="h-2 w-4" />
                                                                                 <ArrowDown className="h-2 w-4" />
                                                                             </div>
@@ -509,14 +506,16 @@ export default function Index({ tags: initialTags }: Props) {
                                                                     {header.column.id === 'type' ? (
                                                                         <Select
                                                                             value={(header.column.getFilterValue() as string) ?? ''}
-                                                                            onValueChange={value => header.column.setFilterValue(value)}
+                                                                            onValueChange={(value) => header.column.setFilterValue(value)}
                                                                         >
-                                                                            <SelectTrigger className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900">
-                                                                                <SelectValue placeholder={`Filtrar ${header.column.columnDef.header as string}...`} />
+                                                                            <SelectTrigger className="h-8 bg-white/80 text-xs focus:bg-white dark:bg-zinc-900/80 dark:focus:bg-zinc-900">
+                                                                                <SelectValue
+                                                                                    placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
+                                                                                />
                                                                             </SelectTrigger>
                                                                             <SelectContent>
                                                                                 <SelectItem value="all">Todos</SelectItem>
-                                                                                {uniqueTypes.map(type => (
+                                                                                {uniqueTypes.map((type) => (
                                                                                     <SelectItem key={type} value={type}>
                                                                                         {type}
                                                                                     </SelectItem>
@@ -526,9 +525,9 @@ export default function Index({ tags: initialTags }: Props) {
                                                                     ) : (
                                                                         <Input
                                                                             value={(header.column.getFilterValue() as string) ?? ''}
-                                                                            onChange={e => header.column.setFilterValue(e.target.value)}
+                                                                            onChange={(e) => header.column.setFilterValue(e.target.value)}
                                                                             placeholder={`Filtrar ${header.column.columnDef.header as string}...`}
-                                                                            className="h-8 text-xs bg-white/80 dark:bg-zinc-900/80 focus:bg-white dark:focus:bg-zinc-900"
+                                                                            className="h-8 bg-white/80 text-xs focus:bg-white dark:bg-zinc-900/80 dark:focus:bg-zinc-900"
                                                                         />
                                                                     )}
                                                                 </div>
@@ -545,15 +544,13 @@ export default function Index({ tags: initialTags }: Props) {
                                         tableRows.map((row) => (
                                             <TableRow key={row.id}>
                                                 {row.getVisibleCells().map((cell) => (
-                                                    <TableCell key={cell.id}>
-                                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                    </TableCell>
+                                                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                                 ))}
                                             </TableRow>
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={columns.length} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                            <TableCell colSpan={columns.length} className="py-8 text-center text-gray-500 dark:text-gray-400">
                                                 No se encontraron etiquetas.
                                             </TableCell>
                                         </TableRow>
@@ -564,21 +561,18 @@ export default function Index({ tags: initialTags }: Props) {
                     </div>
 
                     {/* Paginación para escritorio */}
-                    <div className="hidden sm:flex sm:flex-row-reverse sm:items-center sm:justify-between px-4 py-4 gap-4 bg-sidebar dark:bg-zinc-800 border-t border-gray-200 dark:border-zinc-800 sm:rounded-b-lg">
+                    <div className="bg-sidebar hidden gap-4 border-t border-gray-200 px-4 py-4 sm:flex sm:flex-row-reverse sm:items-center sm:justify-between sm:rounded-b-lg dark:border-zinc-800 dark:bg-zinc-800">
                         <div className="flex items-center gap-4">
-                            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-4">
+                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                                 <div>
                                     Mostrando {Math.min(pagination.pageSize, tableRows.length)} de {filteredCount} registros
                                 </div>
-                                <Select
-                                    value={pagination.pageSize.toString()}
-                                    onValueChange={handlePerPageChange}
-                                >
+                                <Select value={pagination.pageSize.toString()} onValueChange={handlePerPageChange}>
                                     <SelectTrigger className="h-8 w-24">
                                         <SelectValue placeholder={pagination.pageSize.toString()} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {[5, 10, 20, 50, 100].map(size => (
+                                        {[5, 10, 20, 50, 100].map((size) => (
                                             <SelectItem key={size} value={size.toString()}>
                                                 {size}
                                             </SelectItem>
@@ -592,8 +586,7 @@ export default function Index({ tags: initialTags }: Props) {
                         <div className="flex items-center gap-4">
                             {/* Indicador de página actual */}
                             <div className="text-sm text-gray-700 dark:text-gray-300">
-                                Página <span className="font-semibold">{currentPage}</span> de{" "}
-                                <span className="font-semibold">{pageCount || 1}</span>
+                                Página <span className="font-semibold">{currentPage}</span> de <span className="font-semibold">{pageCount || 1}</span>
                             </div>
 
                             {/* Botones de navegación */}
@@ -621,14 +614,11 @@ export default function Index({ tags: initialTags }: Props) {
                                 {/* Números de página */}
                                 {Array.from({ length: pageCount || 1 }, (_, i) => {
                                     // Solo mostrar 5 páginas como máximo
-                                    if (pageCount <= 5 ||
-                                        i === 0 ||
-                                        i === pageCount - 1 ||
-                                        Math.abs(i - pagination.pageIndex) <= 1) {
+                                    if (pageCount <= 5 || i === 0 || i === pageCount - 1 || Math.abs(i - pagination.pageIndex) <= 1) {
                                         return (
                                             <Button
                                                 key={i}
-                                                variant={i === pagination.pageIndex ? "default" : "outline"}
+                                                variant={i === pagination.pageIndex ? 'default' : 'outline'}
                                                 size="icon"
                                                 onClick={() => table.setPageIndex(i)}
                                                 disabled={i === pagination.pageIndex}
@@ -639,9 +629,12 @@ export default function Index({ tags: initialTags }: Props) {
                                         );
                                     }
                                     // Agregar puntos suspensivos en el medio
-                                    if ((i === 1 && pagination.pageIndex > 2) ||
-                                        (i === pageCount - 2 && pagination.pageIndex < pageCount - 3)) {
-                                        return <span key={i} className="px-2 text-gray-500">...</span>;
+                                    if ((i === 1 && pagination.pageIndex > 2) || (i === pageCount - 2 && pagination.pageIndex < pageCount - 3)) {
+                                        return (
+                                            <span key={i} className="px-2 text-gray-500">
+                                                ...
+                                            </span>
+                                        );
                                     }
                                     return null;
                                 })}
@@ -671,11 +664,14 @@ export default function Index({ tags: initialTags }: Props) {
                 </div>
 
                 {/* Paginación para móvil */}
-                <div className="sm:hidden fixed bottom-0 left-0 right-0 w-full bg-sidebar dark:bg-zinc-800 shadow-md p-3 rounded-t-lg border-t border-gray-200 dark:border-zinc-800 z-10">
+                <div className="bg-sidebar fixed right-0 bottom-0 left-0 z-10 w-full rounded-t-lg border-t border-gray-200 p-3 shadow-md sm:hidden dark:border-zinc-800 dark:bg-zinc-800">
                     <div className="flex items-center justify-between">
-                        <div className="text-xs text-gray-500 whitespace-nowrap">
+                        <div className="text-xs whitespace-nowrap text-gray-500">
                             <span className="inline-flex items-center">
-                                <span className="hidden xs:inline">{pagination.pageIndex * pagination.pageSize + 1}-{Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount)}</span>
+                                <span className="xs:inline hidden">
+                                    {pagination.pageIndex * pagination.pageSize + 1}-
+                                    {Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount)}
+                                </span>
                                 <span className="xs:hidden">{Math.min(pagination.pageSize, tableRows.length)}</span>
                                 <span className="mx-1">/</span>
                                 <span>{filteredCount}</span>
@@ -684,15 +680,12 @@ export default function Index({ tags: initialTags }: Props) {
 
                         <div className="flex items-center gap-2">
                             {/* Selector de registros por página */}
-                            <Select
-                                value={pagination.pageSize.toString()}
-                                onValueChange={handlePerPageChange}
-                            >
+                            <Select value={pagination.pageSize.toString()} onValueChange={handlePerPageChange}>
                                 <SelectTrigger className="h-7 w-16 text-xs">
                                     <SelectValue placeholder={pagination.pageSize.toString()} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {[5, 10, 20, 50, 100].map(size => (
+                                    {[5, 10, 20, 50, 100].map((size) => (
                                         <SelectItem key={size} value={size.toString()}>
                                             {size}
                                         </SelectItem>
@@ -708,7 +701,7 @@ export default function Index({ tags: initialTags }: Props) {
                     </div>
 
                     {/* Paginación móvil usando botones más grandes */}
-                    <div className="flex justify-between mt-2">
+                    <div className="mt-2 flex justify-between">
                         <Button
                             variant="outline"
                             size="sm"
@@ -716,7 +709,7 @@ export default function Index({ tags: initialTags }: Props) {
                             onClick={() => table.setPageIndex(0)}
                             disabled={!table.getCanPreviousPage()}
                         >
-                            <ChevronsLeft className="h-4 w-4 mr-1" />
+                            <ChevronsLeft className="mr-1 h-4 w-4" />
                             Inicio
                         </Button>
 
@@ -727,7 +720,7 @@ export default function Index({ tags: initialTags }: Props) {
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
                         >
-                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            <ChevronLeft className="mr-1 h-4 w-4" />
                             Anterior
                         </Button>
 
@@ -739,7 +732,7 @@ export default function Index({ tags: initialTags }: Props) {
                             disabled={!table.getCanNextPage()}
                         >
                             Siguiente
-                            <ChevronRight className="h-4 w-4 ml-1" />
+                            <ChevronRight className="ml-1 h-4 w-4" />
                         </Button>
 
                         <Button
@@ -750,7 +743,7 @@ export default function Index({ tags: initialTags }: Props) {
                             disabled={!table.getCanNextPage()}
                         >
                             Final
-                            <ChevronsRight className="h-4 w-4 ml-1" />
+                            <ChevronsRight className="ml-1 h-4 w-4" />
                         </Button>
                     </div>
                 </div>
@@ -760,7 +753,15 @@ export default function Index({ tags: initialTags }: Props) {
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Estás seguro de eliminar esta etiqueta?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Esta acción no se puede deshacer. Esto eliminará permanentemente la etiqueta <b>{tagToDelete ? (typeof tagToDelete.name === 'string' ? tagToDelete.name : tagToDelete.name[Object.keys(tagToDelete.name)[0]]) : ''}</b> de la base de datos.
+                                Esta acción no se puede deshacer. Esto eliminará permanentemente la etiqueta{' '}
+                                <b>
+                                    {tagToDelete
+                                        ? typeof tagToDelete.name === 'string'
+                                            ? tagToDelete.name
+                                            : tagToDelete.name[Object.keys(tagToDelete.name)[0]]
+                                        : ''}
+                                </b>{' '}
+                                de la base de datos.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

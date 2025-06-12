@@ -33,6 +33,7 @@ final class StatusListController extends Controller
             'description' => 'nullable|string|max:1000',
         ]);
         StatusList::create($validated);
+
         return redirect()->route('status-lists.index')
             ->with('success', 'Estatus creado exitosamente.');
     }
@@ -40,17 +41,18 @@ final class StatusListController extends Controller
     public function edit(StatusList $statusList): Response
     {
         return Inertia::render('StatusLists/Edit', [
-            'status' => $statusList
+            'status' => $statusList,
         ]);
     }
 
     public function update(Request $request, StatusList $statusList)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:status_lists,name,' . $statusList->id,
+            'name' => 'required|string|max:255|unique:status_lists,name,'.$statusList->id,
             'description' => 'nullable|string|max:1000',
         ]);
         $statusList->update($validated);
+
         return redirect()->route('status-lists.index')
             ->with('success', 'Estatus actualizado exitosamente.');
     }
@@ -58,7 +60,8 @@ final class StatusListController extends Controller
     public function destroy(StatusList $statusList)
     {
         $statusList->delete();
+
         return redirect()->route('status-lists.index')
             ->with('success', 'Estatus eliminado exitosamente.');
     }
-} 
+}

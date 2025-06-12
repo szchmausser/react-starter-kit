@@ -1,6 +1,6 @@
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { type FilterCriterion } from '../AdvancedSearchContainer';
 
@@ -26,7 +26,7 @@ const legalEntityOperators = [
 export function LegalEntityFilter({ criterion, onChange, onRemove }: LegalEntityFilterProps) {
     // Cuando cambia el campo seleccionado
     const handleFieldChange = (value: string) => {
-        const selectedField = legalEntityFields.find(field => field.value === value);
+        const selectedField = legalEntityFields.find((field) => field.value === value);
         onChange({
             field: value,
             label: selectedField?.label || '',
@@ -49,34 +49,29 @@ export function LegalEntityFilter({ criterion, onChange, onRemove }: LegalEntity
     // Determinar el placeholder y descripción según el campo seleccionado
     const getPlaceholder = () => {
         if (criterion.field === 'legal_entity_rif') {
-            return "J-12345678-9";
+            return 'J-12345678-9';
         }
-        return "Nombre de la empresa";
+        return 'Nombre de la empresa';
     };
 
     const getDescription = () => {
         if (criterion.field === 'legal_entity_rif') {
-            return "Busca expedientes relacionados con entidades legales por su RIF";
+            return 'Busca expedientes relacionados con entidades legales por su RIF';
         }
-        return "Busca expedientes por razón social o nombre comercial de la entidad";
+        return 'Busca expedientes por razón social o nombre comercial de la entidad';
     };
 
     return (
         <div className="grid grid-cols-1 gap-2 sm:gap-4">
-            <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">
+            <div className="mb-1 text-xs font-medium sm:mb-2 sm:text-sm">
                 Persona Jurídica
-                <span className="text-xs font-normal text-gray-500 ml-2 block sm:inline mt-1 sm:mt-0">
-                    {getDescription()}
-                </span>
+                <span className="mt-1 ml-2 block text-xs font-normal text-gray-500 sm:mt-0 sm:inline">{getDescription()}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 md:grid-cols-4">
                 <div>
-                    <Select
-                        value={criterion.field}
-                        onValueChange={handleFieldChange}
-                    >
-                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                    <Select value={criterion.field} onValueChange={handleFieldChange}>
+                        <SelectTrigger className="h-8 w-full text-xs sm:h-10 sm:text-sm">
                             <SelectValue placeholder="Seleccionar campo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -90,12 +85,8 @@ export function LegalEntityFilter({ criterion, onChange, onRemove }: LegalEntity
                 </div>
 
                 <div>
-                    <Select
-                        value={criterion.operator}
-                        onValueChange={handleOperatorChange}
-                        disabled={!criterion.field}
-                    >
-                        <SelectTrigger className="w-full text-xs sm:text-sm h-8 sm:h-10">
+                    <Select value={criterion.operator} onValueChange={handleOperatorChange} disabled={!criterion.field}>
+                        <SelectTrigger className="h-8 w-full text-xs sm:h-10 sm:text-sm">
                             <SelectValue placeholder="Seleccionar operador" />
                         </SelectTrigger>
                         <SelectContent>
@@ -108,19 +99,19 @@ export function LegalEntityFilter({ criterion, onChange, onRemove }: LegalEntity
                     </Select>
                 </div>
 
-                <div className="sm:col-span-2 flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:col-span-2">
                     <Input
                         value={criterion.value || ''}
                         onChange={handleValueChange}
                         placeholder={getPlaceholder()}
                         disabled={!criterion.field || !criterion.operator}
-                        className="flex-grow text-xs sm:text-sm h-8 sm:h-10"
+                        className="h-8 flex-grow text-xs sm:h-10 sm:text-sm"
                     />
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={onRemove}
-                        className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+                        className="h-8 w-8 flex-shrink-0 sm:h-10 sm:w-10"
                         title="Eliminar criterio"
                     >
                         <X className="h-4 w-4" />
@@ -129,4 +120,4 @@ export function LegalEntityFilter({ criterion, onChange, onRemove }: LegalEntity
             </div>
         </div>
     );
-} 
+}

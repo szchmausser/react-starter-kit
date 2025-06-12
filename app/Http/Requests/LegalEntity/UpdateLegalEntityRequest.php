@@ -25,7 +25,7 @@ class UpdateLegalEntityRequest extends FormRequest
     public function rules()
     {
         $id = $this->route('legal_entity');
-        
+
         return [
             'rif' => 'required|string|max:15|unique:legal_entities,rif,'.$id,
             'business_name' => 'required|string|max:255',
@@ -46,7 +46,7 @@ class UpdateLegalEntityRequest extends FormRequest
             'legal_representative_id' => 'nullable|exists:individuals,id',
         ];
     }
-    
+
     /**
      * Get the error messages for the defined validation rules.
      *
@@ -70,4 +70,4 @@ class UpdateLegalEntityRequest extends FormRequest
             'legal_representative_id.exists' => 'El representante legal seleccionado no existe.',
         ];
     }
-} 
+}

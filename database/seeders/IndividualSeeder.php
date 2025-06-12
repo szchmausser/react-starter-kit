@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Individual;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class IndividualSeeder extends Seeder
@@ -29,7 +28,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Av. Francisco de Miranda',
                 'city' => 'Caracas',
                 'state' => 'Distrito Capital',
-                'occupation' => 'Abogada'
+                'occupation' => 'Abogada',
             ],
             [
                 'national_id' => 'V-23456789',
@@ -46,7 +45,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Urb. El Paraíso',
                 'city' => 'Maracaibo',
                 'state' => 'Zulia',
-                'occupation' => 'Ingeniero'
+                'occupation' => 'Ingeniero',
             ],
             [
                 'national_id' => 'V-34567890',
@@ -61,7 +60,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Calle Bolívar',
                 'city' => 'Valencia',
                 'state' => 'Carabobo',
-                'occupation' => 'Médico'
+                'occupation' => 'Médico',
             ],
             [
                 'national_id' => 'V-45678909',
@@ -77,7 +76,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Urb. Las Mercedes',
                 'city' => 'Barquisimeto',
                 'state' => 'Lara',
-                'occupation' => 'Arquitecto'
+                'occupation' => 'Arquitecto',
             ],
             [
                 'national_id' => 'V-56789012',
@@ -92,7 +91,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Av. Libertador',
                 'city' => 'Mérida',
                 'state' => 'Mérida',
-                'occupation' => 'Profesor'
+                'occupation' => 'Profesor',
             ],
             [
                 'national_id' => 'V-67890123',
@@ -108,7 +107,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Urb. El Trigal',
                 'city' => 'Caracas',
                 'state' => 'Distrito Capital',
-                'occupation' => 'Abogada'
+                'occupation' => 'Abogada',
             ],
             [
                 'national_id' => 'V-78901234',
@@ -122,7 +121,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Av. Bolívar Norte',
                 'city' => 'Valencia',
                 'state' => 'Carabobo',
-                'occupation' => 'Contador'
+                'occupation' => 'Contador',
             ],
             [
                 'national_id' => 'V-89012345',
@@ -138,7 +137,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Urb. La Viña',
                 'city' => 'Maracaibo',
                 'state' => 'Zulia',
-                'occupation' => 'Psicóloga'
+                'occupation' => 'Psicóloga',
             ],
             [
                 'national_id' => 'V-90123456',
@@ -153,7 +152,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Av. Universidad',
                 'city' => 'Mérida',
                 'state' => 'Mérida',
-                'occupation' => 'Ingeniero Civil'
+                'occupation' => 'Ingeniero Civil',
             ],
             [
                 'national_id' => 'V-01234567',
@@ -168,7 +167,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Urb. El Bosque',
                 'city' => 'Barquisimeto',
                 'state' => 'Lara',
-                'occupation' => 'Dentista'
+                'occupation' => 'Dentista',
             ],
             [
                 'national_id' => 'V-98765432',
@@ -183,7 +182,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Av. Bolívar Sur',
                 'city' => 'Valencia',
                 'state' => 'Carabobo',
-                'occupation' => 'Arquitecto'
+                'occupation' => 'Arquitecto',
             ],
             [
                 'national_id' => 'V-87654321',
@@ -198,7 +197,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Urb. La Florida',
                 'city' => 'Caracas',
                 'state' => 'Distrito Capital',
-                'occupation' => 'Médico'
+                'occupation' => 'Médico',
             ],
             [
                 'national_id' => 'V-76543210',
@@ -213,7 +212,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Av. Bolívar',
                 'city' => 'Maracaibo',
                 'state' => 'Zulia',
-                'occupation' => 'Abogado'
+                'occupation' => 'Abogado',
             ],
             [
                 'national_id' => 'V-45678901',
@@ -228,7 +227,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Urb. El Trigal',
                 'city' => 'Caracas',
                 'state' => 'Distrito Capital',
-                'occupation' => 'Psicóloga'
+                'occupation' => 'Psicóloga',
             ],
             [
                 'national_id' => 'V-56789013',
@@ -243,7 +242,7 @@ class IndividualSeeder extends Seeder
                 'address_line_1' => 'Av. Universidad',
                 'city' => 'Mérida',
                 'state' => 'Mérida',
-                'occupation' => 'Ingeniero'
+                'occupation' => 'Ingeniero',
             ],
         ];
 

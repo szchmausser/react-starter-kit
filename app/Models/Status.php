@@ -28,4 +28,4 @@ final class Status extends Model
     {
         return $this->hasMany(Todo::class);
     }
-} 
+}

@@ -7,7 +7,6 @@ use App\Models\Individual;
 use App\Models\LegalCase;
 use App\Models\LegalEntity;
 use App\Models\StatusList;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class LegalCaseSeeder extends Seeder
@@ -21,6 +20,7 @@ class LegalCaseSeeder extends Seeder
         $caseTypes = CaseType::all();
         if ($caseTypes->isEmpty()) {
             $this->command->info('Se requieren tipos de casos para crear expedientes. Por favor ejecute primero CaseTypeSeeder.');
+
             return;
         }
 
@@ -28,6 +28,7 @@ class LegalCaseSeeder extends Seeder
         $individuals = Individual::all();
         if ($individuals->isEmpty()) {
             $this->command->info('Se requieren individuos para asociar a los expedientes. Por favor ejecute primero IndividualSeeder.');
+
             return;
         }
 
@@ -35,6 +36,7 @@ class LegalCaseSeeder extends Seeder
         $legalEntities = LegalEntity::all();
         if ($legalEntities->isEmpty()) {
             $this->command->info('Se requieren entidades legales para asociar a los expedientes. Por favor ejecute primero LegalEntitySeeder.');
+
             return;
         }
 
@@ -42,6 +44,7 @@ class LegalCaseSeeder extends Seeder
         $statuses = StatusList::all();
         if ($statuses->isEmpty()) {
             $this->command->info('Se requieren estados para asociar a los expedientes. Por favor ejecute primero StatusListSeeder.');
+
             return;
         }
 
@@ -52,105 +55,105 @@ class LegalCaseSeeder extends Seeder
                 'entry_date' => '2023-01-15',
                 'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
                 'sentence_date' => '2023-06-20',
-                'closing_date' => '2023-07-05'
+                'closing_date' => '2023-07-05',
             ],
             [
                 'code' => 'EXP-2023-002',
                 'entry_date' => '2023-02-10',
                 'case_type_id' => $caseTypes->where('name', 'Manutención')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-003',
                 'entry_date' => '2023-03-05',
                 'case_type_id' => $caseTypes->where('name', 'Título Supletorio')->first()->id,
                 'sentence_date' => '2023-09-15',
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-004',
                 'entry_date' => '2023-04-20',
                 'case_type_id' => $caseTypes->where('name', 'Demanda por Daños y Perjuicios')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-005',
                 'entry_date' => '2023-05-12',
                 'case_type_id' => $caseTypes->where('name', 'Partición de Herencia')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-006',
                 'entry_date' => '2023-06-18',
                 'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
                 'sentence_date' => '2023-12-10',
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-007',
                 'entry_date' => '2023-07-22',
                 'case_type_id' => $caseTypes->where('name', 'Manutención')->first()->id,
                 'sentence_date' => '2024-01-15',
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-008',
                 'entry_date' => '2023-08-05',
                 'case_type_id' => $caseTypes->where('name', 'Título Supletorio')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-009',
                 'entry_date' => '2023-09-30',
                 'case_type_id' => $caseTypes->where('name', 'Demanda por Daños y Perjuicios')->first()->id,
                 'sentence_date' => '2024-02-20',
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-010',
                 'entry_date' => '2023-10-15',
                 'case_type_id' => $caseTypes->where('name', 'Partición de Herencia')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-011',
                 'entry_date' => '2023-11-08',
                 'case_type_id' => $caseTypes->where('name', 'Divorcio')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2023-012',
                 'entry_date' => '2023-12-01',
                 'case_type_id' => $caseTypes->where('name', 'Manutención')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2024-001',
                 'entry_date' => '2024-01-15',
                 'case_type_id' => $caseTypes->where('name', 'Título Supletorio')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2024-002',
                 'entry_date' => '2024-02-20',
                 'case_type_id' => $caseTypes->where('name', 'Demanda por Daños y Perjuicios')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
             [
                 'code' => 'EXP-2024-003',
                 'entry_date' => '2024-03-10',
                 'case_type_id' => $caseTypes->where('name', 'Partición de Herencia')->first()->id,
                 'sentence_date' => null,
-                'closing_date' => null
+                'closing_date' => null,
             ],
         ];
 
@@ -171,7 +174,7 @@ class LegalCaseSeeder extends Seeder
                     $legalCase->legalEntities()->attach($legalEntity->id);
                 }
             }
-            
+
             // Asignar un estado aleatorio al caso
             $randomStatus = $statuses->random();
             $legalCase->setStatus($randomStatus->name, 'Estado inicial asignado por el seeder');
