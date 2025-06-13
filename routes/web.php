@@ -89,6 +89,9 @@ Route::patch('/legal-cases/{legalCase}/important-dates/{importantDate}/set-expir
 Route::put('/legal-cases/{legalCase}/important-dates/{importantDate}', [CaseImportantDateController::class, 'update'])->name('legal-cases.important-dates.update');
 Route::delete('/legal-cases/{legalCase}/important-dates/{importantDate}', [CaseImportantDateController::class, 'destroy'])->name('legal-cases.important-dates.destroy');
 
+// Nueva ruta para el listado de expedientes por fechas importantes
+Route::get('/legal-cases/important-dates/list', [CaseImportantDateController::class, 'indexList'])->name('legal-cases.important-dates.list');
+
 // Gestión de etiquetas de expedientes
 Route::get('/api/legal-cases/all-tags', [LegalCaseController::class, 'getAllTags'])->name('legal-cases.all-tags');
 Route::get('/legal-cases/{legalCase}/tags', [LegalCaseController::class, 'getTags'])->name('legal-cases.tags');

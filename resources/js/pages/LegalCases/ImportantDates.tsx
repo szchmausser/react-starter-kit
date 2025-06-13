@@ -175,11 +175,7 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
             breadcrumbs={breadcrumbs}
             backButton={{
                 show: true,
-                onClick: () =>
-                    router.visit(route('legal-cases.show', legalCase.id), {
-                        preserveState: false,
-                        replace: true,
-                    }),
+                onClick: () => window.history.back(),
                 label: 'Volver',
             }}
         >

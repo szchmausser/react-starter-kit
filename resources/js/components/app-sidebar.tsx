@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { TodoFloatingPanel } from '@/components/ui/TodoFloatingPanel';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Building, ChevronsUpDown, FileImage, Folder, LayoutGrid, Search, Tag, Users } from 'lucide-react';
+import { BookOpen, Building, Calendar, ChevronsUpDown, FileImage, Folder, LayoutGrid, Search, Tag, Users } from 'lucide-react';
 import { useState } from 'react';
 import AppLogo from './app-logo';
 
@@ -24,6 +24,11 @@ const mainNavItems: NavItem[] = [
         title: 'Expedientes Legales',
         href: route('legal-cases.index'),
         icon: Folder,
+    },
+    {
+        title: 'Lapsos Procesales',
+        href: route('legal-cases.important-dates.list'),
+        icon: Calendar,
     },
     {
         title: 'Personas Naturales',
