@@ -46,33 +46,37 @@ class CaseImportantDateController extends Controller
 
     public function indexList(Request $request)
     {
-        $query = LegalCase::query();
+        $caseTypes = CaseType::orderBy('name')->get(['id', 'name']);
 
-        // Filtrar por rango de fechas importantes
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $startDate = $request->input('start_date');
-            $endDate = $request->input('end_date');
+        // Obtener filtros para la sección de próximos a finalizar
+        $upcomingFilters = $request->only(['upcoming_start_date', 'upcoming_end_date', 'upcoming_case_type_id']);
+        // Obtener filtros para la sección de lapsos pasados
+        $pastDueFilters = $request->only(['past_due_start_date', 'past_due_end_date', 'past_due_case_type_id']);
 
-            $query->whereHas('importantDates', function ($q) use ($startDate, $endDate) {
+        // Query para lapsos procesales próximos a finalizar
+        $queryUpcoming = LegalCase::query();
+
+        if ($request->has('upcoming_start_date') && $request->has('upcoming_end_date')) {
+            $startDate = $request->input('upcoming_start_date');
+            $endDate = $request->input('upcoming_end_date');
+
+            $queryUpcoming->whereHas('importantDates', function ($q) use ($startDate, $endDate) {
                 $q->where('is_expired', false)
                     ->whereDate('end_date', '>=', $startDate)
                     ->whereDate('end_date', '<=', $endDate);
             });
         } else {
-            // Si no hay rango de fechas, solo mostrar las fechas no expiradas y futuras
-            $query->whereHas('importantDates', function ($q) {
+            $queryUpcoming->whereHas('importantDates', function ($q) {
                 $q->where('is_expired', false)
                     ->whereDate('end_date', '>=', now()->toDateString());
             });
         }
 
-        // Filtrar por tipo de expediente
-        if ($request->has('case_type_id') && $request->input('case_type_id') && $request->input('case_type_id') !== 'all') {
-            $query->where('case_type_id', $request->input('case_type_id'));
+        if ($request->filled('upcoming_case_type_id') && $request->input('upcoming_case_type_id') !== 'all') {
+            $queryUpcoming->where('case_type_id', $request->input('upcoming_case_type_id'));
         }
 
-        // Cargar la relación caseType y la próxima fecha importante
-        $legalCases = $query->with([
+        $legalCasesUpcoming = $queryUpcoming->with([
             'caseType',
             'importantDates' => function ($q) {
                 $q->where('is_expired', false)
@@ -93,7 +97,7 @@ class CaseImportantDateController extends Controller
                     ->orderBy('end_date')
                     ->limit(1)
             )
-            ->paginate(10) // Paginación de 10 elementos por página
+            ->paginate(10, ['*'], 'upcoming_page')
             ->through(function ($legalCase) {
                 $nextImportantDate = $legalCase->importantDates->first();
 
@@ -112,12 +116,81 @@ class CaseImportantDateController extends Controller
                 ];
             });
 
-        $caseTypes = CaseType::orderBy('name')->get(['id', 'name']);
+        // Query para lapsos procesales pasados
+        $queryPastDue = LegalCase::query();
+
+        if ($request->has('past_due_start_date') && $request->has('past_due_end_date')) {
+            $startDate = $request->input('past_due_start_date');
+            $endDate = $request->input('past_due_end_date');
+
+            $queryPastDue->whereHas('importantDates', function ($q) use ($startDate, $endDate) {
+                $q->where('is_expired', false)
+                    ->whereDate('end_date', '<', $startDate)
+                    ->whereDate('end_date', '>=', $endDate);
+            });
+        } else {
+            $queryPastDue->whereHas('importantDates', function ($q) {
+                $q->where('is_expired', false)
+                    ->whereDate('end_date', '<', now()->toDateString());
+            });
+        }
+
+        if ($request->filled('past_due_case_type_id') && $request->input('past_due_case_type_id') !== 'all') {
+            $queryPastDue->where('case_type_id', $request->input('past_due_case_type_id'));
+        }
+
+        $legalCasesPastDue = $queryPastDue->with([
+            'caseType',
+            'importantDates' => function ($q) {
+                $q->where('is_expired', false)
+                    ->whereDate('end_date', '<', now()->toDateString())
+                    ->orderByDesc('end_date')
+                    ->limit(1);
+            },
+        ])
+            ->whereHas('importantDates', function ($q) {
+                $q->where('is_expired', false)
+                    ->whereDate('end_date', '<', now()->toDateString());
+            })
+            ->orderByDesc(
+                CaseImportantDate::select('end_date')
+                    ->whereColumn('legal_case_id', 'legal_cases.id')
+                    ->where('is_expired', false)
+                    ->whereDate('end_date', '<', now()->toDateString())
+                    ->orderByDesc('end_date')
+                    ->limit(1)
+            )
+            ->paginate(10, ['*'], 'past_due_page')
+            ->through(function ($legalCase) {
+                $nextImportantDate = $legalCase->importantDates->first();
+
+                return [
+                    'id' => $legalCase->id,
+                    'code' => $legalCase->code,
+                    'case_type' => [
+                        'id' => $legalCase->caseType->id,
+                        'name' => $legalCase->caseType->name,
+                    ],
+                    'next_important_date' => $nextImportantDate ? [
+                        'id' => $nextImportantDate->id,
+                        'title' => $nextImportantDate->title,
+                        'end_date' => $nextImportantDate->end_date?->toDateString(),
+                    ] : null,
+                ];
+            });
 
         return Inertia::render('LegalCases/ImportantDatesIndex', [
-            'legalCases' => $legalCases,
+            'legalCasesUpcoming' => $legalCasesUpcoming,
+            'legalCasesPastDue' => $legalCasesPastDue,
             'caseTypes' => $caseTypes,
-            'filters' => $request->only(['start_date', 'end_date', 'case_type_id']),
+            'filters' => $request->only([
+                'upcoming_start_date',
+                'upcoming_end_date',
+                'upcoming_case_type_id',
+                'past_due_start_date',
+                'past_due_end_date',
+                'past_due_case_type_id',
+            ]),
         ]);
     }
 
