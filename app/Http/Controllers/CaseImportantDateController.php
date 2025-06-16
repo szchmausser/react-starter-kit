@@ -8,6 +8,7 @@ use App\Models\LegalCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia; // Importar CaseType
+use Carbon\Carbon;
 
 class CaseImportantDateController extends Controller
 {
@@ -18,9 +19,12 @@ class CaseImportantDateController extends Controller
             ->orderBy('end_date')
             ->get();
 
+        // Ajustamos la consulta para usar la fecha actual en la zona horaria local
+        $localToday = Carbon::now()->setTimezone(config('app.local_timezone', 'America/Caracas'))->startOfDay();
+
         $nextImportantDate = $legalCase->importantDates()
             ->where('is_expired', false)
-            ->whereDate('end_date', '>=', now()->toDateString())
+            ->whereDate('end_date', '>=', $localToday->toDateString())
             ->orderBy('end_date')
             ->first();
 
@@ -48,6 +52,10 @@ class CaseImportantDateController extends Controller
     {
         $caseTypes = CaseType::orderBy('name')->get(['id', 'name']);
 
+        // Obtenemos la fecha actual en la zona horaria local y la normalizamos a inicio del día
+        $localToday = Carbon::now()->setTimezone(config('app.local_timezone', 'America/Caracas'))->startOfDay();
+        $localTodayString = $localToday->toDateString();
+
         // Obtener filtros para la sección de próximos a finalizar
         $upcomingFilters = $request->only(['upcoming_start_date', 'upcoming_end_date', 'upcoming_case_type_id']);
         // Obtener filtros para la sección de lapsos pasados
@@ -55,6 +63,9 @@ class CaseImportantDateController extends Controller
 
         // Query para lapsos procesales próximos a finalizar
         $queryUpcoming = LegalCase::query();
+
+        // Excluimos los casos que tienen fecha de cierre definida
+        $queryUpcoming->whereNull('closing_date');
 
         if ($request->has('upcoming_start_date') && $request->has('upcoming_end_date')) {
             $startDate = $request->input('upcoming_start_date');
@@ -66,9 +77,9 @@ class CaseImportantDateController extends Controller
                     ->whereDate('end_date', '<=', $endDate);
             });
         } else {
-            $queryUpcoming->whereHas('importantDates', function ($q) {
+            $queryUpcoming->whereHas('importantDates', function ($q) use ($localTodayString) {
                 $q->where('is_expired', false)
-                    ->whereDate('end_date', '>=', now()->toDateString());
+                    ->whereDate('end_date', '>=', $localTodayString);
             });
         }
 
@@ -78,28 +89,33 @@ class CaseImportantDateController extends Controller
 
         $legalCasesUpcoming = $queryUpcoming->with([
             'caseType',
-            'importantDates' => function ($q) {
+            'importantDates' => function ($q) use ($localTodayString) {
                 $q->where('is_expired', false)
-                    ->whereDate('end_date', '>=', now()->toDateString())
+                    ->whereDate('end_date', '>=', $localTodayString)
                     ->orderBy('end_date')
                     ->limit(1);
             },
         ])
-            ->whereHas('importantDates', function ($q) {
+            ->whereHas('importantDates', function ($q) use ($localTodayString) {
                 $q->where('is_expired', false)
-                    ->whereDate('end_date', '>=', now()->toDateString());
+                    ->whereDate('end_date', '>=', $localTodayString);
             })
             ->orderBy(
                 CaseImportantDate::select('end_date')
                     ->whereColumn('legal_case_id', 'legal_cases.id')
                     ->where('is_expired', false)
-                    ->whereDate('end_date', '>=', now()->toDateString())
+                    ->whereDate('end_date', '>=', $localTodayString)
                     ->orderBy('end_date')
                     ->limit(1)
             )
             ->paginate(10, ['*'], 'upcoming_page')
             ->through(function ($legalCase) {
                 $nextImportantDate = $legalCase->importantDates->first();
+
+                // Si no hay fecha importante, no incluimos este caso
+                if (!$nextImportantDate) {
+                    return null;
+                }
 
                 return [
                     'id' => $legalCase->id,
@@ -108,17 +124,25 @@ class CaseImportantDateController extends Controller
                         'id' => $legalCase->caseType->id,
                         'name' => $legalCase->caseType->name,
                     ],
-                    'next_important_date' => $nextImportantDate ? [
+                    'next_important_date' => [
                         'id' => $nextImportantDate->id,
                         'title' => $nextImportantDate->title,
                         'start_date' => $nextImportantDate->start_date?->toDateString(),
                         'end_date' => $nextImportantDate->end_date?->toDateString(),
-                    ] : null,
+                    ],
                 ];
             });
 
+        // Filtramos los casos nulos (sin fechas importantes)
+        $legalCasesUpcoming = $legalCasesUpcoming->setCollection(
+            $legalCasesUpcoming->getCollection()->filter()->values()
+        );
+
         // Query para lapsos procesales pasados
         $queryPastDue = LegalCase::query();
+
+        // Excluimos los casos que tienen fecha de cierre definida
+        $queryPastDue->whereNull('closing_date');
 
         if ($request->has('past_due_start_date') && $request->has('past_due_end_date')) {
             $startDate = $request->input('past_due_start_date');
@@ -130,9 +154,9 @@ class CaseImportantDateController extends Controller
                     ->whereDate('end_date', '>=', $endDate);
             });
         } else {
-            $queryPastDue->whereHas('importantDates', function ($q) {
+            $queryPastDue->whereHas('importantDates', function ($q) use ($localTodayString) {
                 $q->where('is_expired', false)
-                    ->whereDate('end_date', '<', now()->toDateString());
+                    ->whereDate('end_date', '<', $localTodayString);
             });
         }
 
@@ -142,28 +166,33 @@ class CaseImportantDateController extends Controller
 
         $legalCasesPastDue = $queryPastDue->with([
             'caseType',
-            'importantDates' => function ($q) {
+            'importantDates' => function ($q) use ($localTodayString) {
                 $q->where('is_expired', false)
-                    ->whereDate('end_date', '<', now()->toDateString())
+                    ->whereDate('end_date', '<', $localTodayString)
                     ->orderByDesc('end_date')
                     ->limit(1);
             },
         ])
-            ->whereHas('importantDates', function ($q) {
+            ->whereHas('importantDates', function ($q) use ($localTodayString) {
                 $q->where('is_expired', false)
-                    ->whereDate('end_date', '<', now()->toDateString());
+                    ->whereDate('end_date', '<', $localTodayString);
             })
             ->orderByDesc(
                 CaseImportantDate::select('end_date')
                     ->whereColumn('legal_case_id', 'legal_cases.id')
                     ->where('is_expired', false)
-                    ->whereDate('end_date', '<', now()->toDateString())
+                    ->whereDate('end_date', '<', $localTodayString)
                     ->orderByDesc('end_date')
                     ->limit(1)
             )
             ->paginate(10, ['*'], 'past_due_page')
             ->through(function ($legalCase) {
                 $nextImportantDate = $legalCase->importantDates->first();
+
+                // Si no hay fecha importante, no incluimos este caso
+                if (!$nextImportantDate) {
+                    return null;
+                }
 
                 return [
                     'id' => $legalCase->id,
@@ -172,14 +201,19 @@ class CaseImportantDateController extends Controller
                         'id' => $legalCase->caseType->id,
                         'name' => $legalCase->caseType->name,
                     ],
-                    'next_important_date' => $nextImportantDate ? [
+                    'next_important_date' => [
                         'id' => $nextImportantDate->id,
                         'title' => $nextImportantDate->title,
                         'start_date' => $nextImportantDate->start_date?->toDateString(),
                         'end_date' => $nextImportantDate->end_date?->toDateString(),
-                    ] : null,
+                    ],
                 ];
             });
+
+        // Filtramos los casos nulos (sin fechas importantes)
+        $legalCasesPastDue = $legalCasesPastDue->setCollection(
+            $legalCasesPastDue->getCollection()->filter()->values()
+        );
 
         return Inertia::render('LegalCases/ImportantDatesIndex', [
             'legalCasesUpcoming' => $legalCasesUpcoming,

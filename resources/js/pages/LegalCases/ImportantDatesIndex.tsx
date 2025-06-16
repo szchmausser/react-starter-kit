@@ -88,6 +88,39 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
         },
     ];
 
+    // Función para determinar el estado y estilo del badge basado en la fecha final
+    const getStatusBadge = (end_date: string) => {
+        // Parsear end_date como local (no UTC)
+        let end;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
+            const [year, month, day] = end_date.split('-').map(Number);
+            end = new Date(year, month - 1, day);
+        } else {
+            end = new Date(end_date);
+        }
+
+        const today = new Date();
+        const todayYMD = [today.getFullYear(), today.getMonth(), today.getDate()];
+        const endYMD = [end.getFullYear(), end.getMonth(), end.getDate()];
+
+        const isEndBeforeToday =
+            endYMD[0] < todayYMD[0] ||
+            (endYMD[0] === todayYMD[0] && endYMD[1] < todayYMD[1]) ||
+            (endYMD[0] === todayYMD[0] && endYMD[1] === todayYMD[1] && endYMD[2] < todayYMD[2]);
+
+        if (isEndBeforeToday) {
+            return {
+                label: 'Transcurrido',
+                color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+            };
+        }
+
+        return {
+            label: 'En curso',
+            color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+        };
+    };
+
     const handleSearch = (pageName?: string) => {
         const filtersToSend: Filters = {};
 
@@ -222,9 +255,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                     </Select>
                                 </div>
 
-                                {/* Fecha de inicio */}
+                                {/* Fecha final del lapso procesal (desde) */}
                                 <div>
-                                    <Label htmlFor="upcoming_start_date">Fecha de inicio</Label>
+                                    <Label htmlFor="upcoming_start_date">Finalización del lapso (desde)</Label>
                                     <Input
                                         id="upcoming_start_date"
                                         type="date"
@@ -234,9 +267,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                     />
                                 </div>
 
-                                {/* Fecha de fin */}
+                                {/* Fecha final del lapso procesal (hasta) */}
                                 <div>
-                                    <Label htmlFor="upcoming_end_date">Fecha de fin</Label>
+                                    <Label htmlFor="upcoming_end_date">Finalización del lapso (hasta)</Label>
                                     <Input
                                         id="upcoming_end_date"
                                         type="date"
@@ -259,71 +292,154 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                         </div>
 
                         {/* Lista de expedientes con fechas importantes */}
-                        <div className="overflow-x-auto rounded-lg">
-                            <table className="w-full table-auto border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-400">
-                                        <th className="px-6 py-3">Código</th>
-                                        <th className="px-6 py-3">Tipo de expediente</th>
-                                        <th className="px-6 py-3">Fecha de inicio del lapso procesal</th>
-                                        <th className="px-6 py-3">Fecha final del lapso procesal</th>
-                                        <th className="px-6 py-3">Descripción del lapso procesal</th>
-                                        <th className="px-6 py-3">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
-                                    {legalCasesUpcoming.data.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                                No se encontraron expedientes con fechas importantes
-                                            </td>
+                        <div className="hidden md:block">
+                            {' '}
+                            {/* Tabla para pantallas grandes */}
+                            <div className="overflow-x-auto rounded-lg">
+                                <table className="w-full table-auto border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-400">
+                                            <th className="px-6 py-3">Código</th>
+                                            <th className="px-6 py-3">Tipo de expediente</th>
+                                            <th className="px-6 py-3">Fecha de inicio del lapso procesal</th>
+                                            <th className="px-6 py-3">Fecha final del lapso procesal</th>
+                                            <th className="px-6 py-3">Estado</th>
+                                            <th className="px-6 py-3">Descripción del lapso procesal</th>
+                                            <th className="px-6 py-3">Acciones</th>
                                         </tr>
-                                    ) : (
-                                        legalCasesUpcoming.data.map((legalCase) => (
-                                            <tr key={legalCase.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800">
-                                                <td className="px-6 py-4 font-medium whitespace-nowrap">
-                                                    <Link
-                                                        href={route('legal-cases.show', legalCase.id)}
-                                                        className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                                                    >
-                                                        {legalCase.code}
-                                                    </Link>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
+                                        {legalCasesUpcoming.data.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                                    No se encontraron expedientes con fechas importantes
                                                 </td>
-                                                <td className="px-6 py-4">{legalCase.case_type.name}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {legalCase.next_important_date ? (
-                                                        formatDateSafe(legalCase.next_important_date.start_date)
-                                                    ) : (
-                                                        <span className="text-gray-500 dark:text-gray-400">N/A</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {legalCase.next_important_date ? (
-                                                        formatDateSafe(legalCase.next_important_date.end_date)
-                                                    ) : (
-                                                        <span className="text-gray-500 dark:text-gray-400">N/A</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {legalCase.next_important_date ? (
-                                                        legalCase.next_important_date.title
-                                                    ) : (
-                                                        <span className="text-gray-500 dark:text-gray-400">N/A</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
+                                            </tr>
+                                        ) : (
+                                            legalCasesUpcoming.data.map((legalCase) => {
+                                                // Si el caso no tiene una fecha importante definida, no lo mostramos
+                                                if (!legalCase.next_important_date) {
+                                                    return null;
+                                                }
+
+                                                const statusBadge = getStatusBadge(legalCase.next_important_date.end_date);
+
+                                                return (
+                                                    <tr key={legalCase.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                                        <td className="px-6 py-4 font-medium whitespace-nowrap">
+                                                            <Link
+                                                                href={route('legal-cases.show', legalCase.id)}
+                                                                className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                                            >
+                                                                {legalCase.code}
+                                                            </Link>
+                                                        </td>
+                                                        <td className="px-6 py-4">{legalCase.case_type.name}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {legalCase.next_important_date ? (
+                                                                formatDateSafe(legalCase.next_important_date.start_date)
+                                                            ) : (
+                                                                <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {legalCase.next_important_date ? (
+                                                                formatDateSafe(legalCase.next_important_date.end_date)
+                                                            ) : (
+                                                                <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            {legalCase.next_important_date ? (
+                                                                <span className={`rounded-full px-2 py-1 text-xs font-medium ${statusBadge.color}`}>
+                                                                    {statusBadge.label}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            {legalCase.next_important_date ? (
+                                                                legalCase.next_important_date.title
+                                                            ) : (
+                                                                <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <Link
+                                                                href={route('legal-cases.important-dates.index', legalCase.id)}
+                                                                className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                                            >
+                                                                Ver detalles
+                                                            </Link>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div className="md:hidden">
+                            {' '}
+                            {/* Tarjetas para pantallas pequeñas */}
+                            {legalCasesUpcoming.data.length === 0 ? (
+                                <p className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                    No se encontraron expedientes con fechas importantes
+                                </p>
+                            ) : (
+                                <div className="grid gap-4">
+                                    {' '}
+                                    {/* Contenedor para las tarjetas */}
+                                    {legalCasesUpcoming.data.map((legalCase) => {
+                                        if (!legalCase.next_important_date) {
+                                            return null;
+                                        }
+                                        const statusBadge = getStatusBadge(legalCase.next_important_date.end_date);
+                                        return (
+                                            <div key={legalCase.id} className="rounded-lg border p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+                                                <div className="mb-2 flex items-center justify-between">
+                                                    <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                                        <Link href={route('legal-cases.show', legalCase.id)}>{legalCase.code}</Link>
+                                                    </h3>
+                                                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${statusBadge.color}`}>
+                                                        {statusBadge.label}
+                                                    </span>
+                                                </div>
+                                                <div className="text-sm text-gray-600 dark:text-gray-300">
+                                                    <p className="mb-1">
+                                                        <span className="font-medium">Tipo de expediente:</span> {legalCase.case_type.name}
+                                                    </p>
+                                                    <p className="mb-1">
+                                                        <span className="font-medium">Lapso Procesal:</span>{' '}
+                                                        {legalCase.next_important_date ? (
+                                                            `${formatDateSafe(legalCase.next_important_date.start_date)} - ${formatDateSafe(legalCase.next_important_date.end_date)}`
+                                                        ) : (
+                                                            <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                        )}
+                                                    </p>
+                                                    <p className="mb-2">
+                                                        <span className="font-medium">Descripción:</span>{' '}
+                                                        {legalCase.next_important_date ? (
+                                                            legalCase.next_important_date.title
+                                                        ) : (
+                                                            <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                        )}
+                                                    </p>
                                                     <Link
                                                         href={route('legal-cases.important-dates.index', legalCase.id)}
                                                         className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                                                     >
                                                         Ver detalles
                                                     </Link>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Paginación */}
@@ -378,9 +494,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                             </Select>
                                         </div>
 
-                                        {/* Fecha de inicio */}
+                                        {/* Fecha final del lapso procesal (desde) */}
                                         <div>
-                                            <Label htmlFor="past_due_start_date">Fecha de inicio</Label>
+                                            <Label htmlFor="past_due_start_date">Finalización del lapso (desde)</Label>
                                             <Input
                                                 id="past_due_start_date"
                                                 type="date"
@@ -390,9 +506,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                             />
                                         </div>
 
-                                        {/* Fecha de fin */}
+                                        {/* Fecha final del lapso procesal (hasta) */}
                                         <div>
-                                            <Label htmlFor="past_due_end_date">Fecha de fin</Label>
+                                            <Label htmlFor="past_due_end_date">Finalización del lapso (hasta)</Label>
                                             <Input
                                                 id="past_due_end_date"
                                                 type="date"
@@ -414,71 +530,166 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                     </div>
                                 </div>
 
-                                <div className="overflow-x-auto rounded-lg">
-                                    <table className="w-full table-auto border-collapse">
-                                        <thead>
-                                            <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-400">
-                                                <th className="px-6 py-3">Código</th>
-                                                <th className="px-6 py-3">Tipo de expediente</th>
-                                                <th className="px-6 py-3">Fecha de inicio del lapso procesal</th>
-                                                <th className="px-6 py-3">Fecha final del lapso procesal</th>
-                                                <th className="px-6 py-3">Descripción del lapso procesal</th>
-                                                <th className="px-6 py-3">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
-                                            {legalCasesPastDue.data.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                                        No se encontraron expedientes con lapsos procesales pasados
-                                                    </td>
+                                <div className="hidden md:block">
+                                    {' '}
+                                    {/* Tabla para pantallas grandes */}
+                                    <div className="overflow-x-auto rounded-lg">
+                                        <table className="w-full table-auto border-collapse">
+                                            <thead>
+                                                <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-400">
+                                                    <th className="px-6 py-3">Código</th>
+                                                    <th className="px-6 py-3">Tipo de expediente</th>
+                                                    <th className="px-6 py-3">Fecha de inicio del lapso procesal</th>
+                                                    <th className="px-6 py-3">Fecha final del lapso procesal</th>
+                                                    <th className="px-6 py-3">Estado</th>
+                                                    <th className="px-6 py-3">Descripción del lapso procesal</th>
+                                                    <th className="px-6 py-3">Acciones</th>
                                                 </tr>
-                                            ) : (
-                                                legalCasesPastDue.data.map((legalCase) => (
-                                                    <tr key={legalCase.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800">
-                                                        <td className="px-6 py-4 font-medium whitespace-nowrap">
-                                                            <Link
-                                                                href={route('legal-cases.show', legalCase.id)}
-                                                                className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                                                            >
-                                                                {legalCase.code}
-                                                            </Link>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
+                                                {legalCasesPastDue.data.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                                            No se encontraron expedientes con lapsos procesales pasados
                                                         </td>
-                                                        <td className="px-6 py-4">{legalCase.case_type.name}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {legalCase.next_important_date ? (
-                                                                formatDateSafe(legalCase.next_important_date.start_date)
-                                                            ) : (
-                                                                <span className="text-gray-500 dark:text-gray-400">N/A</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {legalCase.next_important_date ? (
-                                                                formatDateSafe(legalCase.next_important_date.end_date)
-                                                            ) : (
-                                                                <span className="text-gray-500 dark:text-gray-400">N/A</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            {legalCase.next_important_date ? (
-                                                                legalCase.next_important_date.title
-                                                            ) : (
-                                                                <span className="text-gray-500 dark:text-gray-400">N/A</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                    </tr>
+                                                ) : (
+                                                    legalCasesPastDue.data.map((legalCase) => {
+                                                        // Si el caso no tiene una fecha importante definida, no lo mostramos
+                                                        if (!legalCase.next_important_date) {
+                                                            return null;
+                                                        }
+
+                                                        // Para los lapsos pasados, siempre mostramos el badge "Transcurrido"
+                                                        const statusBadge = {
+                                                            label: 'Transcurrido',
+                                                            color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+                                                        };
+
+                                                        return (
+                                                            <tr key={legalCase.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                                                <td className="px-6 py-4 font-medium whitespace-nowrap">
+                                                                    <Link
+                                                                        href={route('legal-cases.show', legalCase.id)}
+                                                                        className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                                                    >
+                                                                        {legalCase.code}
+                                                                    </Link>
+                                                                </td>
+                                                                <td className="px-6 py-4">{legalCase.case_type.name}</td>
+                                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                                    {legalCase.next_important_date ? (
+                                                                        formatDateSafe(legalCase.next_important_date.start_date)
+                                                                    ) : (
+                                                                        <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                                    {legalCase.next_important_date ? (
+                                                                        formatDateSafe(legalCase.next_important_date.end_date)
+                                                                    ) : (
+                                                                        <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4">
+                                                                    {legalCase.next_important_date ? (
+                                                                        <span
+                                                                            className={`rounded-full px-2 py-1 text-xs font-medium ${statusBadge.color}`}
+                                                                        >
+                                                                            {statusBadge.label}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4">
+                                                                    {legalCase.next_important_date ? (
+                                                                        legalCase.next_important_date.title
+                                                                    ) : (
+                                                                        <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                                    <Link
+                                                                        href={route('legal-cases.important-dates.index', legalCase.id)}
+                                                                        className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                                                    >
+                                                                        Ver detalles
+                                                                    </Link>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div className="md:hidden">
+                                    {' '}
+                                    {/* Tarjetas para pantallas pequeñas */}
+                                    {legalCasesPastDue.data.length === 0 ? (
+                                        <p className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                            No se encontraron expedientes con lapsos procesales pasados
+                                        </p>
+                                    ) : (
+                                        <div className="grid gap-4">
+                                            {' '}
+                                            {/* Contenedor para las tarjetas */}
+                                            {legalCasesPastDue.data.map((legalCase) => {
+                                                if (!legalCase.next_important_date) {
+                                                    return null;
+                                                }
+                                                const statusBadge = {
+                                                    label: 'Transcurrido',
+                                                    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+                                                };
+                                                return (
+                                                    <div
+                                                        key={legalCase.id}
+                                                        className="rounded-lg border p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
+                                                    >
+                                                        <div className="mb-2 flex items-center justify-between">
+                                                            <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                                                <Link href={route('legal-cases.show', legalCase.id)}>{legalCase.code}</Link>
+                                                            </h3>
+                                                            <span className={`rounded-full px-2 py-1 text-xs font-medium ${statusBadge.color}`}>
+                                                                {statusBadge.label}
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                                                            <p className="mb-1">
+                                                                <span className="font-medium">Tipo de expediente:</span> {legalCase.case_type.name}
+                                                            </p>
+                                                            <p className="mb-1">
+                                                                <span className="font-medium">Lapso Procesal:</span>{' '}
+                                                                {legalCase.next_important_date ? (
+                                                                    `${formatDateSafe(legalCase.next_important_date.start_date)} - ${formatDateSafe(legalCase.next_important_date.end_date)}`
+                                                                ) : (
+                                                                    <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                                )}
+                                                            </p>
+                                                            <p className="mb-2">
+                                                                <span className="font-medium">Descripción:</span>{' '}
+                                                                {legalCase.next_important_date ? (
+                                                                    legalCase.next_important_date.title
+                                                                ) : (
+                                                                    <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                                )}
+                                                            </p>
                                                             <Link
                                                                 href={route('legal-cases.important-dates.index', legalCase.id)}
                                                                 className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                                                             >
                                                                 Ver detalles
                                                             </Link>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Paginación para Lapsos Procesales Pasados */}
