@@ -17,6 +17,7 @@ interface CaseType {
 interface ImportantDate {
     id: number;
     title: string;
+    start_date: string;
     end_date: string;
 }
 
@@ -34,6 +35,8 @@ interface Filters {
     past_due_start_date?: string;
     past_due_end_date?: string;
     past_due_case_type_id?: string;
+    upcoming_page?: string;
+    past_due_page?: string;
     [key: string]: string | undefined;
 }
 
@@ -109,10 +112,10 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
         }
 
         if (pageName === 'upcoming_page') {
-            filtersToSend.upcoming_page = legalCasesUpcoming.current_page;
+            filtersToSend.upcoming_page = legalCasesUpcoming.current_page.toString();
         }
         if (pageName === 'past_due_page') {
-            filtersToSend.past_due_page = legalCasesPastDue.current_page;
+            filtersToSend.past_due_page = legalCasesPastDue.current_page.toString();
         }
 
         router.get(route('legal-cases.important-dates.list'), filtersToSend, {
@@ -137,7 +140,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
             }
             // También mantener la paginación de la sección no afectada
             if (legalCasesPastDue.current_page) {
-                filtersToSend.past_due_page = legalCasesPastDue.current_page;
+                filtersToSend.past_due_page = legalCasesPastDue.current_page.toString();
             }
         } else if (section === 'past_due') {
             if (filterData.upcoming_start_date) {
@@ -151,7 +154,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
             }
             // También mantener la paginación de la sección no afectada
             if (legalCasesUpcoming.current_page) {
-                filtersToSend.upcoming_page = legalCasesUpcoming.current_page;
+                filtersToSend.upcoming_page = legalCasesUpcoming.current_page.toString();
             }
         }
 
@@ -262,6 +265,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                     <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-400">
                                         <th className="px-6 py-3">Código</th>
                                         <th className="px-6 py-3">Tipo de expediente</th>
+                                        <th className="px-6 py-3">Fecha de inicio del lapso procesal</th>
                                         <th className="px-6 py-3">Fecha final del lapso procesal</th>
                                         <th className="px-6 py-3">Descripción del lapso procesal</th>
                                         <th className="px-6 py-3">Acciones</th>
@@ -270,7 +274,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                 <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
                                     {legalCasesUpcoming.data.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                            <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                                 No se encontraron expedientes con fechas importantes
                                             </td>
                                         </tr>
@@ -286,6 +290,13 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                     </Link>
                                                 </td>
                                                 <td className="px-6 py-4">{legalCase.case_type.name}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {legalCase.next_important_date ? (
+                                                        formatDateSafe(legalCase.next_important_date.start_date)
+                                                    ) : (
+                                                        <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                    )}
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {legalCase.next_important_date ? (
                                                         formatDateSafe(legalCase.next_important_date.end_date)
@@ -409,6 +420,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                             <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-400">
                                                 <th className="px-6 py-3">Código</th>
                                                 <th className="px-6 py-3">Tipo de expediente</th>
+                                                <th className="px-6 py-3">Fecha de inicio del lapso procesal</th>
                                                 <th className="px-6 py-3">Fecha final del lapso procesal</th>
                                                 <th className="px-6 py-3">Descripción del lapso procesal</th>
                                                 <th className="px-6 py-3">Acciones</th>
@@ -417,7 +429,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                         <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
                                             {legalCasesPastDue.data.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                                         No se encontraron expedientes con lapsos procesales pasados
                                                     </td>
                                                 </tr>
@@ -433,6 +445,13 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                             </Link>
                                                         </td>
                                                         <td className="px-6 py-4">{legalCase.case_type.name}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {legalCase.next_important_date ? (
+                                                                formatDateSafe(legalCase.next_important_date.start_date)
+                                                            ) : (
+                                                                <span className="text-gray-500 dark:text-gray-400">N/A</span>
+                                                            )}
+                                                        </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
                                                             {legalCase.next_important_date ? (
                                                                 formatDateSafe(legalCase.next_important_date.end_date)

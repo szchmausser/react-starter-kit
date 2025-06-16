@@ -254,15 +254,16 @@ export default function ImportantDates({ legalCase, importantDates, nextImportan
                                                     <span className={`rounded-full px-2 py-1 text-xs font-medium ${status.color}`}>
                                                         {status.label}
                                                     </span>
+                                                    <span className="ml-2 flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                                        <Calendar className="h-4 w-4" /> {formatDateSafe(date.end_date)}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-2 flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400">
+                                                    <span>Inicio: {formatDateSafe(date.start_date)}</span>
+                                                    <span>Fin: {formatDateSafe(date.end_date)}</span>
                                                 </div>
                                                 {date.description && (
-                                                    <>
-                                                        <div className="mt-2 flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400">
-                                                            <span>Inicio: {formatDateSafe(date.start_date)}</span>
-                                                            <span>Fin: {formatDateSafe(date.end_date)}</span>
-                                                        </div>
-                                                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{date.description}</p>
-                                                    </>
+                                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{date.description}</p>
                                                 )}
                                                 <div className="mt-2 flex flex-col gap-y-1 text-sm text-gray-500 dark:text-gray-400">
                                                     <span>Creado por: {date.created_by && date.created_by.name ? date.created_by.name : 'N/A'}</span>

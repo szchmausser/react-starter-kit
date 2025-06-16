@@ -111,6 +111,7 @@ class CaseImportantDateController extends Controller
                     'next_important_date' => $nextImportantDate ? [
                         'id' => $nextImportantDate->id,
                         'title' => $nextImportantDate->title,
+                        'start_date' => $nextImportantDate->start_date?->toDateString(),
                         'end_date' => $nextImportantDate->end_date?->toDateString(),
                     ] : null,
                 ];
@@ -174,6 +175,7 @@ class CaseImportantDateController extends Controller
                     'next_important_date' => $nextImportantDate ? [
                         'id' => $nextImportantDate->id,
                         'title' => $nextImportantDate->title,
+                        'start_date' => $nextImportantDate->start_date?->toDateString(),
                         'end_date' => $nextImportantDate->end_date?->toDateString(),
                     ] : null,
                 ];
