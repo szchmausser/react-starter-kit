@@ -1,3 +1,4 @@
+import LaravelPagination from '@/components/LaravelPagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,9 +7,8 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDateSafe } from '@/lib/utils';
 import { type BreadcrumbItem, type PageProps } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ChevronDown, ChevronUp, Filter, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp, Filter } from 'lucide-react';
 import { useState } from 'react';
-import LaravelPagination from '@/components/LaravelPagination';
 
 interface CaseType {
     id: number;
@@ -38,7 +38,8 @@ interface Filters {
     past_due_case_type_id?: string;
     upcoming_page?: string;
     past_due_page?: string;
-    per_page?: string;
+    upcoming_per_page?: string;
+    past_due_per_page?: string;
     [key: string]: string | undefined;
 }
 
@@ -77,7 +78,8 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
         past_due_case_type_id: filters.past_due_case_type_id || 'all',
     });
 
-    const [pageSize, setPageSize] = useState<number>(filters.per_page ? parseInt(filters.per_page, 10) : 10);
+    const [upcomingPageSize, setUpcomingPageSize] = useState<number>(filters.upcoming_per_page ? parseInt(filters.upcoming_per_page, 10) : 10);
+    const [pastDuePageSize, setPastDuePageSize] = useState<number>(filters.past_due_per_page ? parseInt(filters.past_due_per_page, 10) : 10);
     const [showPastDueSection, setShowPastDueSection] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
 
@@ -211,10 +213,10 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
         });
     };
 
-    // Función para manejar el cambio de tamaño de página
-    const handlePerPageChange = (value: string) => {
+    // Función para manejar el cambio de tamaño de página para lapsos próximos
+    const handleUpcomingPerPageChange = (value: string) => {
         const newPerPage = parseInt(value, 10);
-        setPageSize(newPerPage);
+        setUpcomingPageSize(newPerPage);
 
         // Obtener todos los parámetros actuales para preservar los filtros
         const params: Filters = {};
@@ -238,8 +240,56 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
             params.past_due_case_type_id = filterData.past_due_case_type_id;
         }
 
-        // Añadir el parámetro per_page
-        params.per_page = newPerPage.toString();
+        // Preservar el tamaño de página de la otra tabla
+        if (pastDuePageSize !== 10) {
+            params.past_due_per_page = pastDuePageSize.toString();
+        }
+
+        // Añadir el parámetro per_page y resetear la página a 1 solo para la tabla de próximos
+        params.upcoming_per_page = newPerPage.toString();
+        params.upcoming_page = '1';
+
+        router.get(route('legal-cases.important-dates.list'), params, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    // Función para manejar el cambio de tamaño de página para lapsos pasados
+    const handlePastDuePerPageChange = (value: string) => {
+        const newPerPage = parseInt(value, 10);
+        setPastDuePageSize(newPerPage);
+
+        // Obtener todos los parámetros actuales para preservar los filtros
+        const params: Filters = {};
+
+        if (filterData.upcoming_start_date) {
+            params.upcoming_start_date = filterData.upcoming_start_date;
+        }
+        if (filterData.upcoming_end_date) {
+            params.upcoming_end_date = filterData.upcoming_end_date;
+        }
+        if (filterData.upcoming_case_type_id && filterData.upcoming_case_type_id !== 'all') {
+            params.upcoming_case_type_id = filterData.upcoming_case_type_id;
+        }
+        if (filterData.past_due_start_date) {
+            params.past_due_start_date = filterData.past_due_start_date;
+        }
+        if (filterData.past_due_end_date) {
+            params.past_due_end_date = filterData.past_due_end_date;
+        }
+        if (filterData.past_due_case_type_id && filterData.past_due_case_type_id !== 'all') {
+            params.past_due_case_type_id = filterData.past_due_case_type_id;
+        }
+
+        // Preservar el tamaño de página de la otra tabla
+        if (upcomingPageSize !== 10) {
+            params.upcoming_per_page = upcomingPageSize.toString();
+        }
+
+        // Añadir el parámetro per_page y resetear la página a 1 solo para la tabla de pasados
+        params.past_due_per_page = newPerPage.toString();
+        params.past_due_page = '1';
 
         router.get(route('legal-cases.important-dates.list'), params, {
             preserveState: true,
@@ -250,7 +300,21 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
     // Función para manejar la navegación de página
     const handlePageNavigation = (url: string | null) => {
         if (!url) return;
-        router.visit(url, {
+
+        // Extraer los parámetros de la URL actual
+        const urlObj = new URL(url);
+        const params = Object.fromEntries(urlObj.searchParams.entries());
+
+        // Asegurarnos de que se mantengan los tamaños de página personalizados
+        if (upcomingPageSize !== 10) {
+            params.upcoming_per_page = upcomingPageSize.toString();
+        }
+        if (pastDuePageSize !== 10) {
+            params.past_due_per_page = pastDuePageSize.toString();
+        }
+
+        // Construir la nueva URL con los parámetros adicionales
+        router.visit(route('legal-cases.important-dates.list', params), {
             preserveState: true,
             replace: true,
         });
@@ -266,15 +330,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                         <div className="mb-4 flex items-center justify-between">
                             <h1 className="text-2xl font-bold">Lapsos procesales próximos a finalizar</h1>
                             <div className="flex gap-2">
-                                <Button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    variant="outline"
-                                    className="flex items-center gap-2"
-                                >
+                                <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="flex items-center gap-2">
                                     <Filter className="h-4 w-4" />
-                                    <span className="hidden sm:inline">
-                                        {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-                                    </span>
+                                    <span className="hidden sm:inline">{showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}</span>
                                 </Button>
                                 <Button
                                     onClick={() => setShowPastDueSection(!showPastDueSection)}
@@ -368,7 +426,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                 <div className="overflow-x-auto">
                                     <table className="w-full table-auto border-collapse">
                                         <thead>
-                                            <tr className="border-b border-gray-200 bg-gray-50 text-left text-md font-medium text-muted-foreground dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
+                                            <tr className="text-muted-foreground border-b border-gray-200 bg-gray-50 text-left text-sm font-medium dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
                                                 <th className="px-6 py-3">Código</th>
                                                 <th className="px-6 py-3">Tipo de expediente</th>
                                                 <th className="px-6 py-3">Fecha de inicio del lapso procesal</th>
@@ -395,8 +453,11 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                     const statusBadge = getStatusBadge(legalCase.next_important_date.end_date);
 
                                                     return (
-                                                        <tr key={legalCase.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800">
-                                                            <td className="px-6 py-4 font-medium whitespace-nowrap">
+                                                        <tr
+                                                            key={legalCase.id}
+                                                            className="text-sm font-medium hover:bg-gray-50 dark:hover:bg-zinc-800"
+                                                        >
+                                                            <td className="px-6 py-4 whitespace-nowrap">
                                                                 <Link
                                                                     href={route('legal-cases.show', legalCase.id)}
                                                                     className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
@@ -421,7 +482,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 {legalCase.next_important_date ? (
-                                                                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${statusBadge.color}`}>
+                                                                    <span
+                                                                        className={`rounded-full px-2 py-1 text-xs font-medium ${statusBadge.color}`}
+                                                                    >
                                                                         {statusBadge.label}
                                                                     </span>
                                                                 ) : (
@@ -436,12 +499,15 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                                 )}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                                <Link
-                                                                    href={route('legal-cases.important-dates.index', legalCase.id)}
-                                                                    className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                                                                >
-                                                                    Ver detalles
-                                                                </Link>
+                                                                <Button asChild variant="outline" size="sm" className="dark:hover:bg-zinc-700">
+                                                                    <Link
+                                                                        href={route('legal-cases.important-dates.index', legalCase.id)}
+                                                                        className="flex items-center gap-1"
+                                                                    >
+                                                                        <CalendarDays className="h-4 w-4" />
+                                                                        Ver lapsos procesales
+                                                                    </Link>
+                                                                </Button>
                                                             </td>
                                                         </tr>
                                                     );
@@ -451,23 +517,21 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                     </table>
                                 </div>
                             </div>
-
                             {/* Paginación para escritorio */}
                             {legalCasesUpcoming.data.length > 0 && (
                                 <div className="bg-sidebar flex flex-row-reverse items-center justify-between gap-4 border-t border-gray-200 px-4 py-4 sm:rounded-b-lg dark:border-zinc-800 dark:bg-zinc-800">
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                                             <div>
-                                                Mostrando{' '}
-                                                {legalCasesUpcoming.to - legalCasesUpcoming.from + 1}{' '}
-                                                de {legalCasesUpcoming.total} registros
+                                                Mostrando {legalCasesUpcoming.to - legalCasesUpcoming.from + 1} de {legalCasesUpcoming.total}{' '}
+                                                registros
                                             </div>
-                                            <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
+                                            <Select value={upcomingPageSize.toString()} onValueChange={handleUpcomingPerPageChange}>
                                                 <SelectTrigger className="h-8 w-24">
                                                     <SelectValue placeholder="10" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {[5, 10, 20, 50, 100].map((size) => (
+                                                    {[1, 5, 10, 20, 50, 100].map((size) => (
                                                         <SelectItem key={size} value={size.toString()}>
                                                             {size}
                                                         </SelectItem>
@@ -538,31 +602,33 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                             <span className="text-gray-500 dark:text-gray-400">N/A</span>
                                                         )}
                                                     </p>
-                                                    <Link
-                                                        href={route('legal-cases.important-dates.index', legalCase.id)}
-                                                        className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                                                    >
-                                                        Ver detalles
-                                                    </Link>
+                                                    <Button asChild variant="outline" size="sm" className="w-full dark:hover:bg-zinc-700">
+                                                        <Link
+                                                            href={route('legal-cases.important-dates.index', legalCase.id)}
+                                                            className="flex items-center justify-center gap-1"
+                                                        >
+                                                            <CalendarDays className="h-4 w-4" />
+                                                            Ver lapsos procesales
+                                                        </Link>
+                                                    </Button>
                                                 </div>
                                             </div>
                                         );
                                     })}
                                 </div>
                             )}
-
                             {/* Paginación móvil para lapsos próximos */}
                             {legalCasesUpcoming.data.length > 0 && (
                                 <div className="bg-sidebar mt-4 flex flex-col gap-2 rounded-lg border border-gray-200 p-3 dark:border-zinc-800 dark:bg-zinc-800">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             {/* Selector de registros por página */}
-                                            <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
+                                            <Select value={upcomingPageSize.toString()} onValueChange={handleUpcomingPerPageChange}>
                                                 <SelectTrigger className="h-7 w-14 text-xs">
                                                     <SelectValue placeholder="10" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {[5, 10, 20, 50, 100].map((size) => (
+                                                    {[1, 5, 10, 20, 50, 100].map((size) => (
                                                         <SelectItem key={size} value={size.toString()}>
                                                             {size}
                                                         </SelectItem>
@@ -584,7 +650,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                             size="sm"
                                             className="h-8 w-8 p-0"
                                             onClick={() => {
-                                                const firstPageLink = legalCasesUpcoming.links.find(link => link.label === '1');
+                                                const firstPageLink = legalCasesUpcoming.links.find((link) => link.label === '1');
                                                 if (firstPageLink?.url) handlePageNavigation(firstPageLink.url);
                                             }}
                                             disabled={legalCasesUpcoming.current_page === 1}
@@ -597,7 +663,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                             size="sm"
                                             className="h-8 w-8 p-0"
                                             onClick={() => {
-                                                const prevLink = legalCasesUpcoming.links.find(link => link.label === '&laquo; Previous');
+                                                const prevLink = legalCasesUpcoming.links.find((link) => link.label === '&laquo; Previous');
                                                 if (prevLink?.url) handlePageNavigation(prevLink.url);
                                             }}
                                             disabled={legalCasesUpcoming.current_page === 1}
@@ -606,7 +672,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                         </Button>
 
                                         <div className="flex items-center text-xs">
-                                            <span>Pág. {legalCasesUpcoming.current_page}/{legalCasesUpcoming.last_page}</span>
+                                            <span>
+                                                Pág. {legalCasesUpcoming.current_page}/{legalCasesUpcoming.last_page}
+                                            </span>
                                         </div>
 
                                         <Button
@@ -614,7 +682,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                             size="sm"
                                             className="h-8 w-8 p-0"
                                             onClick={() => {
-                                                const nextLink = legalCasesUpcoming.links.find(link => link.label === 'Next &raquo;');
+                                                const nextLink = legalCasesUpcoming.links.find((link) => link.label === 'Next &raquo;');
                                                 if (nextLink?.url) handlePageNavigation(nextLink.url);
                                             }}
                                             disabled={legalCasesUpcoming.current_page === legalCasesUpcoming.last_page}
@@ -627,7 +695,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                             size="sm"
                                             className="h-8 w-8 p-0"
                                             onClick={() => {
-                                                const lastPageLink = legalCasesUpcoming.links.find(link => link.label === legalCasesUpcoming.last_page.toString());
+                                                const lastPageLink = legalCasesUpcoming.links.find(
+                                                    (link) => link.label === legalCasesUpcoming.last_page.toString(),
+                                                );
                                                 if (lastPageLink?.url) handlePageNavigation(lastPageLink.url);
                                             }}
                                             disabled={legalCasesUpcoming.current_page === legalCasesUpcoming.last_page}
@@ -715,7 +785,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                         <div className="overflow-x-auto">
                                             <table className="w-full table-auto border-collapse">
                                                 <thead>
-                                                    <tr className="border-b border-gray-200 bg-gray-50 text-left text-md font-medium text-muted-foreground dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
+                                                    <tr className="text-md text-muted-foreground border-b border-gray-200 bg-gray-50 text-left font-medium dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
                                                         <th className="px-6 py-3">Código</th>
                                                         <th className="px-6 py-3">Tipo de expediente</th>
                                                         <th className="px-6 py-3">Fecha de inicio del lapso procesal</th>
@@ -789,12 +859,20 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                                         )}
                                                                     </td>
                                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                                        <Link
-                                                                            href={route('legal-cases.important-dates.index', legalCase.id)}
-                                                                            className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                                                        <Button
+                                                                            asChild
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            className="dark:hover:bg-zinc-700"
                                                                         >
-                                                                            Ver detalles
-                                                                        </Link>
+                                                                            <Link
+                                                                                href={route('legal-cases.important-dates.index', legalCase.id)}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <CalendarDays className="h-4 w-4" />
+                                                                                Ver lapsos procesales
+                                                                            </Link>
+                                                                        </Button>
                                                                     </td>
                                                                 </tr>
                                                             );
@@ -804,23 +882,21 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                             </table>
                                         </div>
                                     </div>
-
                                     {/* Paginación para escritorio */}
                                     {legalCasesPastDue.data.length > 0 && (
                                         <div className="bg-sidebar flex flex-row-reverse items-center justify-between gap-4 border-t border-gray-200 px-4 py-4 sm:rounded-b-lg dark:border-zinc-800 dark:bg-zinc-800">
                                             <div className="flex items-center gap-4">
                                                 <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                                                     <div>
-                                                        Mostrando{' '}
-                                                        {legalCasesPastDue.to - legalCasesPastDue.from + 1}{' '}
-                                                        de {legalCasesPastDue.total} registros
+                                                        Mostrando {legalCasesPastDue.to - legalCasesPastDue.from + 1} de {legalCasesPastDue.total}{' '}
+                                                        registros
                                                     </div>
-                                                    <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
+                                                    <Select value={pastDuePageSize.toString()} onValueChange={handlePastDuePerPageChange}>
                                                         <SelectTrigger className="h-8 w-24">
                                                             <SelectValue placeholder="10" />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {[5, 10, 20, 50, 100].map((size) => (
+                                                            {[1, 5, 10, 20, 50, 100].map((size) => (
                                                                 <SelectItem key={size} value={size.toString()}>
                                                                     {size}
                                                                 </SelectItem>
@@ -897,31 +973,33 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                                     <span className="text-gray-500 dark:text-gray-400">N/A</span>
                                                                 )}
                                                             </p>
-                                                            <Link
-                                                                href={route('legal-cases.important-dates.index', legalCase.id)}
-                                                                className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                                                            >
-                                                                Ver detalles
-                                                            </Link>
+                                                            <Button asChild variant="outline" size="sm" className="w-full dark:hover:bg-zinc-700">
+                                                                <Link
+                                                                    href={route('legal-cases.important-dates.index', legalCase.id)}
+                                                                    className="flex items-center justify-center gap-1"
+                                                                >
+                                                                    <CalendarDays className="h-4 w-4" />
+                                                                    Ver lapsos procesales
+                                                                </Link>
+                                                            </Button>
                                                         </div>
                                                     </div>
                                                 );
                                             })}
                                         </div>
                                     )}
-
                                     {/* Paginación móvil para lapsos pasados */}
                                     {legalCasesPastDue.data.length > 0 && (
                                         <div className="bg-sidebar mt-4 flex flex-col gap-2 rounded-lg border border-gray-200 p-3 dark:border-zinc-800 dark:bg-zinc-800">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     {/* Selector de registros por página */}
-                                                    <Select value={pageSize.toString()} onValueChange={handlePerPageChange}>
+                                                    <Select value={pastDuePageSize.toString()} onValueChange={handlePastDuePerPageChange}>
                                                         <SelectTrigger className="h-7 w-14 text-xs">
                                                             <SelectValue placeholder="10" />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {[5, 10, 20, 50, 100].map((size) => (
+                                                            {[1, 5, 10, 20, 50, 100].map((size) => (
                                                                 <SelectItem key={size} value={size.toString()}>
                                                                     {size}
                                                                 </SelectItem>
@@ -943,7 +1021,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                     size="sm"
                                                     className="h-8 w-8 p-0"
                                                     onClick={() => {
-                                                        const firstPageLink = legalCasesPastDue.links.find(link => link.label === '1');
+                                                        const firstPageLink = legalCasesPastDue.links.find((link) => link.label === '1');
                                                         if (firstPageLink?.url) handlePageNavigation(firstPageLink.url);
                                                     }}
                                                     disabled={legalCasesPastDue.current_page === 1}
@@ -956,7 +1034,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                     size="sm"
                                                     className="h-8 w-8 p-0"
                                                     onClick={() => {
-                                                        const prevLink = legalCasesPastDue.links.find(link => link.label === '&laquo; Previous');
+                                                        const prevLink = legalCasesPastDue.links.find((link) => link.label === '&laquo; Previous');
                                                         if (prevLink?.url) handlePageNavigation(prevLink.url);
                                                     }}
                                                     disabled={legalCasesPastDue.current_page === 1}
@@ -965,7 +1043,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                 </Button>
 
                                                 <div className="flex items-center text-xs">
-                                                    <span>Pág. {legalCasesPastDue.current_page}/{legalCasesPastDue.last_page}</span>
+                                                    <span>
+                                                        Pág. {legalCasesPastDue.current_page}/{legalCasesPastDue.last_page}
+                                                    </span>
                                                 </div>
 
                                                 <Button
@@ -973,7 +1053,7 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                     size="sm"
                                                     className="h-8 w-8 p-0"
                                                     onClick={() => {
-                                                        const nextLink = legalCasesPastDue.links.find(link => link.label === 'Next &raquo;');
+                                                        const nextLink = legalCasesPastDue.links.find((link) => link.label === 'Next &raquo;');
                                                         if (nextLink?.url) handlePageNavigation(nextLink.url);
                                                     }}
                                                     disabled={legalCasesPastDue.current_page === legalCasesPastDue.last_page}
@@ -986,7 +1066,9 @@ export default function ImportantDatesIndex({ legalCasesUpcoming, legalCasesPast
                                                     size="sm"
                                                     className="h-8 w-8 p-0"
                                                     onClick={() => {
-                                                        const lastPageLink = legalCasesPastDue.links.find(link => link.label === legalCasesPastDue.last_page.toString());
+                                                        const lastPageLink = legalCasesPastDue.links.find(
+                                                            (link) => link.label === legalCasesPastDue.last_page.toString(),
+                                                        );
                                                         if (lastPageLink?.url) handlePageNavigation(lastPageLink.url);
                                                     }}
                                                     disabled={legalCasesPastDue.current_page === legalCasesPastDue.last_page}

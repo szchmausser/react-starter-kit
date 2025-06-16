@@ -931,12 +931,6 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                                                 )}
                                                             </button>
                                                         </div>
-                                                        {tag.type && (
-                                                            <div className="flex items-center gap-1 opacity-70">
-                                                                <div className={`h-2 w-2 rounded-full bg-current`}></div>
-                                                                <span className="hidden text-xs sm:inline">{tag.type}</span>
-                                                            </div>
-                                                        )}
                                                         <div className="mx-0.5 h-4 w-px bg-current opacity-20"></div>
                                                         <button
                                                             onClick={(e) => {

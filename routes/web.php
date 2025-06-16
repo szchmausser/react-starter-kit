@@ -92,7 +92,6 @@ Route::delete('/legal-cases/{legalCase}/important-dates/{importantDate}', [CaseI
 // Nueva ruta para el listado de expedientes por fechas importantes
 Route::get('/legal-cases/important-dates/list', [CaseImportantDateController::class, 'indexList'])->name('legal-cases.important-dates.list');
 
-
 // Gestión de etiquetas de expedientes
 Route::get('/api/legal-cases/all-tags', [LegalCaseController::class, 'getAllTags'])->name('legal-cases.all-tags');
 Route::get('/legal-cases/{legalCase}/tags', [LegalCaseController::class, 'getTags'])->name('legal-cases.tags');
@@ -122,5 +121,5 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

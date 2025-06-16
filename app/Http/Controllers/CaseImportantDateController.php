@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\CaseImportantDate;
 use App\Models\CaseType;
 use App\Models\LegalCase;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia; // Importar CaseType
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // Importar CaseType
+use Inertia\Inertia;
 
 class CaseImportantDateController extends Controller
 {
@@ -61,6 +61,14 @@ class CaseImportantDateController extends Controller
         // Obtener filtros para la sección de lapsos pasados
         $pastDueFilters = $request->only(['past_due_start_date', 'past_due_end_date', 'past_due_case_type_id']);
 
+        // Obtener tamaños de página para cada sección
+        $upcomingPerPage = (int) $request->input('upcoming_per_page', 1000);
+        $pastDuePerPage = (int) $request->input('past_due_per_page', 1000);
+
+        // Validar que los tamaños de página sean valores razonables
+        $upcomingPerPage = in_array($upcomingPerPage, [1, 5, 10, 20, 50, 100]) ? $upcomingPerPage : 10;
+        $pastDuePerPage = in_array($pastDuePerPage, [1, 5, 10, 20, 50, 100]) ? $pastDuePerPage : 10;
+
         // Query para lapsos procesales próximos a finalizar
         $queryUpcoming = LegalCase::query();
 
@@ -108,12 +116,12 @@ class CaseImportantDateController extends Controller
                     ->orderBy('end_date')
                     ->limit(1)
             )
-            ->paginate(10, ['*'], 'upcoming_page')
+            ->paginate($upcomingPerPage, ['*'], 'upcoming_page')
             ->through(function ($legalCase) {
                 $nextImportantDate = $legalCase->importantDates->first();
 
                 // Si no hay fecha importante, no incluimos este caso
-                if (!$nextImportantDate) {
+                if (! $nextImportantDate) {
                     return null;
                 }
 
@@ -133,7 +141,6 @@ class CaseImportantDateController extends Controller
                 ];
             });
 
-        // Filtramos los casos nulos (sin fechas importantes)
         $legalCasesUpcoming = $legalCasesUpcoming->setCollection(
             $legalCasesUpcoming->getCollection()->filter()->values()
         );
@@ -185,12 +192,12 @@ class CaseImportantDateController extends Controller
                     ->orderByDesc('end_date')
                     ->limit(1)
             )
-            ->paginate(10, ['*'], 'past_due_page')
+            ->paginate($pastDuePerPage, ['*'], 'past_due_page')
             ->through(function ($legalCase) {
                 $nextImportantDate = $legalCase->importantDates->first();
 
                 // Si no hay fecha importante, no incluimos este caso
-                if (!$nextImportantDate) {
+                if (! $nextImportantDate) {
                     return null;
                 }
 
@@ -210,7 +217,6 @@ class CaseImportantDateController extends Controller
                 ];
             });
 
-        // Filtramos los casos nulos (sin fechas importantes)
         $legalCasesPastDue = $legalCasesPastDue->setCollection(
             $legalCasesPastDue->getCollection()->filter()->values()
         );
@@ -226,6 +232,8 @@ class CaseImportantDateController extends Controller
                 'past_due_start_date',
                 'past_due_end_date',
                 'past_due_case_type_id',
+                'upcoming_per_page',
+                'past_due_per_page',
             ]),
         ]);
     }
