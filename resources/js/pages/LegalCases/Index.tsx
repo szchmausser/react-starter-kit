@@ -222,7 +222,7 @@ export default function Index() {
 
         // Batch updates para evitar múltiples renderizados
         let shouldUpdate = false;
-        let newPagination = { ...pagination };
+        const newPagination = { ...pagination };
 
         if (newPageIndex !== pagination.pageIndex) {
             newPagination.pageIndex = newPageIndex;

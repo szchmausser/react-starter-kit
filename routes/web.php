@@ -35,9 +35,32 @@ Route::get('media-library/{media}/download', [MediaLibraryController::class, 'do
 Route::get('media-library/{media}/info', [MediaLibraryController::class, 'fileInfo'])->name('media-library.info')->middleware([]);
 Route::put('media-library/{media}', [MediaLibraryController::class, 'update'])->name('media-library.update')->middleware([]);
 
+use App\Models\LegalCase;
+use Carbon\Carbon;
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        $now = Carbon::now();
+        $startOfWeek = $now->copy()->startOfWeek();
+        $endOfWeek = $now->copy()->endOfWeek();
+        $startOfLastWeek = $now->copy()->subWeek()->startOfWeek();
+        $endOfLastWeek = $now->copy()->subWeek()->endOfWeek();
+
+        $registeredThisWeek = LegalCase::whereBetween('created_at', [$startOfWeek, $endOfWeek])->count();
+        $registeredLastWeek = LegalCase::whereBetween('created_at', [$startOfLastWeek, $endOfLastWeek])->count();
+        $closedThisWeek = LegalCase::whereNotNull('closing_date')->whereBetween('closing_date', [$startOfWeek, $endOfWeek])->count();
+        $closedLastWeek = LegalCase::whereNotNull('closing_date')->whereBetween('closing_date', [$startOfLastWeek, $endOfLastWeek])->count();
+        $active = LegalCase::whereNull('closing_date')->count();
+
+        return Inertia::render('dashboard', [
+            'casesSummary' => [
+                'registeredThisWeek' => $registeredThisWeek,
+                'registeredLastWeek' => $registeredLastWeek,
+                'closedThisWeek' => $closedThisWeek,
+                'closedLastWeek' => $closedLastWeek,
+                'active' => $active,
+            ],
+        ]);
     })->name('dashboard');
 
     // Rutas para la gestión de etiquetas
@@ -71,6 +94,10 @@ Route::get('/legal-cases/{case}/participants/add', [CaseParticipantController::c
 Route::post('/legal-cases/{case}/participants/search', [CaseParticipantController::class, 'search'])->name('case-participants.search');
 Route::post('/legal-cases/{case}/participants', [CaseParticipantController::class, 'associate'])->name('case-participants.associate');
 Route::delete('/legal-cases/{case}/participants', [CaseParticipantController::class, 'remove'])->name('case-participants.remove');
+
+// Actualización de fechas clave en expedientes
+Route::patch('legal-cases/{case}/sentence-date', [LegalCaseController::class, 'updateSentenceDate'])->middleware(['auth', 'verified'])->name('legal-cases.update-sentence-date');
+Route::patch('legal-cases/{case}/closing-date', [LegalCaseController::class, 'updateClosingDate'])->middleware(['auth', 'verified'])->name('legal-cases.update-closing-date');
 
 // Gestión de estatus de expedientes
 Route::get('/legal-cases/{legalCase}/statuses', [LegalCaseController::class, 'statuses'])->name('legal-cases.statuses');

@@ -369,6 +369,38 @@ final class LegalCaseController extends Controller
     }
 
     /**
+     * Actualiza la fecha de sentencia del expediente.
+     */
+    public function updateSentenceDate(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'sentence_date' => 'required|date',
+        ]);
+
+        $legalCase = LegalCase::findOrFail($id);
+        $legalCase->sentence_date = $validated['sentence_date'];
+        $legalCase->save();
+
+        return response()->json(['success' => true, 'sentence_date' => $legalCase->sentence_date]);
+    }
+
+    /**
+     * Actualiza la fecha de cierre del expediente.
+     */
+    public function updateClosingDate(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'closing_date' => 'required|date',
+        ]);
+
+        $legalCase = LegalCase::findOrFail($id);
+        $legalCase->closing_date = $validated['closing_date'];
+        $legalCase->save();
+
+        return response()->json(['success' => true, 'closing_date' => $legalCase->closing_date]);
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id): RedirectResponse

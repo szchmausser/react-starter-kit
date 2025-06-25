@@ -115,6 +115,44 @@ interface Props {
 }
 
 export default function LegalCaseShow({ legalCase, events, nextImportantDate, mediaItems = [] }: Props) {
+    // --- Date modal state ---
+    const [sentenceDateDialogOpen, setSentenceDateDialogOpen] = useState(false);
+    const [closingDateDialogOpen, setClosingDateDialogOpen] = useState(false);
+    const [sentenceDate, setSentenceDate] = useState<string | undefined>(legalCase.sentence_date);
+    const [closingDate, setClosingDate] = useState<string | undefined>(legalCase.closing_date);
+    const [sentenceDateInput, setSentenceDateInput] = useState(sentenceDate || '');
+    const [closingDateInput, setClosingDateInput] = useState(closingDate || '');
+    const [sentenceDateSaving, setSentenceDateSaving] = useState(false);
+    const [closingDateSaving, setClosingDateSaving] = useState(false);
+
+    // Handlers for PATCH requests
+    const handleUpdateSentenceDate = async () => {
+        setSentenceDateSaving(true);
+        try {
+            const response = await axios.patch(route('legal-cases.update-sentence-date', legalCase.id), { sentence_date: sentenceDateInput });
+            setSentenceDate(sentenceDateInput);
+            setSentenceDateDialogOpen(false);
+            toast.success('Fecha de sentencia actualizada');
+        } catch (err: any) {
+            toast.error('Error al actualizar la fecha de sentencia');
+        } finally {
+            setSentenceDateSaving(false);
+        }
+    };
+    const handleUpdateClosingDate = async () => {
+        setClosingDateSaving(true);
+        try {
+            const response = await axios.patch(route('legal-cases.update-closing-date', legalCase.id), { closing_date: closingDateInput });
+            setClosingDate(closingDateInput);
+            setClosingDateDialogOpen(false);
+            toast.success('Fecha de cierre actualizada');
+        } catch (err: any) {
+            toast.error('Error al actualizar la fecha de cierre');
+        } finally {
+            setClosingDateSaving(false);
+        }
+    };
+
     const [participantToRemove, setParticipantToRemove] = useState<{ id: number; type: string; name: string } | null>(null);
     const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -962,7 +1000,7 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                 <span className="dark:text-gray-200">Información General del Expediente</span>
                             </div>
                             {/* Campos principales en columnas, estilo ficha legal */}
-                            <div className="px-6 pt-6 pb-2">
+                            <div className="p-6">
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                     <div className="flex flex-col items-stretch rounded-md border border-gray-200 bg-gray-100 p-4 dark:border-zinc-700 dark:bg-zinc-800">
                                         <div className="mb-1 flex items-center gap-1.5">
@@ -1023,101 +1061,158 @@ export default function LegalCaseShow({ legalCase, events, nextImportantDate, me
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            {/* Línea divisoria */}
-                            <div className="my-4 border-t border-gray-200 dark:border-zinc-700" />
-                            {/* Fechas importantes en la parte inferior, en recuadros */}
-                            <div className="grid grid-cols-1 gap-6 px-6 pb-6 md:grid-cols-4">
-                                <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <div className="mb-1 flex items-center gap-1.5">
-                                        <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                            FECHA DE ENTRADA
+                                {/* Fechas importantes en la parte inferior, en recuadros */}
+                                <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4">
+                                    <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
+                                        <div className="flex w-full items-center gap-1.5">
+                                            <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                                FECHA DE ENTRADA
+                                            </span>
+                                            <Button size="icon" variant="ghost" className="ml-auto" disabled />
+                                        </div>
+                                        <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
+                                            {formatDateSafe(legalCase.entry_date)}
                                         </span>
                                     </div>
-                                    <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
-                                        {formatDateSafe(legalCase.entry_date)}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <div className="mb-1 flex items-center gap-1.5">
-                                        <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                            FECHA DE SENTENCIA
+                                    <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
+                                        <div className="flex w-full items-center gap-1.5">
+                                            <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                                FECHA DE SENTENCIA
+                                            </span>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="ml-auto text-gray-600 hover:text-blue-800"
+                                                onClick={() => setSentenceDateDialogOpen(true)}
+                                                title="Editar fecha de sentencia"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
+                                            {sentenceDate ? formatDateSafe(sentenceDate) : 'NO DEFINIDA'}
                                         </span>
                                     </div>
-                                    <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
-                                        {legalCase.sentence_date ? formatDateSafe(legalCase.sentence_date) : 'NO DEFINIDA'}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <div className="mb-1 flex items-center gap-1.5">
-                                        <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                            FECHA DE CIERRE
+                                    <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
+                                        <div className="flex w-full items-center gap-1.5">
+                                            <Calendar className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                                FECHA DE CIERRE
+                                            </span>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="ml-auto text-gray-600 hover:text-blue-800"
+                                                onClick={() => setClosingDateDialogOpen(true)}
+                                                title="Editar fecha de cierre"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
+                                            {closingDate ? formatDateSafe(closingDate) : 'NO DEFINIDA'}
                                         </span>
                                     </div>
-                                    <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
-                                        {legalCase.closing_date ? formatDateSafe(legalCase.closing_date) : 'NO DEFINIDA'}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                                    <div className="mb-1 flex items-center gap-1.5">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400"
-                                        >
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <line x1="12" x2="12" y1="8" y2="12"></line>
-                                            <line x1="12" x2="12.01" y1="16" y2="16"></line>
-                                        </svg>
-                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                            PRÓXIMA FECHA IMPORTANTE
-                                        </span>
-                                    </div>
-                                    {nextImportantDate ? (
-                                        <div className="flex items-center justify-between gap-2">
-                                            <div className="flex flex-col">
+                                    <div className="flex flex-col items-stretch rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
+                                        <div className="flex w-full items-center gap-1.5">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400"
+                                            >
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="12" x2="12" y1="8" y2="12"></line>
+                                                <line x1="12" x2="12.01" y1="16" y2="16"></line>
+                                            </svg>
+                                            <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                                PRÓXIMA FECHA IMPORTANTE
+                                            </span>
+                                            <div className="flex-1" />
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-blue-800"
+                                                onClick={() => router.visit(route('legal-cases.important-dates.index', legalCase.id))}
+                                                title={nextImportantDate ? 'Editar fechas importantes' : 'Gestionar fechas importantes'}
+                                            >
+                                                <Calendar className="h-6 w-6" />
+                                            </Button>
+                                        </div>
+                                        {nextImportantDate ? (
+                                            <div className="mt-1 flex flex-col">
                                                 <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">
                                                     {formatDateSafe(nextImportantDate.end_date)}
                                                 </span>
-                                                <span className="mt-1 text-base font-semibold text-gray-800 dark:text-gray-200">
+                                                <span className="text-base font-semibold text-gray-800 dark:text-gray-200">
                                                     {nextImportantDate.title}
                                                 </span>
                                             </div>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="text-gray-600 hover:text-blue-800"
-                                                onClick={() => router.visit(route('legal-cases.important-dates.index', legalCase.id))}
-                                                title="Editar fechas importantes"
-                                            >
-                                                <Calendar className="h-6 w-6" />
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="text-lg font-bold text-gray-900 uppercase dark:text-gray-100">NO DEFINIDA</span>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="text-gray-600 hover:text-blue-800"
-                                                onClick={() => router.visit(route('legal-cases.important-dates.index', legalCase.id))}
-                                                title="Gestionar fechas importantes"
-                                            >
-                                                <Calendar className="h-6 w-6" />
-                                            </Button>
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <span className="mt-1 text-lg font-bold text-gray-900 uppercase dark:text-gray-100">NO DEFINIDA</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Sentence Date Edit Dialog */}
+                        <Dialog open={sentenceDateDialogOpen} onOpenChange={setSentenceDateDialogOpen}>
+                            <DialogContent className="bg-white dark:bg-zinc-900">
+                                <DialogHeader>
+                                    <DialogTitle>Editar Fecha de Sentencia</DialogTitle>
+                                    <DialogDescription>Seleccione una nueva fecha de sentencia y guarde los cambios.</DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                    <Input
+                                        type="date"
+                                        value={sentenceDateInput}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSentenceDateInput(e.target.value)}
+                                        className="border-gray-300 dark:border-gray-600 dark:bg-zinc-800"
+                                    />
+                                </div>
+                                <DialogFooter>
+                                    <Button
+                                        onClick={handleUpdateSentenceDate}
+                                        disabled={sentenceDateInput === '' || sentenceDateInput === sentenceDate || sentenceDateSaving}
+                                    >
+                                        Guardar
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+
+                        {/* Closing Date Edit Dialog */}
+                        <Dialog open={closingDateDialogOpen} onOpenChange={setClosingDateDialogOpen}>
+                            <DialogContent className="bg-white dark:bg-zinc-900">
+                                <DialogHeader>
+                                    <DialogTitle>Editar Fecha de Cierre</DialogTitle>
+                                    <DialogDescription>Seleccione una nueva fecha de cierre y guarde los cambios.</DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                    <Input
+                                        type="date"
+                                        value={closingDateInput}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setClosingDateInput(e.target.value)}
+                                        className="border-gray-300 dark:border-gray-600 dark:bg-zinc-800"
+                                    />
+                                </div>
+                                <DialogFooter>
+                                    <Button
+                                        onClick={handleUpdateClosingDate}
+                                        disabled={closingDateInput === '' || closingDateInput === closingDate || closingDateSaving}
+                                    >
+                                        Guardar
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
 
                         {/* Tarjeta: Sujetos procesales */}
                         <div className="mb-6 overflow-hidden rounded-md border dark:border-zinc-700">
