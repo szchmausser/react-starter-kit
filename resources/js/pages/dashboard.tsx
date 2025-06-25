@@ -1,4 +1,6 @@
 import CasesSummary from '@/components/CasesSummary';
+import PastDueDeadlines from '@/components/PastDueDeadlines';
+import UrgentDeadlines from '@/components/UrgentDeadlines';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -26,6 +28,8 @@ export default function Dashboard() {
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <CasesSummary casesSummary={casesSummary} />
+                <PastDueDeadlines />
+                <UrgentDeadlines />
             </div>
         </AppLayout>
     );

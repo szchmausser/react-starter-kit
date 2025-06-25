@@ -35,6 +35,7 @@ Route::get('media-library/{media}/download', [MediaLibraryController::class, 'do
 Route::get('media-library/{media}/info', [MediaLibraryController::class, 'fileInfo'])->name('media-library.info')->middleware([]);
 Route::put('media-library/{media}', [MediaLibraryController::class, 'update'])->name('media-library.update')->middleware([]);
 
+use App\Http\Controllers\DashboardController;
 use App\Models\LegalCase;
 use Carbon\Carbon;
 
@@ -62,6 +63,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ],
         ]);
     })->name('dashboard');
+
+    Route::get('dashboard/urgent-deadlines', [DashboardController::class, 'getUrgentDeadlines'])->name('dashboard.urgent-deadlines');
+    Route::get('dashboard/past-due-deadlines', [DashboardController::class, 'getPastDueDeadlines'])->name('dashboard.past-due-deadlines');
 
     // Rutas para la gestión de etiquetas
     Route::resource('tags', TagController::class);
