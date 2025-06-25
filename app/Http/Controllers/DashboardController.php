@@ -5,9 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\LegalCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    public function index()
+    {
+        $now = Carbon::now();
+        $startOfWeek = $now->copy()->startOfWeek();
+        $endOfWeek = $now->copy()->endOfWeek();
+        $startOfLastWeek = $now->copy()->subWeek()->startOfWeek();
+        $endOfLastWeek = $now->copy()->subWeek()->endOfWeek();
+
+        $registeredThisWeek = LegalCase::whereBetween('created_at', [$startOfWeek, $endOfWeek])->count();
+        $registeredLastWeek = LegalCase::whereBetween('created_at', [$startOfLastWeek, $endOfLastWeek])->count();
+        $closedThisWeek = LegalCase::whereNotNull('closing_date')->whereBetween('closing_date', [$startOfWeek, $endOfWeek])->count();
+        $closedLastWeek = LegalCase::whereNotNull('closing_date')->whereBetween('closing_date', [$startOfLastWeek, $endOfLastWeek])->count();
+        $active = LegalCase::whereNull('closing_date')->count();
+
+        return Inertia::render('dashboard', [
+            'casesSummary' => [
+                'registeredThisWeek' => $registeredThisWeek,
+                'registeredLastWeek' => $registeredLastWeek,
+                'closedThisWeek' => $closedThisWeek,
+                'closedLastWeek' => $closedLastWeek,
+                'active' => $active,
+            ],
+        ]);
+    }
+
     public function getUrgentDeadlines()
     {
         $localToday = Carbon::now()->setTimezone(config('app.local_timezone', 'America/Caracas'))->startOfDay();
