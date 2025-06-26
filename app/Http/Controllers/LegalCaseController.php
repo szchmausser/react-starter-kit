@@ -263,7 +263,7 @@ final class LegalCaseController extends Controller
             ->first();
 
         // Obtener todos los archivos multimedia (sin filtrar por colección)
-        $allMedia = $legalCase->getMedia('*');
+                $allMedia = $legalCase->getMedia();
 
         Log::debug('Todos los archivos multimedia encontrados:', [
             'legal_case_id' => $legalCase->id,

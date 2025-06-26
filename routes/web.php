@@ -44,6 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard/urgent-deadlines', [DashboardController::class, 'getUrgentDeadlines'])->name('dashboard.urgent-deadlines');
     Route::get('dashboard/past-due-deadlines', [DashboardController::class, 'getPastDueDeadlines'])->name('dashboard.past-due-deadlines');
+    Route::get('dashboard/case-status-distribution', [DashboardController::class, 'getCaseStatusDistribution'])->name('dashboard.case-status-distribution');
+    Route::get('dashboard/case-type-distribution', [DashboardController::class, 'getCaseTypeDistribution'])->name('dashboard.case-type-distribution');
 
     // Rutas para la gestión de etiquetas
     Route::resource('tags', TagController::class);

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\LegalCase;
+use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -118,5 +120,47 @@ class DashboardController extends Controller
         })->filter()->values();
 
         return response()->json($pastDueDeadlines);
+    }
+
+    public function getCaseStatusDistribution()
+    {
+        // Obtener los IDs de los expedientes activos
+        $activeCaseIds = DB::table('legal_cases')->whereNull('closing_date')->pluck('id');
+
+        // Subconsulta para obtener el ID del estado más reciente de cada expediente activo
+        $latestStatusIds = DB::table('statuses')
+            ->select(DB::raw('MAX(id) as id'))
+            ->where('model_type', 'App\Models\LegalCase')
+            ->whereIn('model_id', $activeCaseIds)
+            ->groupBy('model_id');
+
+        // Obtener los estados más recientes
+        $latestStatuses = DB::table('statuses')
+            ->whereIn('id', $latestStatusIds);
+
+        // Consulta principal para la distribución de estados
+        $statusDistribution = DB::table('legal_cases')
+            ->whereNull('legal_cases.closing_date')
+            ->leftJoinSub($latestStatuses, 'latest_statuses', function ($join) {
+                $join->on('legal_cases.id', '=', 'latest_statuses.model_id');
+            })
+            ->select(DB::raw('COALESCE(latest_statuses.name, \'Sin Estado\') as status'), DB::raw('COUNT(legal_cases.id) as count'))
+            ->groupBy('status')
+            ->orderBy('count', 'desc')
+            ->get();
+
+        return response()->json($statusDistribution);
+    }
+
+    public function getCaseTypeDistribution()
+    {
+        $typeDistribution = LegalCase::whereNull('closing_date')
+            ->join('case_types', 'legal_cases.case_type_id', '=', 'case_types.id')
+            ->select('case_types.name as type', DB::raw('count(*) as count'))
+            ->groupBy('case_types.name')
+            ->orderBy('count', 'desc')
+            ->get();
+
+        return response()->json($typeDistribution);
     }
 }
