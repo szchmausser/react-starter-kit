@@ -13,14 +13,14 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $now = Carbon::now();
+        $now = Carbon::now()->setTimezone(config('app.local_timezone', 'America/Caracas'));
         $startOfWeek = $now->copy()->startOfWeek();
         $endOfWeek = $now->copy()->endOfWeek();
         
         // This week's data with detailed cases
-        $registeredThisWeekCases = LegalCase::whereBetween('created_at', [$startOfWeek, $endOfWeek])
-            ->select('id', 'code as case_number', 'created_at')
-            ->orderBy('created_at', 'desc')
+        $registeredThisWeekCases = LegalCase::whereBetween('entry_date', [$startOfWeek, $endOfWeek])
+            ->select('id', 'code as case_number', 'entry_date')
+            ->orderBy('entry_date', 'desc')
             ->get();
         
         $closedThisWeekCases = LegalCase::whereNotNull('closing_date')
@@ -32,12 +32,12 @@ class DashboardController extends Controller
         // Last week's data for comparison
         $startOfLastWeek = $startOfWeek->copy()->subWeek();
         $endOfLastWeek = $endOfWeek->copy()->subWeek();
-        $registeredLastWeek = LegalCase::whereBetween('created_at', [$startOfLastWeek, $endOfLastWeek])->count();
+        $registeredLastWeek = LegalCase::whereBetween('entry_date', [$startOfLastWeek, $endOfLastWeek])->count();
         $closedLastWeek = LegalCase::whereNotNull('closing_date')->whereBetween('closing_date', [$startOfLastWeek, $endOfLastWeek])->count();
         
         // Active cases with details
         $activeCases = LegalCase::whereNull('closing_date')
-            ->select('id', 'code as case_number', 'created_at')
+            ->select('id', 'code as case_number', 'updated_at')
             ->orderBy('created_at', 'desc')
             ->get();
 

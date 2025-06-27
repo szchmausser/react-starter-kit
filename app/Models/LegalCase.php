@@ -33,6 +33,8 @@ final class LegalCase extends Model implements HasMedia, Searchable
         'entry_date' => 'date',
         'sentence_date' => 'date',
         'closing_date' => 'date',
+        'created_at' => 'date',
+        'updated_at' => 'date',
     ];
 
     /**

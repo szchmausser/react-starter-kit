@@ -2,7 +2,9 @@ export interface CaseDetail {
     id: number;
     case_number: string;
     created_at?: string;
+    entry_date?: string; // Added for registered cases
     closing_date?: string;
+    updated_at?: string; // Added for active cases
 }
 
 export interface CasesSummaryData {
