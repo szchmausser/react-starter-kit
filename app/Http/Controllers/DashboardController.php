@@ -16,22 +16,42 @@ class DashboardController extends Controller
         $now = Carbon::now();
         $startOfWeek = $now->copy()->startOfWeek();
         $endOfWeek = $now->copy()->endOfWeek();
-        $startOfLastWeek = $now->copy()->subWeek()->startOfWeek();
-        $endOfLastWeek = $now->copy()->subWeek()->endOfWeek();
-
-        $registeredThisWeek = LegalCase::whereBetween('created_at', [$startOfWeek, $endOfWeek])->count();
+        
+        // This week's data with detailed cases
+        $registeredThisWeekCases = LegalCase::whereBetween('created_at', [$startOfWeek, $endOfWeek])
+            ->select('id', 'code as case_number', 'created_at')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        $closedThisWeekCases = LegalCase::whereNotNull('closing_date')
+            ->whereBetween('closing_date', [$startOfWeek, $endOfWeek])
+            ->select('id', 'code as case_number', 'closing_date')
+            ->orderBy('closing_date', 'desc')
+            ->get();
+        
+        // Last week's data for comparison
+        $startOfLastWeek = $startOfWeek->copy()->subWeek();
+        $endOfLastWeek = $endOfWeek->copy()->subWeek();
         $registeredLastWeek = LegalCase::whereBetween('created_at', [$startOfLastWeek, $endOfLastWeek])->count();
-        $closedThisWeek = LegalCase::whereNotNull('closing_date')->whereBetween('closing_date', [$startOfWeek, $endOfWeek])->count();
         $closedLastWeek = LegalCase::whereNotNull('closing_date')->whereBetween('closing_date', [$startOfLastWeek, $endOfLastWeek])->count();
-        $active = LegalCase::whereNull('closing_date')->count();
+        
+        // Active cases with details
+        $activeCases = LegalCase::whereNull('closing_date')
+            ->select('id', 'code as case_number', 'created_at')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return Inertia::render('dashboard', [
             'casesSummary' => [
-                'registeredThisWeek' => $registeredThisWeek,
+                'registeredThisWeek' => $registeredThisWeekCases->count(),
                 'registeredLastWeek' => $registeredLastWeek,
-                'closedThisWeek' => $closedThisWeek,
+                'closedThisWeek' => $closedThisWeekCases->count(),
                 'closedLastWeek' => $closedLastWeek,
-                'active' => $active,
+                'active' => $activeCases->count(),
+                // Detailed case lists
+                'registeredThisWeekCases' => $registeredThisWeekCases,
+                'closedThisWeekCases' => $closedThisWeekCases,
+                'activeCases' => $activeCases,
             ],
         ]);
     }
@@ -72,7 +92,7 @@ class DashboardController extends Controller
                 'date' => $deadlineDate->toDateString(),
                 'legal_case' => [
                     'id' => $case->id,
-                    'case_number' => $case->code, // Asumiendo que 'code' es el número de caso
+                    'case_number' => $case->code,
                 ],
             ];
 
@@ -130,7 +150,7 @@ class DashboardController extends Controller
         // Subconsulta para obtener el ID del estado más reciente de cada expediente activo
         $latestStatusIds = DB::table('statuses')
             ->select(DB::raw('MAX(id) as id'))
-            ->where('model_type', 'App\Models\LegalCase')
+            ->where('model_type', 'App\\Models\\LegalCase')
             ->whereIn('model_id', $activeCaseIds)
             ->groupBy('model_id');
 

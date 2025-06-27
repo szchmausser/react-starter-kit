@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileText } from 'lucide-react';
+import { FolderKanban } from 'lucide-react';
 import {
     Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis
 } from 'recharts';
@@ -10,10 +10,10 @@ interface TypeDistributionData {
     count: number;
 }
 
-// Paleta de colores para el gráfico. Se pueden añadir más si hay muchos estados.
-const COLORS = ['#6a0dad', '#e0115f', '#00ffff', '#ff7f50', '#3fff00', '#ff00ff', '#ffff00', '#c0c0c0'];
+// Paleta de colores para el gráfico
+const COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#14b8a6', '#3b82f6', '#22c55e', '#f97316', '#ef4444'];
 
-// Componente del Gráfico de Distribución de Expedientes por Estado
+// Componente del Gráfico de Distribución de Expedientes por Tipo
 export default function CaseTypeChart() {
     const [data, setData] = useState<TypeDistributionData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -21,7 +21,6 @@ export default function CaseTypeChart() {
     useEffect(() => {
         async function fetchData() {
             try {
-                // Corregimos la llamada a la API para usar una URL estática
                 const response = await fetch('/dashboard/case-type-distribution');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -52,7 +51,7 @@ export default function CaseTypeChart() {
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 md:p-6">
             <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
-                    <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    <FolderKanban className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Distribución de Expedientes por Tipo</h2>
             </div>
