@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\LegalCase;
-use App\Models\Status;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -16,25 +14,25 @@ class DashboardController extends Controller
         $now = Carbon::now()->setTimezone(config('app.local_timezone', 'America/Caracas'));
         $startOfWeek = $now->copy()->startOfWeek();
         $endOfWeek = $now->copy()->endOfWeek();
-        
+
         // This week's data with detailed cases
         $registeredThisWeekCases = LegalCase::whereBetween('entry_date', [$startOfWeek, $endOfWeek])
             ->select('id', 'code as case_number', 'entry_date')
             ->orderBy('entry_date', 'desc')
             ->get();
-        
+
         $closedThisWeekCases = LegalCase::whereNotNull('closing_date')
             ->whereBetween('closing_date', [$startOfWeek, $endOfWeek])
             ->select('id', 'code as case_number', 'closing_date')
             ->orderBy('closing_date', 'desc')
             ->get();
-        
+
         // Last week's data for comparison
         $startOfLastWeek = $startOfWeek->copy()->subWeek();
         $endOfLastWeek = $endOfWeek->copy()->subWeek();
         $registeredLastWeek = LegalCase::whereBetween('entry_date', [$startOfLastWeek, $endOfLastWeek])->count();
         $closedLastWeek = LegalCase::whereNotNull('closing_date')->whereBetween('closing_date', [$startOfLastWeek, $endOfLastWeek])->count();
-        
+
         // Active cases with details
         $activeCases = LegalCase::whereNull('closing_date')
             ->select('id', 'code as case_number', 'updated_at')
@@ -82,7 +80,9 @@ class DashboardController extends Controller
             // La primera fecha importante en la colección es la más cercana gracias al orderBy
             $nextDeadline = $case->importantDates->first();
 
-            if (!$nextDeadline) continue;
+            if (! $nextDeadline) {
+                continue;
+            }
 
             $deadlineDate = Carbon::parse($nextDeadline->end_date);
 
@@ -126,7 +126,9 @@ class DashboardController extends Controller
         $pastDueDeadlines = $legalCases->map(function ($case) {
             $lastPastDueDeadline = $case->importantDates->first();
 
-            if (!$lastPastDueDeadline) return null;
+            if (! $lastPastDueDeadline) {
+                return null;
+            }
 
             return [
                 'id' => $lastPastDueDeadline->id,

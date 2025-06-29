@@ -1,3 +1,5 @@
+import { type PageProps } from '@/types';
+
 export interface CaseDetail {
     id: number;
     case_number: string;
@@ -23,6 +25,6 @@ export interface DashboardProps {
     casesSummary: CasesSummaryData;
 }
 
-export interface DashboardPageProps {
+export interface DashboardPageProps extends PageProps {
     casesSummary: CasesSummaryData;
 }
