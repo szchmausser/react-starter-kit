@@ -4,6 +4,7 @@ use App\Http\Controllers\CaseEventController;
 use App\Http\Controllers\CaseImportantDateController;
 use App\Http\Controllers\CaseParticipantController;
 use App\Http\Controllers\CaseTypeController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IndividualController;
 use App\Http\Controllers\LegalCaseController;
 use App\Http\Controllers\LegalCaseMediaController;
@@ -34,10 +35,6 @@ Route::delete('media-library/{media}', [MediaLibraryController::class, 'destroy'
 Route::get('media-library/{media}/download', [MediaLibraryController::class, 'download'])->name('media-library.download')->middleware([]);
 Route::get('media-library/{media}/info', [MediaLibraryController::class, 'fileInfo'])->name('media-library.info')->middleware([]);
 Route::put('media-library/{media}', [MediaLibraryController::class, 'update'])->name('media-library.update')->middleware([]);
-
-use App\Http\Controllers\DashboardController;
-use App\Models\LegalCase;
-use Carbon\Carbon;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
