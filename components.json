@@ -3,12 +3,13 @@
     "style": "default",
     "rsc": false,
     "tsx": true,
-    "tailwind": {
-        "config": "tailwind.config.js",
-        "css": "resources/css/app.css",
-        "baseColor": "neutral",
-        "cssVariables": true,
-        "prefix": ""
+    "_comment": "Tailwind CSS ahora se usa desde CDN. La sección tailwind se mantiene comentada para referencia.",
+    "_tailwind": {
+        "_config": "tailwind.config.js",
+        "_css": "resources/css/app.css",
+        "_baseColor": "neutral",
+        "_cssVariables": true,
+        "_prefix": ""
     },
     "aliases": {
         "components": "@/components",
